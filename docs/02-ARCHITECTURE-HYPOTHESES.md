@@ -161,3 +161,13 @@ Evidence: `docs/research/SMX-004-BEHAVIOUR-EXECUTION.md`, `docs/research/SMX-004
 - **H-009 strengthened narrowly at the execution-boundary level, still unresolved end-to-end.** Unknown opcodes fail validation, no arbitrary host-call instruction exists, runtime services are explicit/capability-mediated, optional capability denial can degrade cleanly, and hard execution budgets are demonstrated. SMX-006/016 must still test package/parser attacks, confused-deputy cases, memory amplification, target-specific host bridges, and real sandbox escape.
 
 No other hypothesis receives a status change from SMX-004.
+
+## SMX-005 review record — 2026-09-17
+
+Evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md`, `docs/research/SMX-005-DOCUMENT-FIXTURES.json`, and `experiments/smx-005-document-model/`.
+
+- **H-007 strengthened.** The Thing/definition/instance/behaviour/port/connection/asset/migration semantics from SMX-002–004 fit an engine-independent typed logical-record graph with stable IDs, immutable revision/chunk lineage, semantic transactions, and content-addressed immutable blobs. No SMX-005 requirement benefits from making Godot scenes/resources the public canonical format.
+- **H-008 strengthened further.** The document model and executable fixtures preserve Thing/reference identity across rename, reparent, physical chunk relocation, partial loading, instance provenance, public-interface restructure, and asset-content replacement without path repair. Final concrete ID encoding remains open.
+- **H-018 strengthened at the schema/document layer; unresolved end-to-end.** Deterministic staged migration preserves IDs/references and compatible optional extension data, rejects unsupported required features, validates target state before commit, and leaves the source untouched on failure. Actual migration across future Godot/runtime semantic changes remains for SMX-009/015/020.
+
+No other hypothesis receives a status change from SMX-005.
