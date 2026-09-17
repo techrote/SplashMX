@@ -18,7 +18,9 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 12. `docs/research/SMX-003-COMPOSITION-FIXTURES.json` — machine-addressable CMP-/CT-IDs and direct experimental coverage for SMX-003.
 13. `docs/research/SMX-004-BEHAVIOUR-EXECUTION.md` — bounded-turn executor semantics, ordering, mutation visibility, determinism, continuations, budgets, and hot-swap contract.
 14. `docs/research/SMX-004-BEHAVIOUR-FIXTURES.json` — machine-addressable EXE-/ET-IDs and direct experimental coverage for SMX-004.
-15. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+15. `docs/research/SMX-005-CANONICAL-DOCUMENT.md` — canonical logical-record/identity/reference/chunk/transaction/migration semantics and encoding-family comparison.
+16. `docs/research/SMX-005-DOCUMENT-FIXTURES.json` — machine-addressable DOC-/DT-IDs and direct experimental coverage for SMX-005.
+17. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -26,19 +28,19 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 |---|---|---|
 | Product scope / “Flash successor” intent | Constitution, Roadmap | Current issue |
 | Research terminology / evaluation method | SMX-001 research baseline | Corpus JSON; issue #1 merged PR |
-| Thing/object/kernel semantics | SMX-002 Thing kernel, H-001/H-002/H-003/H-008 | SMX-002 fixtures/experiment; SMX-001 cases C-003/C-004/C-006/C-007/C-020/C-021/C-022/C-025 and A-001/A-014/A-016 |
+| Thing/object/kernel semantics | SMX-002 Thing kernel, H-001/H-002/H-003/H-008 | SMX-002 fixtures/experiment; C-003/C-004/C-006/C-007/C-020/C-021/C-022/C-025; A-001/A-014/A-016 |
 | Composition/local classes/instances | SMX-003 composition research, H-002–H-005, CMP-001–CMP-012 | SMX-003 fixtures/experiment; C-002/C-006/C-007/C-011/C-017/C-018/C-021/C-027; A-001/A-008/A-016 |
 | Behaviour/rules/scripting/IR | SMX-004 behaviour execution, H-005/H-006/H-009, EXE-001–EXE-015 | SMX-004 fixtures/experiment; C-003/C-004/C-005/C-009/C-022/C-024/C-025; A-003/A-004/A-006 |
-| IDs/references/schema/canonical format | H-007/H-008/H-018, SMX-002 K-001/K-002/K-010/K-012, SMX-003 DefinitionId/RevisionId/ElementId/overlay requirements, SMX-004 behaviour/attachment/continuation state requirements | SMX-005 outputs; C-006/C-012/C-023/C-024 |
-| Security/sandbox/capabilities | Constitution P9, H-009, SMX-002 K-005/K-006, SMX-004 EXE-005/006/009/015 | SMX-006/016 outputs; C-022/A-003/A-004/A-012/A-015; current platform primary docs |
-| Lifecycle/serialization/determinism | H-008/H-010, SMX-002 state/context taxonomy, SMX-003 protected-deletion/reconciliation requirements, SMX-004 continuation/PRNG/private-state handoff | SMX-007/015 outputs; C-024/A-002 |
-| Streaming/hot swap | H-005/H-010/H-011, SMX-002 K-012, SMX-003 public-interface/provenance model, SMX-004 EXE-010–EXE-013 | SMX-008/015 outputs; C-012/C-025/C-027 |
-| Godot mapping/browser limits | H-007/H-014/H-015, SMX-002 K-010, SMX-004 no-Godot execution contract, SMX-001 evidence E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
-| Multiplayer | Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-003 CMP-012, SMX-004 ordered external-input/service boundary | SMX-010/017 outputs; C-013/C-014/C-020/C-021/A-009/A-011; current browser/Godot transport docs |
-| Collaborative editing | Constitution P8, H-013/H-017, SMX-003 base-revision/overlay/reconcile model | SMX-011/018 outputs; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
+| IDs/references/schema/canonical format | SMX-005 canonical document, H-007/H-008/H-018, DOC-001–DOC-016 | SMX-005 fixtures/experiment; C-006/C-011/C-012/C-018/C-023/C-025/C-026/C-027; A-001/A-002/A-008/A-010/A-012 |
+| Security/sandbox/capabilities | Constitution P9, H-009, SMX-002 K-005/K-006, SMX-004 EXE-005/006/009/015, SMX-005 DOC-013/DOC-016 | SMX-006/016 outputs; C-022/A-003/A-004/A-012/A-015; current platform primary docs |
+| Lifecycle/serialization/determinism | H-008/H-010, SMX-005 document/runtime/save/context planes, SMX-004 continuation/PRNG/private-state handoff | SMX-007/015 outputs; C-024/A-002 |
+| Streaming/hot swap | H-005/H-010/H-011, SMX-005 catalog/chunk/reference-resolution model, SMX-003 public-interface/provenance model, SMX-004 EXE-010–EXE-013 | SMX-008/015 outputs; C-012/C-025/C-027 |
+| Godot mapping/browser limits | H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract, SMX-001 E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
+| Multiplayer | Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-003 CMP-012, SMX-004 ordered external-input/service boundary, SMX-005 runtime/document separation | SMX-010/017 outputs; C-013/C-014/C-020/C-021/A-009/A-011; current browser/Godot transport docs |
+| Collaborative editing | Constitution P8, H-013/H-017, SMX-005 semantic transaction/base-revision model, SMX-003 base-revision/overlay/reconcile model | SMX-011/018 outputs; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
 | Editor UX/progressive disclosure | P1–P3, H-016, scorecard S-01/S-16, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR | SMX-012/019 outputs |
-| Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-004 capability/service/budget hooks | SMX-013/016 outputs; C-011/C-022/C-026 |
-| Publishing/player/server | P10–P12, H-014/H-015/H-018, cases C-015/C-023 | SMX-014/017/019 outputs |
+| Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-004 capability/service/budget hooks, SMX-005 cross-document qualification/assets | SMX-013/016 outputs; C-011/C-022/C-026 |
+| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model | SMX-014/017/019 outputs; C-015/C-023 |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
 ## SMX-001 baseline retrieval rules
@@ -48,52 +50,59 @@ Later research should cite stable corpus IDs rather than paraphrasing test cases
 - `C-###` identifies representative cases.
 - `A-###` identifies adversarial variants.
 - `S-##` identifies architecture scorecard criteria.
-- Applicable cases that were not exercised must remain explicitly `N/E` (not evaluated), not silently treated as passing.
+- Applicable cases that were not exercised remain explicitly `N/E`, not implicitly passing.
 - A hard-gate score of `0` cannot be averaged away by stronger scores elsewhere.
 
-When adding or changing corpus cases, preserve existing IDs and update both the Markdown baseline and companion JSON in the same PR.
+When adding or changing corpus cases, preserve existing IDs and update both baseline Markdown and companion JSON in the same PR.
 
 ## SMX-002 kernel retrieval rules
 
-SMX-002 introduces stable research references for the provisional Thing-kernel candidate:
-
 - `K-001` through `K-012` identify candidate semantic invariants.
 - `T-001` through `T-007` identify disposable executable fixture classes.
-- The Python model in `experiments/smx-002-kernel-model/` is **non-normative**; do not infer storage layout or production runtime APIs from it.
-- The durable conclusion is semantic: stable Thing identity + intrinsic state + optional facets + explicit interfaces + typed relationships, with runtime/editor grants/authority/handles in explicit context.
-- Command/event/value is a candidate port vocabulary refined by SMX-004: no first-class synchronous cross-Thing query is selected; snapshot values or async request/response are preferred.
-- Definition/instance representation was intentionally left open and is refined by SMX-003.
+- The Python model in `experiments/smx-002-kernel-model/` is **non-normative**.
+- Durable conclusion: stable Thing identity + intrinsic state + optional facets + explicit interfaces + typed relationships, with current grants/authority/engine handles in context.
+- Command/event/value was refined by SMX-004: no synchronous cross-Thing query; snapshot values or async request/response are preferred.
 
 ## SMX-003 composition retrieval rules
 
-SMX-003 adds stable research references for composition and local-definition semantics:
-
 - `CMP-001` through `CMP-012` identify candidate composition/definition invariants.
 - `CT-001` through `CT-010` identify disposable executable fixture classes.
-- The Python model in `experiments/smx-003-composition-model/` is **non-normative**; do not infer canonical storage layout, production reconciliation APIs, or final ID encoding from it.
-- The durable candidate is **stable local-definition graph + concrete instance graph + sparse explicit overlay**.
-- `DefinitionId`, immutable revision identity, `ElementId`, concrete `ThingId`, and stable port IDs are distinct semantic roles; SMX-005 owns their concrete canonical encoding.
+- The Python model in `experiments/smx-003-composition-model/` is **non-normative**.
+- Durable candidate: **stable local-definition graph + concrete instance graph + sparse explicit overlay**.
+- `DefinitionId`, immutable revision identity, `ElementId`, concrete `ThingId`, and stable port IDs are distinct semantic roles.
 - `instance-of` is provenance, not control/authority/ownership.
-- Compatible base changes propagate to unoverridden loci; explicit instance overrides continue to win while valid.
-- Invalidated override/exposure targets and protected destructive changes become explicit reconciliation conflicts rather than silent reinterpretation.
-- Public ports are stable indirections over internal `ElementId + PortId` endpoints so internal reparenting does not require external connection repair.
-- Collaboration conflict resolution is not defined by the overlay model; SMX-011 owns concurrent-edit semantics.
+- Compatible base changes propagate to unoverridden loci; valid explicit instance overrides remain authoritative.
+- Invalidated override/exposure targets and protected destructive changes are explicit reconciliation conflicts.
+- Public ports are stable indirections over internal `ElementId + PortId` endpoints.
+- Collaboration conflict resolution remains SMX-011 work.
 
 ## SMX-004 execution retrieval rules
 
-SMX-004 adds stable references for the provisional behaviour executor:
-
 - `EXE-001` through `EXE-015` identify candidate execution invariants.
 - `ET-001` through `ET-011` identify disposable executable fixture classes.
-- The Python model in `experiments/smx-004-behaviour-model/` is **non-normative**; do not infer the production bytecode, VM object model, scheduler data structures, or compiler API from it.
-- One activation is a **bounded transactional run-to-completion turn**: internal writes commit atomically, then staged follow-on work is enqueued.
-- Direct foreign-Thing state mutation is excluded; cross-Thing effects use explicit ports/commands/value propagation.
-- Logical timers and long-lived work use explicit continuations rather than durable stackful coroutine state.
-- Default randomness is explicit/deterministic and scoped; host/network/time/entropy results are explicit external inputs.
-- Host services are asynchronous, named, capability-mediated boundaries; ordinary IR has no ambient Godot/browser/filesystem/network call.
-- Hard instruction/emission/activation/resource budgets are part of execution semantics and feed SMX-006/016.
-- Hot swap is quiescent and transactional: compatible private state is retained, incompatible state needs explicit bounded migration, and pending continuations are mapped/cancelled/rejected explicitly.
-- Beginner rules and advanced behaviours target the same semantic IR; future visual/text syntaxes must compile to it or H-006 must be revisited.
+- The Python model in `experiments/smx-004-behaviour-model/` is **non-normative**.
+- One activation is a bounded transactional run-to-completion turn: state commits atomically, then staged follow-on work is enqueued.
+- Direct foreign-Thing state mutation is excluded; cross-Thing effects use explicit interfaces.
+- Logical timers/long-lived work use explicit continuations, not durable stackful coroutine state.
+- Default randomness is deterministic/scoped; host/network/time/entropy results are explicit external inputs.
+- Host services are asynchronous named capability-mediated boundaries.
+- Hard execution/resource budgets are semantic requirements.
+- Hot swap is quiescent and transactional with explicit state/continuation migration rules.
+- Beginner and advanced behaviour target the same semantic IR.
+
+## SMX-005 canonical-document retrieval rules
+
+- `DOC-001` through `DOC-016` identify canonical-document semantic invariants.
+- `DT-001` through `DT-012` identify disposable executable fixture classes.
+- The Python model in `experiments/smx-005-document-model/` and its sorted-key JSON projection are **non-normative**; do not infer final JSON/CBOR/Protobuf/SQLite/package choices from them.
+- Durable candidate: **typed logical record graph + stable semantic IDs + immutable revision/chunk lineage + sparse semantic transactions + content-addressed immutable blobs**.
+- Logical mutable entities use stable IDs; content digests identify immutable bytes/revision payloads and do not replace Thing/Definition/Port/Connection/Asset identity.
+- Authored document, live runtime state, persistent world/save state, and transient runtime/editor/network context are separate planes.
+- Partial loading is first-class: references distinguish `loaded`, `known_unloaded`, `tombstoned`, `unknown`, `incompatible`, and `dependency_unavailable` states.
+- Instance provenance/overlays from SMX-003 and behaviour definitions/attachments from SMX-004 remain explicit canonical authored records; live behaviour private state/PRNG/timers/continuations are not silently authored state.
+- Semantic transactions target typed IDs/loci with preconditions and all-or-nothing commit; physical JSON pointers, DB rows, and tree paths are not the canonical edit language.
+- Migration is staged/deterministic/capability-free by default, validates target state before commit, preserves IDs/references unless explicitly remapped, and fails closed on unsupported required features.
+- Unknown optional extension data may be preserved only through explicit compatibility envelopes; unknown required semantics are not silently ignored.
 
 ## Initial external primary-source anchors
 
@@ -109,22 +118,16 @@ As checked 2026-09-17, Godot 4.7.2 is the current stable Godot 4 release and 4.8
 
 - https://docs.godotengine.org/en/latest/tutorials/editor/using_the_web_editor.html
 
-Questions: browser editor limitations, IndexedDB/project storage, export capability, renderer support, debugging/GDExtension/C# limitations.
-
 ### Godot web export
 
 - https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_web.html
 - https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_web.html
-
-Questions: single-threaded versus threaded builds, cross-origin isolation, JavaScript bridge/eval hardening, WebAssembly/WebGL constraints, browser lifecycle behaviour.
 
 ### Godot runtime I/O and packaging
 
 - https://docs.godotengine.org/en/stable/tutorials/io/runtime_file_loading_and_saving.html
 - https://docs.godotengine.org/en/stable/tutorials/export/exporting_pcks.html
 - https://docs.godotengine.org/en/stable/tutorials/export/exporting_projects.html
-
-Questions: runtime asset loading, PCK/ZIP behaviour, untrusted-pack security implications, mod/pack semantics.
 
 ### Godot networking
 
@@ -134,11 +137,7 @@ Questions: runtime asset loading, PCK/ZIP behaviour, untrusted-pack security imp
 - https://docs.godotengine.org/en/stable/tutorials/networking/webrtc.html
 - https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_dedicated_servers.html
 
-Questions: SceneTree coupling, browser transports, WebRTC signalling/mesh properties, dedicated/headless execution, which layers are implementation substrate versus public contract.
-
 ### Object-model comparison anchors
-
-SMX-002 used these as conceptual F4 comparison material, not selected dependencies:
 
 - Godot 4.7 key concepts: https://docs.godotengine.org/en/4.7/getting_started/introduction/key_concepts_overview.html
 - Godot 4.7 node access: https://docs.godotengine.org/en/4.7/tutorials/scripting/nodes_and_scene_instances.html
@@ -150,8 +149,6 @@ SMX-002 used these as conceptual F4 comparison material, not selected dependenci
 
 ### Composition/definition comparison anchors
 
-SMX-003 adds comparative material for local-definition/override semantics:
-
 - Godot stable imported-scene inheritance: https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/import_configuration.html
 - Unity current prefab introduction: https://docs.unity3d.com/current/Manual/prefabs-introduction.html
 - Unity current prefab overrides: https://docs.unity3d.com/current/Manual/prefabs-override.html
@@ -160,26 +157,33 @@ SMX-003 adds comparative material for local-definition/override semantics:
 - Self Handbook 2024.1 programming guide: https://handbook.selflanguage.org/2024.1/progguid.html
 - Self Handbook 2024.1 glossary: https://handbook.selflanguage.org/2024.1/glossary.html
 
-These are precedents/trade-off evidence, not selected dependencies or compatibility contracts.
-
 ### Behaviour/execution comparison anchors
 
-SMX-004 adds execution/sandbox precedents, none selected as dependencies:
-
-- W3C SCXML run-to-completion/event semantics: https://www.w3.org/TR/scxml/
+- W3C SCXML: https://www.w3.org/TR/scxml/
 - WebAssembly specifications: https://webassembly.github.io/spec/
 - WebAssembly module validation: https://webassembly.github.io/spec/core/valid/modules.html
 - WebAssembly host-function execution boundary: https://webassembly.github.io/spec/core/exec/instructions.html
-- Scratch VM current monorepo README: https://github.com/scratchfoundation/scratch-editor/blob/develop/packages/scratch-vm/README.md
+- Scratch VM: https://github.com/scratchfoundation/scratch-editor/blob/develop/packages/scratch-vm/README.md
 - CEL: https://cel.dev/
 - CEL language definition/cost model: https://github.com/cel-expr/cel-spec/blob/master/doc/langdef.md
 - Starlark specification: https://github.com/bazelbuild/starlark/blob/master/spec.md
 
-Use these as F4/F3-style design evidence only; SplashMX currently selects its own bounded-turn semantic IR.
+### Canonical-document/encoding comparison anchors
+
+SMX-005 uses these as representation/storage precedents, not selected dependencies:
+
+- JSON Schema specification (Draft 2020-12 family): https://json-schema.org/specification
+- Protocol Buffers Editions language guide / unknown fields: https://protobuf.dev/programming-guides/editions/
+- Protocol Buffers encoding / non-guaranteed field serialization order: https://protobuf.dev/programming-guides/encoding/
+- SQLite as application file format: https://sqlite.org/appfileformat.html
+- SQLite database file format / transaction/WAL representation: https://sqlite.org/fileformat.html
+- RFC 8949 CBOR / deterministic encoding: https://www.rfc-editor.org/rfc/rfc8949.html
+
+These support the current conclusion that semantic identity, versioning, transactions, migration, and partial-loading rules must sit above a chosen byte/store technology.
 
 ### Browser/platform primary sources
 
-Relevant issues should prefer current specifications or authoritative browser documentation for WebAssembly, WebRTC, WebSocket, IndexedDB, File System Access where applicable, CSP, cross-origin isolation, workers, storage quotas, lifecycle/background throttling, and permissions.
+Relevant issues should prefer current specifications or authoritative browser documentation for WebAssembly, WebRTC, WebSocket, IndexedDB, permissions, CSP, cross-origin isolation, workers, storage quotas, and lifecycle/background throttling.
 
 ### Collaboration research
 
@@ -202,7 +206,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
