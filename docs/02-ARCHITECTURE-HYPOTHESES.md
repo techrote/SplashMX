@@ -129,3 +129,14 @@ SMX-001 reviewed H-001 through H-018 against the authoritative glossary, represe
 **Status of every H-001–H-018 after SMX-001: unresolved.**
 
 No wording change is justified by baseline construction alone. The new C-/A-case corpus and S-scorecard make later falsification more concrete, but are not empirical support for the hypotheses. Later issues must update individual status only when they generate actual evidence.
+
+## SMX-002 review record — 2026-09-17
+
+Evidence: `docs/research/SMX-002-THING-KERNEL.md`, `docs/research/SMX-002-THING-KERNEL-FIXTURES.json`, and `experiments/smx-002-kernel-model/`.
+
+- **H-001 strengthened.** One faceted Thing semantic envelope maps all 28 representative SMX-001 cases without requiring a second base object category. The executable slice covers UI/ports, cross-object values, durable references, nesting/control, local/network context, capability declaration/grant separation, and behaviour-facet replacement identity. Runtime performance and later subsystem correctness remain unproven.
+- **H-002 strengthened.** A-001/A-016 are exercised directly: changing containment does not mutate control, authority, reference, persistence-service, or replication-session relationships.
+- **H-003 strengthened, still provisional.** The same experimental `Thing` type represents a group and a leaf; group meaning is expressed through containment plus optional facets. SMX-003 must still test definition/instance propagation and complex nested coordination.
+- **H-008 strengthened.** Corpus pressure plus executable rename/reparent/control/authority independence supports a path-independent durable logical identity requirement. Exact ID encoding, namespaces, non-reuse, and tombstone semantics remain for SMX-005/007.
+
+H-004–H-007 and H-009–H-018 receive no status change from SMX-002. The candidate kernel is explicitly provisional and must still survive downstream composition, execution, serialization, lifecycle, networking, collaboration, and destructive-harness work.

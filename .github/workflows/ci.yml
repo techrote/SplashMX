@@ -18,3 +18,5 @@ jobs:
           python-version: '3.x'
       - name: Validate repository structure and local Markdown links
         run: python tools/validate_repo.py
+      - name: Run SMX-002 kernel falsification tests
+        run: python -m unittest discover -s experiments/smx-002-kernel-model -p 'test_*.py'

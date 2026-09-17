@@ -100,6 +100,58 @@ Executable research must name its question, hypothesis IDs, corpus IDs, source c
 
 **Source:** SMX-001 research baseline section 9; AGENTS prototype discipline.
 
+## SMX-002 Thing-kernel research — 2026-09-17
+
+### D-010 — Durable Thing identity must not be derived from hierarchy or engine handle
+
+**Status:** DECISION at the semantic-requirement level; exact encoding remains open.
+
+A Thing that is logically the same entity across rename, reparent, controller/authority transfer, save/load, or stream-out/in must retain a stable opaque identity distinct from label, containment path, Godot `NodePath`, process pointer, physics RID, or network peer ID.
+
+**Reason:** C-006/C-007/C-012/C-017/C-021 and A-001/A-016 make ordinary reparent/control operations incompatible with path-derived identity. The SMX-002 experiment directly demonstrates reparent/control/authority/engine-handle independence.
+
+**Source:** `docs/research/SMX-002-THING-KERNEL.md` K-001/K-002/K-010; fixtures T-001/T-007. Exact namespaces, generation, non-reuse, and tombstone semantics remain SMX-005/007 work.
+
+### D-011 — Containment, control, authority, observation, persistence, and replication are separate explicit semantics
+
+**Status:** DECISION at the object-fabric semantic level.
+
+SplashMX must not use one overloaded `owner`/parent relation to stand for these dimensions. Containment is one typed relationship. Current controller and simulation authority are explicit runtime/context bindings; observation is explicit; persistence/replication policy is declared separately from the currently active service/session.
+
+**Reason:** C-007/C-020/C-021 and A-016 require these relationships to differ simultaneously. T-001/T-002 demonstrate that changing containment need not mutate the others.
+
+**Source:** SMX-002 Thing-kernel research K-003/K-004; T-001/T-002.
+
+### D-012 — Intrinsic declaration and runtime/editor context are separate planes
+
+**Status:** DECISION at the semantic level.
+
+Thing state/facets may declare capability requirements, persistence eligibility, network policy, presentation, behaviour parameters, and intrinsic values. Current capability grants, active controller/authority, replication recipients, save service, editor selection, cache residency, diagnostics, and engine handles are context unless an explicit higher-level operation persists/projects them.
+
+**Reason:** this avoids transient runtime/editor facts silently becoming durable Thing meaning and allows the same Thing to execute under different users, peers, services, and engine handles.
+
+**Source:** SMX-002 K-005/K-006/K-010; T-003/T-007.
+
+### D-013 — Command/event/value is the current candidate port vocabulary, not a frozen protocol
+
+**Status:** HYPOTHESIS/PROVISIONAL DIRECTION.
+
+SMX-002 found `command`, `event`, and directional `value` ports sufficient for its basic UI/cross-Thing cases. First-class query/request-response remains unresolved.
+
+**Reason:** a pure message model is awkward for continuous author-facing value binding, while a pure reactive-value model is awkward for discrete intent/occurrence. The three-way vocabulary covers C-003/C-004 without yet choosing scheduling/IR semantics.
+
+**Must be tested by:** SMX-004 against C-005/C-009/C-025 and A-004/A-006 plus async/query cases.
+
+### D-014 — The current kernel candidate is faceted Thing + explicit relation graph
+
+**Status:** HYPOTHESIS/PROVISIONAL DIRECTION for downstream falsification, not Architecture v1.0.
+
+The candidate combines stable Thing identity, intrinsic state namespaces, optional facets, explicit ports/interfaces, first-class typed relationships, and explicit runtime/editor context bindings. Storage layout and implementation technology are intentionally unspecified.
+
+**Reason:** it maps all C-001–C-028 without a second base-object category and has no observed hard-gate failure in the SMX-002 scope. The executable slice exercises A-001/A-014/A-016 and capability/port/behaviour-identity cases.
+
+**Must be tested by:** SMX-003/004/005 and later SMX-015 destructive integration.
+
 ## Initial primary-source snapshot — repository creation, 2026-09-17
 
 These observations were planning inputs. For later research, use the more explicit SMX-001 freshness policy and E-006–E-014 refresh below; relevant issues must still re-check current upstream state.
@@ -263,33 +315,96 @@ Primary sources:
 
 **Implication:** peer and authoritative server experiments are plausible substrate directions, but their semantics remain unresolved until SMX-009/010/017.
 
+## SMX-002 comparative-model evidence — checked 2026-09-17
+
+These are conceptual F4 inputs and current documentation examples. They justify comparisons, not adoption of the referenced frameworks.
+
+### E-015 — Godot's core project composition is scene/node-tree oriented
+
+**Status:** FACT / conceptual comparison input.
+
+Godot 4.7 documentation describes games as trees of nodes grouped into reusable scenes and documents hierarchical node lookup.
+
+Primary sources:
+
+- https://docs.godotengine.org/en/4.7/getting_started/introduction/key_concepts_overview.html
+- https://docs.godotengine.org/en/4.7/tutorials/scripting/nodes_and_scene_instances.html
+
+**Implication:** this is an efficient substrate model, but SplashMX durable identity/relationship semantics must not assume hierarchy/path equivalence.
+
+### E-016 — ECS precedent separates unique entities, optional components, and explicit relationships
+
+**Status:** FACT / conceptual comparison input.
+
+Bevy's ECS guide describes entities as unique things with sets of components processed by systems. Its relationship facilities demonstrate custom data-driven entity relations in addition to child hierarchy.
+
+Primary sources:
+
+- https://bevy.org/learn/quick-start/getting-started/ecs/
+- https://github.com/bevyengine/bevy/blob/main/examples/ecs/relationships.rs
+
+**Implication:** optional facet data and explicit relations are useful precedents; external system ownership of object meaning is not adopted as a SplashMX requirement.
+
+### E-017 — Actor precedent separates stable reference from encapsulated state/behaviour
+
+**Status:** FACT / conceptual comparison input.
+
+Akka documentation describes actors as encapsulated state/behaviour communicating through messages and actor references; behaviour can change while the externally used reference remains stable.
+
+Primary sources:
+
+- https://doc.akka.io/libraries/guide/concepts/akka-actor.html
+- https://doc.akka.io/libraries/akka/snapshot/general/actors.html
+
+**Implication:** stable logical address and explicit communication support SMX-002's direction, while mandatory mailbox/scheduler semantics remain deferred to SMX-004.
+
+### E-018 — Prototype delegation is flexible but makes inherited lookup implicit
+
+**Status:** FACT / conceptual comparison input.
+
+MDN's prototype-chain guide documents dynamic delegation/inherited-property lookup through mutable prototype chains.
+
+Primary source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain
+
+**Implication:** prototype/delegation remains a useful comparison for SMX-003 local definitions, but is not selected as the universal Thing kernel because propagation/provenance/conflict semantics must remain explicit.
+
 ## SMX-001 hypothesis review
 
-H-001 through H-018 remain **unresolved**. SMX-001 adds a falsification corpus and evaluation scorecard but produces no empirical evidence sufficient to strengthen, refine, weaken, or reject any architecture hypothesis. This is intentional.
+H-001 through H-018 remained **unresolved** after SMX-001. SMX-001 added a falsification corpus and evaluation scorecard but produced no empirical evidence sufficient to strengthen, refine, weaken, or reject architecture hypotheses.
 
-## Open architectural questions at repository creation
+## SMX-002 hypothesis review
+
+- H-001: **strengthened**.
+- H-002: **strengthened**.
+- H-003: **strengthened, still provisional**.
+- H-008: **strengthened**.
+- All other hypotheses: no status change from SMX-002.
+
+Detailed evidence and limitations are recorded in `docs/research/SMX-002-THING-KERNEL.md`.
+
+## Open architectural questions
 
 ### O-001 — Minimal universal port vocabulary
 
-Is the durable communication model best expressed as inputs/outputs, commands/events/queries, generic messages, reactive state links, or a smaller primitive set?
+SMX-002 narrows this to a current candidate of command/event/value ports. Whether query/request-response is first-class, and exact ordering/direction semantics, remain open.
 
-Owner: SMX-002/004.
+Owner: SMX-004.
 
 ### O-002 — Where behaviour state lives
 
-Can behaviours retain private state while Things expose a coherent durable state model? What is the state-transfer contract on hot swap?
+SMX-002 assigns behaviour-private state an explicit facet namespace but does not decide serialization, hot-swap state transfer, or migration compatibility.
 
-Owner: SMX-002/004/007.
+Owner: SMX-004/007.
 
 ### O-003 — Definition/instance model
 
-Prototype inheritance, structural definitions, patches/overrides, or a hybrid may best fit local classes and collaboration.
+Prototype inheritance, structural definitions, patches/overrides, or a hybrid may best fit local classes and collaboration. SMX-002 intentionally leaves open whether a definition is literally a Thing or a Thing-shaped specification sharing the same kernel vocabulary.
 
 Owner: SMX-003/005/011.
 
 ### O-004 — Canonical encoding
 
-Human-readable, binary, database-like, or hybrid representations need comparison against diffability, partial loading, deterministic encoding, package size, validation, and migration.
+Human-readable, binary, database-like, or hybrid representations need comparison against diffability, partial loading, deterministic encoding, package size, validation, and migration. SMX-002's object-fabric graph is semantic, not a storage layout decision.
 
 Owner: SMX-005.
 
@@ -301,15 +416,21 @@ Owner: SMX-004.
 
 ### O-006 — Multiplayer replication boundary
 
-State replication, event replication, simulation inputs, snapshots, or hybrid strategies must align with Thing authority and browser/server topology.
+State replication, event replication, simulation inputs, snapshots, or hybrid strategies must align with Thing authority and browser/server topology. SMX-002 separates declaration/policy from current runtime authority but does not select replication mechanics.
 
 Owner: SMX-010/017.
 
 ### O-007 — Collaboration substrate
 
-Desired user-visible conflict semantics must be specified before choosing CRDT/OT/operation-log technology.
+Desired user-visible conflict semantics must be specified before choosing CRDT/OT/operation-log technology. Stable Thing/relation identities are now an input, not a conflict-resolution algorithm.
 
 Owner: SMX-011/018.
+
+### O-008 — Durable identity namespace and tombstones
+
+Path independence is now a semantic requirement. Exact generation format, namespace scope, cross-package addressing, non-reuse, tombstone lifetime, and unresolved/destroyed reference representation remain open.
+
+Owner: SMX-005/007.
 
 ## Maintenance rule
 
