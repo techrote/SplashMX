@@ -12,7 +12,9 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 6. `docs/05-DECISION-AND-EVIDENCE-LOG.md` — accepted/rejected findings and source freshness notes.
 7. `docs/research/SMX-001-RESEARCH-BASELINE.md` — authoritative glossary, evaluation method, scorecard, failure conditions, source-freshness policy, and harness conventions.
 8. `docs/research/SMX-001-EVALUATION-CORPUS.json` — machine-addressable C-/A-case corpus and scorecard IDs.
-9. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+9. `docs/research/SMX-002-THING-KERNEL.md` — candidate universal Thing semantics, state/context/relationship taxonomy, port vocabulary, alternatives, corpus mapping, and downstream handoffs.
+10. `docs/research/SMX-002-THING-KERNEL-FIXTURES.json` — machine-addressable K-/T-IDs and direct experimental coverage for SMX-002.
+11. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -20,18 +22,18 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 |---|---|---|
 | Product scope / “Flash successor” intent | Constitution, Roadmap | Current issue |
 | Research terminology / evaluation method | SMX-001 research baseline | Corpus JSON; issue #1 merged PR |
-| Thing/object/kernel semantics | Hypotheses H-001–H-004, SMX-001 baseline | SMX-002 outputs; dependency PR evidence |
-| Composition/local classes/instances | H-002–H-005, SMX-001 cases C-002/C-006/C-007/C-017/C-018/C-027 | SMX-003 outputs |
-| Behaviour/rules/scripting/IR | H-005/H-006, cases C-025/A-004/A-006 | SMX-004 outputs |
-| IDs/references/schema/canonical format | H-007/H-008/H-018, cases C-006/C-012/C-023/C-024 | SMX-005 outputs |
-| Security/sandbox/capabilities | Constitution P9, H-009, cases C-022/A-003/A-004/A-012/A-015 | SMX-006/016 outputs; current platform primary docs |
-| Lifecycle/serialization/determinism | H-008/H-010, cases C-024/A-002 | SMX-007/015 outputs |
-| Streaming/hot swap | H-005/H-010/H-011, cases C-012/C-025/C-027 | SMX-008/015 outputs |
-| Godot mapping/browser limits | H-007/H-014/H-015, SMX-001 evidence E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
-| Multiplayer | Constitution P7, H-012/H-013, cases C-013/C-014/C-020/C-021/A-009/A-011 | SMX-010/017 outputs; current browser/Godot transport docs |
-| Collaborative editing | Constitution P8, H-013/H-017, cases C-016–C-019/A-007/A-008 | SMX-011/018 outputs; CRDT/OT/local-first primary material |
+| Thing/object/kernel semantics | SMX-002 Thing kernel, H-001/H-002/H-003/H-008 | SMX-002 fixtures/experiment; SMX-001 cases C-003/C-004/C-006/C-007/C-020/C-021/C-022/C-025 and A-001/A-014/A-016 |
+| Composition/local classes/instances | H-002–H-005, SMX-002 handoff, SMX-001 cases C-002/C-006/C-007/C-017/C-018/C-027 | SMX-003 outputs |
+| Behaviour/rules/scripting/IR | H-005/H-006, SMX-002 command/event/value candidate, cases C-025/A-004/A-006 | SMX-004 outputs |
+| IDs/references/schema/canonical format | H-007/H-008/H-018, SMX-002 K-001/K-002/K-010/K-012, cases C-006/C-012/C-023/C-024 | SMX-005 outputs |
+| Security/sandbox/capabilities | Constitution P9, H-009, SMX-002 K-005/K-006, cases C-022/A-003/A-004/A-012/A-015 | SMX-006/016 outputs; current platform primary docs |
+| Lifecycle/serialization/determinism | H-008/H-010, SMX-002 state/context taxonomy, cases C-024/A-002 | SMX-007/015 outputs |
+| Streaming/hot swap | H-005/H-010/H-011, SMX-002 K-012, cases C-012/C-025/C-027 | SMX-008/015 outputs |
+| Godot mapping/browser limits | H-007/H-014/H-015, SMX-002 K-010, SMX-001 evidence E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
+| Multiplayer | Constitution P7, H-012/H-013, SMX-002 relationship/context split, cases C-013/C-014/C-020/C-021/A-009/A-011 | SMX-010/017 outputs; current browser/Godot transport docs |
+| Collaborative editing | Constitution P8, H-013/H-017, stable Thing/relation IDs from SMX-002, cases C-016–C-019/A-007/A-008 | SMX-011/018 outputs; CRDT/OT/local-first primary material |
 | Editor UX/progressive disclosure | P1–P3, H-016, scorecard S-01/S-16 | SMX-012/019 outputs |
-| Component ecosystem | P9/P13, H-004/H-009, cases C-011/C-022/C-026 | SMX-013/016 outputs |
+| Component ecosystem | P9/P13, H-004/H-009, facets from SMX-002, cases C-011/C-022/C-026 | SMX-013/016 outputs |
 | Publishing/player/server | P10–P12, H-014/H-015/H-018, cases C-015/C-023 | SMX-014/017/019 outputs |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
@@ -46,6 +48,17 @@ Later research should cite stable corpus IDs rather than paraphrasing test cases
 - A hard-gate score of `0` cannot be averaged away by stronger scores elsewhere.
 
 When adding or changing corpus cases, preserve existing IDs and update both the Markdown baseline and companion JSON in the same PR.
+
+## SMX-002 kernel retrieval rules
+
+SMX-002 introduces stable research references for the provisional Thing-kernel candidate:
+
+- `K-001` through `K-012` identify candidate semantic invariants.
+- `T-001` through `T-007` identify disposable executable fixture classes.
+- The Python model in `experiments/smx-002-kernel-model/` is **non-normative**; do not infer storage layout or production runtime APIs from it.
+- The durable conclusion is semantic: stable Thing identity + intrinsic state + optional facets + explicit interfaces + typed relationships, with runtime/editor grants/authority/handles in explicit context.
+- Command/event/value is a **candidate** port vocabulary for SMX-004 to validate or reject.
+- Definition/instance representation remains intentionally open for SMX-003/005.
 
 ## Initial external primary-source anchors
 
@@ -88,6 +101,18 @@ Questions: runtime asset loading, PCK/ZIP behaviour, untrusted-pack security imp
 
 Questions: SceneTree coupling, browser transports, WebRTC signalling/mesh properties, dedicated/headless execution, which layers are implementation substrate versus public contract.
 
+### Object-model comparison anchors
+
+SMX-002 used these as conceptual F4 comparison material, not selected dependencies:
+
+- Godot 4.7 key concepts: https://docs.godotengine.org/en/4.7/getting_started/introduction/key_concepts_overview.html
+- Godot 4.7 node access: https://docs.godotengine.org/en/4.7/tutorials/scripting/nodes_and_scene_instances.html
+- Bevy ECS: https://bevy.org/learn/quick-start/getting-started/ecs/
+- Bevy relationship example: https://github.com/bevyengine/bevy/blob/main/examples/ecs/relationships.rs
+- Akka actor model: https://doc.akka.io/libraries/guide/concepts/akka-actor.html
+- Akka actor reference/behaviour detail: https://doc.akka.io/libraries/akka/snapshot/general/actors.html
+- MDN prototype chain: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Inheritance_and_the_prototype_chain
+
 ### Browser/platform primary sources
 
 Relevant issues should prefer current specifications or authoritative browser documentation for WebAssembly, WebRTC, WebSocket, IndexedDB, File System Access where applicable, CSP, cross-origin isolation, workers, storage quotas, lifecycle/background throttling, and permissions.
@@ -113,7 +138,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
