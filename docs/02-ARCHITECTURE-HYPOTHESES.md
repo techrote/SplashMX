@@ -140,3 +140,14 @@ Evidence: `docs/research/SMX-002-THING-KERNEL.md`, `docs/research/SMX-002-THING-
 - **H-008 strengthened.** Corpus pressure plus executable rename/reparent/control/authority independence supports a path-independent durable logical identity requirement. Exact ID encoding, namespaces, non-reuse, and tombstone semantics remain for SMX-005/007.
 
 H-004–H-007 and H-009–H-018 receive no status change from SMX-002. The candidate kernel is explicitly provisional and must still survive downstream composition, execution, serialization, lifecycle, networking, collaboration, and destructive-harness work.
+
+## SMX-003 review record — 2026-09-17
+
+Evidence: `docs/research/SMX-003-COMPOSITION-DEFINITIONS.md`, `docs/research/SMX-003-COMPOSITION-FIXTURES.json`, and `experiments/smx-003-composition-model/`.
+
+- **H-002 strengthened further.** Promotion, structural override, definition revision, and instance reconciliation preserve controller/authority/persistence/replication context unless explicitly changed. A-001/A-016 remain satisfied through the new definition/instance layer.
+- **H-003 strengthened.** Groups remain ordinary Things with their own state/facets/ports while their members retain independent Thing identities and semantics. No separate group base-object category was required by the composition experiment.
+- **H-004 strengthened.** An ordinary authored group can be promoted into a reusable local definition while the original concrete Things remain the first instance with unchanged Thing IDs. Multiple independent instances, sparse overlays, local additions, and base-revision propagation are exercised. Cross-project packaging remains SMX-013 work, so the full local-definition-to-portable-component hypothesis is not yet proven end-to-end.
+- **H-005 unresolved / no direct status change.** SMX-003 provides stable semantic loci for inherited/overridden behaviours, but executable hot-swap state transfer and behaviour compatibility remain SMX-004/007 work.
+
+No other hypothesis receives a status change from SMX-003.
