@@ -30,3 +30,7 @@ jobs:
         run: python tools/validate_smx005.py
       - name: Run SMX-005 canonical document falsification tests
         run: python -m unittest discover -s experiments/smx-005-document-model -p 'test_*.py'
+      - name: Validate SMX-006 research fixtures
+        run: python tools/validate_smx006.py
+      - name: Run SMX-006 capability sandbox falsification tests
+        run: python -m unittest discover -s experiments/smx-006-security-model -p 'test_*.py'
