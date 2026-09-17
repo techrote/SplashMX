@@ -22,3 +22,7 @@ jobs:
         run: python -m unittest discover -s experiments/smx-002-kernel-model -p 'test_*.py'
       - name: Run SMX-003 composition falsification tests
         run: python -m unittest discover -s experiments/smx-003-composition-model -p 'test_*.py'
+      - name: Validate SMX-004 research fixtures
+        run: python tools/validate_smx004.py
+      - name: Run SMX-004 behaviour execution falsification tests
+        run: python -m unittest discover -s experiments/smx-004-behaviour-model -p 'test_*.py'
