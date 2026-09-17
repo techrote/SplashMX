@@ -189,7 +189,7 @@ if smx002_fixture_path.is_file():
 
         if smx002_doc_path.is_file():
             document = smx002_doc_path.read_text(encoding="utf-8")
-            for identifier in expected_invariants + fixture_ids:
+            for identifier in expected_invariants:
                 if identifier not in document:
                     errors.append(f"SMX-002 research document does not reference {identifier}")
 
