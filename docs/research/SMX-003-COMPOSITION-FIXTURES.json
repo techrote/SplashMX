@@ -1,0 +1,96 @@
+{
+  "schema": "splashmx-smx003-composition-fixtures-v1",
+  "issue": "SMX-003",
+  "status": "non-normative-research-fixtures",
+  "composition_invariants": [
+    "CMP-001",
+    "CMP-002",
+    "CMP-003",
+    "CMP-004",
+    "CMP-005",
+    "CMP-006",
+    "CMP-007",
+    "CMP-008",
+    "CMP-009",
+    "CMP-010",
+    "CMP-011",
+    "CMP-012"
+  ],
+  "fixtures": [
+    {
+      "id": "CT-001",
+      "name": "promote existing group without reconstructing Things",
+      "cases": ["C-002", "C-006", "C-007", "A-001"],
+      "expected": ["CMP-001", "CMP-004", "CMP-005", "CMP-012"]
+    },
+    {
+      "id": "CT-002",
+      "name": "instantiate definition with independent concrete Thing identities",
+      "cases": ["C-002", "C-011"],
+      "expected": ["CMP-002", "CMP-003", "CMP-005"]
+    },
+    {
+      "id": "CT-003",
+      "name": "property override survives compatible base update",
+      "cases": ["C-002", "C-018"],
+      "expected": ["CMP-006", "CMP-007"]
+    },
+    {
+      "id": "CT-004",
+      "name": "structural parent override survives base reparent",
+      "cases": ["C-007", "C-017", "A-008"],
+      "expected": ["CMP-006", "CMP-007", "CMP-012"]
+    },
+    {
+      "id": "CT-005",
+      "name": "base removal of overridden element conflicts explicitly",
+      "cases": ["C-018", "A-008"],
+      "expected": ["CMP-008", "CMP-009"]
+    },
+    {
+      "id": "CT-006",
+      "name": "base removal with inbound durable reference conflicts",
+      "cases": ["C-006", "A-008"],
+      "expected": ["CMP-009"]
+    },
+    {
+      "id": "CT-007",
+      "name": "local addition survives base update and remains local",
+      "cases": ["C-002", "C-011"],
+      "expected": ["CMP-006", "CMP-011"]
+    },
+    {
+      "id": "CT-008",
+      "name": "public interface survives internal reparent",
+      "cases": ["C-011", "C-027"],
+      "expected": ["CMP-005", "CMP-010"]
+    },
+    {
+      "id": "CT-009",
+      "name": "removed public implementation endpoint conflicts",
+      "cases": ["C-011", "C-027", "A-008"],
+      "expected": ["CMP-008", "CMP-010"]
+    },
+    {
+      "id": "CT-010",
+      "name": "composition update leaves controller and authority unchanged",
+      "cases": ["C-007", "C-021", "A-001", "A-016"],
+      "expected": ["CMP-003", "CMP-012"]
+    }
+  ],
+  "direct_case_coverage": [
+    "C-002",
+    "C-006",
+    "C-007",
+    "C-011",
+    "C-017",
+    "C-018",
+    "C-021",
+    "C-027"
+  ],
+  "direct_adversarial_coverage": [
+    "A-001",
+    "A-008",
+    "A-016"
+  ]
+}
