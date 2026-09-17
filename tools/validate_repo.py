@@ -19,6 +19,11 @@ REQUIRED = [
     "docs/05-DECISION-AND-EVIDENCE-LOG.md",
     "docs/research/SMX-001-RESEARCH-BASELINE.md",
     "docs/research/SMX-001-EVALUATION-CORPUS.json",
+    "docs/research/SMX-002-THING-KERNEL.md",
+    "docs/research/SMX-002-THING-KERNEL-FIXTURES.json",
+    "experiments/smx-002-kernel-model/README.md",
+    "experiments/smx-002-kernel-model/model.py",
+    "experiments/smx-002-kernel-model/test_model.py",
 ]
 
 errors: list[str] = []
@@ -54,6 +59,7 @@ for path in ROOT.rglob("*.md"):
 # small companion corpus so later agents can safely use IDs in fixtures and RAG.
 corpus_path = ROOT / "docs/research/SMX-001-EVALUATION-CORPUS.json"
 baseline_path = ROOT / "docs/research/SMX-001-RESEARCH-BASELINE.md"
+corpus_ids: set[str] = set()
 if corpus_path.is_file():
     try:
         corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
@@ -82,6 +88,7 @@ if corpus_path.is_file():
                     errors.append(f"invalid SMX-001 case id in {key}: {case_id!r}")
                 else:
                     all_ids.append(case_id)
+                    corpus_ids.add(case_id)
                 if not item.get("name"):
                     errors.append(f"SMX-001 case {case_id!r} has no name")
                 stresses = item.get("stresses")
@@ -122,6 +129,69 @@ if corpus_path.is_file():
             for identifier in all_ids + list(scorecard_ids or []):
                 if identifier not in baseline:
                     errors.append(f"SMX-001 baseline does not reference corpus id {identifier}")
+
+# SMX-002 has a deliberately non-normative fixture manifest. Validate only the
+# research IDs/coverage, not a production runtime schema.
+smx002_fixture_path = ROOT / "docs/research/SMX-002-THING-KERNEL-FIXTURES.json"
+smx002_doc_path = ROOT / "docs/research/SMX-002-THING-KERNEL.md"
+if smx002_fixture_path.is_file():
+    try:
+        fixtures = json.loads(smx002_fixture_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        errors.append(f"invalid SMX-002 fixture JSON: {exc}")
+    else:
+        if fixtures.get("schema") != "splashmx-smx002-kernel-fixtures-v1":
+            errors.append("unexpected SMX-002 fixture schema")
+        if fixtures.get("status") != "non-normative-research-fixtures":
+            errors.append("SMX-002 fixtures must remain explicitly non-normative")
+
+        invariants = fixtures.get("kernel_invariants")
+        expected_invariants = [f"K-{index:03d}" for index in range(1, 13)]
+        if invariants != expected_invariants:
+            errors.append("SMX-002 kernel_invariants must be exactly K-001 through K-012")
+
+        fixture_entries = fixtures.get("fixtures")
+        fixture_ids: list[str] = []
+        if not isinstance(fixture_entries, list) or not fixture_entries:
+            errors.append("SMX-002 fixtures must contain a non-empty fixtures list")
+        else:
+            for entry in fixture_entries:
+                if not isinstance(entry, dict):
+                    errors.append("SMX-002 fixtures contains a non-object entry")
+                    continue
+                fixture_id = entry.get("id")
+                if not isinstance(fixture_id, str) or not re.fullmatch(r"T-\d{3}", fixture_id):
+                    errors.append(f"invalid SMX-002 fixture id: {fixture_id!r}")
+                else:
+                    fixture_ids.append(fixture_id)
+                cases = entry.get("cases")
+                if not isinstance(cases, list) or not cases:
+                    errors.append(f"SMX-002 fixture {fixture_id!r} has no case coverage")
+                else:
+                    unknown = sorted(set(map(str, cases)) - corpus_ids)
+                    if unknown:
+                        errors.append(
+                            f"SMX-002 fixture {fixture_id!r} references unknown corpus IDs: "
+                            + ", ".join(unknown)
+                        )
+                expected = entry.get("expected")
+                if not isinstance(expected, list) or not expected:
+                    errors.append(f"SMX-002 fixture {fixture_id!r} has no expected invariants")
+        if len(fixture_ids) != len(set(fixture_ids)):
+            errors.append("duplicate SMX-002 fixture IDs")
+
+        direct_ids = list(fixtures.get("direct_case_coverage", [])) + list(
+            fixtures.get("direct_adversarial_coverage", [])
+        )
+        unknown_direct = sorted(set(map(str, direct_ids)) - corpus_ids)
+        if unknown_direct:
+            errors.append("SMX-002 direct coverage references unknown corpus IDs: " + ", ".join(unknown_direct))
+
+        if smx002_doc_path.is_file():
+            document = smx002_doc_path.read_text(encoding="utf-8")
+            for identifier in expected_invariants + fixture_ids:
+                if identifier not in document:
+                    errors.append(f"SMX-002 research document does not reference {identifier}")
 
 if errors:
     print("SplashMX repository validation failed:")
