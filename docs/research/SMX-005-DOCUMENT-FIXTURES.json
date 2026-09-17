@@ -1,0 +1,93 @@
+{
+  "schema": "splashmx-smx005-document-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "issue": "SMX-005",
+  "established": "2026-09-17",
+  "document_invariants": [
+    "DOC-001", "DOC-002", "DOC-003", "DOC-004",
+    "DOC-005", "DOC-006", "DOC-007", "DOC-008",
+    "DOC-009", "DOC-010", "DOC-011", "DOC-012",
+    "DOC-013", "DOC-014", "DOC-015", "DOC-016"
+  ],
+  "direct_case_coverage": [
+    "C-006", "C-011", "C-012", "C-018",
+    "C-023", "C-025", "C-026", "C-027"
+  ],
+  "direct_adversarial_coverage": [
+    "A-001", "A-002", "A-008", "A-010", "A-012"
+  ],
+  "fixtures": [
+    {
+      "id": "DT-001",
+      "name": "rename reparent and chunk relocation preserve identity",
+      "cases": ["C-006", "A-001"],
+      "expected": ["DOC-001", "DOC-004", "DOC-014"]
+    },
+    {
+      "id": "DT-002",
+      "name": "known unloaded reference distinct from tombstone and unknown",
+      "cases": ["C-012", "A-002"],
+      "expected": ["DOC-004", "DOC-014", "DOC-015"]
+    },
+    {
+      "id": "DT-003",
+      "name": "definition provenance and sparse instance overlay round trip",
+      "cases": ["C-018", "A-008"],
+      "expected": ["DOC-005", "DOC-009", "DOC-011"]
+    },
+    {
+      "id": "DT-004",
+      "name": "public port and connection survive internal restructure",
+      "cases": ["C-011", "C-027"],
+      "expected": ["DOC-004", "DOC-007", "DOC-014"]
+    },
+    {
+      "id": "DT-005",
+      "name": "behaviour revision and attachment round trip separate from live state",
+      "cases": ["C-025"],
+      "expected": ["DOC-003", "DOC-006", "DOC-009"]
+    },
+    {
+      "id": "DT-006",
+      "name": "deterministic schema migration preserves identity references and optional extensions",
+      "cases": ["C-023", "A-010"],
+      "expected": ["DOC-012", "DOC-013", "DOC-016"]
+    },
+    {
+      "id": "DT-007",
+      "name": "transaction precondition failure is atomic",
+      "cases": ["A-008"],
+      "expected": ["DOC-011", "DOC-012"]
+    },
+    {
+      "id": "DT-008",
+      "name": "unknown required feature rejected optional extension preserved",
+      "cases": ["C-023", "A-010"],
+      "expected": ["DOC-013", "DOC-016"]
+    },
+    {
+      "id": "DT-009",
+      "name": "dependency unavailable distinct from local unknown target",
+      "cases": ["C-026", "A-002"],
+      "expected": ["DOC-004", "DOC-015"]
+    },
+    {
+      "id": "DT-010",
+      "name": "research canonicalization stable across map insertion order",
+      "cases": ["C-023"],
+      "expected": ["DOC-009", "DOC-010"]
+    },
+    {
+      "id": "DT-011",
+      "name": "logical asset identity survives blob replacement",
+      "cases": ["C-011"],
+      "expected": ["DOC-002", "DOC-008", "DOC-011"]
+    },
+    {
+      "id": "DT-012",
+      "name": "malformed duplicate oversized and digest mismatch inputs fail validation",
+      "cases": ["A-012"],
+      "expected": ["DOC-010", "DOC-016"]
+    }
+  ]
+}
