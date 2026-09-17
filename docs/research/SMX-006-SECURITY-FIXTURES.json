@@ -1,0 +1,87 @@
+{
+  "schema": "splashmx-smx006-security-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "issue": "SMX-006",
+  "established": "2026-09-17",
+  "security_invariants": [
+    "SEC-001","SEC-002","SEC-003","SEC-004","SEC-005","SEC-006",
+    "SEC-007","SEC-008","SEC-009","SEC-010","SEC-011","SEC-012",
+    "SEC-013","SEC-014","SEC-015","SEC-016","SEC-017","SEC-018"
+  ],
+  "direct_case_coverage": ["C-011","C-022","C-026"],
+  "direct_adversarial_coverage": ["A-003","A-004","A-012","A-015"],
+  "fixtures": [
+    {
+      "id": "ST-001",
+      "name": "No ambient HTTP authority",
+      "cases": ["C-022","A-003"],
+      "expected": ["SEC-001","SEC-002","SEC-011"]
+    },
+    {
+      "id": "ST-002",
+      "name": "Scoped HTTP grant",
+      "cases": ["C-022"],
+      "expected": ["SEC-003","SEC-009","SEC-017"]
+    },
+    {
+      "id": "ST-003",
+      "name": "Nested component isolation",
+      "cases": ["C-011","A-003"],
+      "expected": ["SEC-002","SEC-011"]
+    },
+    {
+      "id": "ST-004",
+      "name": "Delegation monotonic narrowing",
+      "cases": ["A-003"],
+      "expected": ["SEC-004","SEC-008"]
+    },
+    {
+      "id": "ST-005",
+      "name": "Revocation cascades to delegated leases",
+      "cases": ["A-003"],
+      "expected": ["SEC-005"]
+    },
+    {
+      "id": "ST-006",
+      "name": "Required versus optional capability denial",
+      "cases": ["C-022"],
+      "expected": ["SEC-010","SEC-017","SEC-018"]
+    },
+    {
+      "id": "ST-007",
+      "name": "Package path and decompression bounds",
+      "cases": ["A-012"],
+      "expected": ["SEC-007","SEC-008"]
+    },
+    {
+      "id": "ST-008",
+      "name": "Dependency and migration amplification bounds",
+      "cases": ["A-012"],
+      "expected": ["SEC-008","SEC-014"]
+    },
+    {
+      "id": "ST-009",
+      "name": "Signature does not grant capability",
+      "cases": ["C-026"],
+      "expected": ["SEC-006","SEC-017"]
+    },
+    {
+      "id": "ST-010",
+      "name": "Network cannot inject host capability",
+      "cases": ["A-015"],
+      "expected": ["SEC-007","SEC-012","SEC-015"]
+    },
+    {
+      "id": "ST-011",
+      "name": "Service request quota",
+      "cases": ["A-004"],
+      "expected": ["SEC-008","SEC-011"]
+    },
+    {
+      "id": "ST-012",
+      "name": "Unknown required security semantics fail closed",
+      "cases": ["A-012"],
+      "expected": ["SEC-015"]
+    }
+  ]
+}
