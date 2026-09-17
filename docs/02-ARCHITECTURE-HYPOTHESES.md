@@ -171,3 +171,15 @@ Evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md`, `docs/research/SMX-005-
 - **H-018 strengthened at the schema/document layer; unresolved end-to-end.** Deterministic staged migration preserves IDs/references and compatible optional extension data, rejects unsupported required features, validates target state before commit, and leaves the source untouched on failure. Actual migration across future Godot/runtime semantic changes remains for SMX-009/015/020.
 
 No other hypothesis receives a status change from SMX-005.
+
+
+## SMX-006 review record — 2026-09-17
+
+Evidence: `docs/research/SMX-006-CAPABILITY-SANDBOX.md`, `docs/research/SMX-006-SECURITY-FIXTURES.json`, and `experiments/smx-006-security-model/`.
+
+- **H-006 strengthened indirectly.** The bounded-turn common IR from SMX-004 exposes a finite service boundary where capability checks can be applied uniformly without adding a privileged second user execution engine. Actual hostile IR/compiler testing remains SMX-016.
+- **H-009 strengthened substantially at model level, still unresolved end-to-end.** Principal-scoped grants, monotonic narrowing delegation, live revocation, deny-by-default host mediation, parser/migration/network limits, nested-component isolation, and signature-without-privilege semantics are directly exercised. Real Godot/browser/native escape resistance and decoder/process isolation remain unproven.
+- **H-014 strengthened narrowly.** Current Godot host facilities can remain behind adapters: JavaScriptBridge can be omitted from custom web templates, while untrusted PCK/GDExtension/native-code routes are excluded from ordinary content. Production mapping/maintenance/performance remain SMX-009/019 work.
+- **H-015 strengthened narrowly from security architecture.** A generic player centralizes parser validation, capability mediation, quota enforcement, and platform hardening. Publishing/runtime performance evidence remains SMX-014/019.
+
+No other hypothesis receives a status change from SMX-006.

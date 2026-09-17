@@ -252,6 +252,72 @@ SMX-005 does not choose JSON, deterministic CBOR, Protocol Buffers, SQLite, or a
 
 **Source:** SMX-005 representation-family comparison and DOC-009/DOC-010.
 
+
+
+### D-033 — Ordinary content has no ambient host authority
+
+**Status:** DECISION at security-boundary semantic level; subject to SMX-016 hostile proof.
+
+Ordinary creations/components receive no implicit filesystem, network, clipboard, camera/microphone, geolocation, browser JavaScript, native-code, process, engine-reflection, or unrestricted resource-loading authority. Privileged effects cross named runtime services.
+
+**Source:** `docs/research/SMX-006-CAPABILITY-SANDBOX.md` SEC-001/SEC-007/SEC-013; ST-001.
+
+### D-034 — Host authority is a principal-scoped, narrowed, revocable lease rather than hierarchy inheritance
+
+**Status:** DECISION at security semantic level.
+
+Capability grants bind to explicit security principals with typed scopes/lifetimes. Containment/definition ancestry does not transfer privilege. Delegation requires an active delegable source grant and can only narrow scope/lifetime; source revocation invalidates delegated descendants.
+
+**Source:** SMX-006 SEC-002–SEC-005/SEC-011; ST-003–ST-005.
+
+### D-035 — Signatures/provenance do not grant ordinary runtime capability
+
+**Status:** DECISION.
+
+A valid signature may establish publisher identity, integrity, or update lineage, but does not by itself grant host services, larger resource budgets, or delegation rights.
+
+**Source:** SMX-006 SEC-006/SEC-017; ST-009.
+
+### D-036 — Browser/OS permission is a second independent gate beneath SplashMX capability policy
+
+**Status:** DECISION.
+
+A SplashMX grant is necessary before a runtime adapter requests a privileged browser/OS feature. Browser/OS permission is independently necessary and may expire/revoke. Neither layer implicitly grants the other.
+
+**Source:** SMX-006 SEC-018; current W3C Permissions/Permissions Policy/Media Capture/Geolocation/Clipboard/Notifications specifications.
+
+### D-037 — Ordinary community packages cannot enter Godot through executable host-code paths
+
+**Status:** DECISION at ordinary-content boundary.
+
+Untrusted SplashMX packages do not load arbitrary GDScript/C#, GDExtension/native libraries, JavaScriptBridge/eval, or executable Godot PCK/mod projects. Godot assets/facilities may be used only through validated SplashMX adapters and package/document contracts.
+
+**Source:** SMX-006 SEC-013; Godot PCK, GDExtension, and web-compilation primary docs checked 2026-09-17.
+
+### D-038 — Parser, canonical migration, IR execution, runtime services, and network ingress are independent security boundaries
+
+**Status:** DECISION.
+
+Each layer validates and budgets its own input. Passing an earlier layer does not make later input trusted, and browser/WASM/Godot sandboxing does not replace SplashMX validation/capability enforcement.
+
+**Source:** SMX-006 SEC-007/SEC-008/SEC-014/SEC-015; ST-007/ST-008/ST-010/ST-012.
+
+### D-039 — Hard resource limits extend across package parsing, dependencies, migrations, services, and network ingress
+
+**Status:** DECISION at category level; exact quota values/policy remain downstream.
+
+SMX-004 executor budgets are extended with package compressed/expanded bytes and ratio, entry/path counts, canonical record/depth/fanout limits, dependency depth/bytes, migration steps/cost/output, service request/response quotas, and network message/rate/queue ceilings.
+
+**Source:** SMX-006 SEC-008; ST-007/ST-008/ST-011.
+
+### D-040 — Capability grants/handles are runtime policy, not authored/save/network authority tokens
+
+**Status:** DECISION at security semantic level.
+
+Canonical authored documents, save-state records, package signatures, and ordinary network messages cannot mint or serialize live capability authority. Stable declarations may request capabilities; live grants remain host/user policy state.
+
+**Source:** SMX-006 SEC-003/SEC-012/SEC-017; ST-009/ST-010.
+
 ## Primary-source and comparative evidence
 
 ### E-001 through E-014 — Godot/web/runtime baseline
@@ -376,6 +442,62 @@ Source: https://www.rfc-editor.org/rfc/rfc8949.html
 
 **Implication:** a constrained deterministic CBOR profile is a credible future chunk/package encoding candidate without being selected by SMX-005.
 
+
+
+### E-031 — Godot web builds can omit JavaScriptBridge/eval support
+
+**Status:** FACT, time-sensitive; checked 2026-09-17.
+
+Current Godot web compilation docs state JavaScriptBridge is included by default/official templates and can be omitted using `javascript_eval=no`.
+
+Source: https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_web.html
+
+**Implication:** SMX-009/016 should evaluate a hardened custom web player rather than exposing this bridge to ordinary content.
+
+### E-032 — Godot warns that runtime-loaded PCK/mod content may contain malicious code
+
+**Status:** FACT, time-sensitive; checked 2026-09-17.
+
+Current Godot PCK/ZIP docs state packs may contain scripts/scenes/shaders and explicitly describe malicious/replaced pack scenarios as security vulnerabilities.
+
+Source: https://docs.godotengine.org/en/latest/tutorials/export/exporting_pcks.html
+
+**Implication:** untrusted SplashMX content must not be treated as an executable Godot mod/PCK project.
+
+### E-033 — GDExtension is native shared-library execution
+
+**Status:** FACT, time-sensitive; checked 2026-09-17.
+
+Godot describes GDExtension as runtime interaction with native shared libraries.
+
+Source: https://docs.godotengine.org/en/latest/engine_details/engine_api/gdextension/what_is_gdextension.html
+
+**Implication:** GDExtension/native libraries stay outside ordinary community-package authority.
+
+### E-034 — Web powerful-feature permission is user-controlled and revocable
+
+**Status:** FACT, time-sensitive; checked 2026-09-17.
+
+The W3C Permissions specification models powerful-feature states including granted/denied/prompt, permission lifetime/revocation, and the relationship with Permissions Policy.
+
+Sources:
+- https://www.w3.org/TR/permissions/
+- https://www.w3.org/TR/permissions-policy/
+
+**Implication:** browser permission is an independent lower-layer gate, not the SplashMX capability system itself.
+
+### E-035 — Camera/microphone, geolocation, clipboard, and notifications have distinct host permission semantics
+
+**Status:** FACT, time-sensitive; checked 2026-09-17.
+
+Sources:
+- https://www.w3.org/TR/mediacapture-streams/
+- https://www.w3.org/TR/2026/REC-geolocation-20260324/
+- https://www.w3.org/TR/clipboard-apis/
+- https://notifications.spec.whatwg.org/
+
+**Implication:** SplashMX should expose stable semantic capabilities while adapters handle browser-specific permission/gesture/lifetime rules.
+
 ## Hypothesis review snapshots
 
 ### SMX-001
@@ -409,7 +531,12 @@ H-001–H-018: **unresolved**; baseline added corpus/scorecard only.
 - H-018: **strengthened at schema/document layer, unresolved end-to-end** — staged deterministic migration is executable; future engine-semantic migrations remain untested.
 - Others: no status change.
 
-Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion fixture/harness artifacts.
+Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion fixture/harness artifacts.\n\n### SMX-006
+
+- H-006: **strengthened indirectly** — one constrained IR can share one capability/service enforcement boundary.
+- H-009: **strengthened substantially at model level, unresolved end-to-end** — principal grants, narrowed delegation, revocation, nested isolation, parser/service/network limits, and signature-without-privilege are exercised; real host escape remains SMX-016.
+- H-014: **strengthened narrowly** — current Godot host powers can remain behind adapters; JavaScriptBridge can be omitted and PCK/GDExtension paths excluded from ordinary content.
+- H-015: **strengthened narrowly from security architecture** — generic players centralize validation/capability mediation/hardening; performance/publishing proof remains later work.
 
 ## Open architectural questions
 
@@ -492,6 +619,20 @@ Owner: SMX-009/014/019/020.
 SMX-005 requires typed qualification for references outside the current document and distinguishes unavailable dependencies, but final package IDs, dependency resolution, version constraints, vendoring/remix rules, and signatures remain open.
 
 Owner: SMX-013/014/016.
+
+
+
+### O-014 — Capability grant persistence and permission UX
+
+SMX-006 defines principals/scopes/delegation/revocation but not the final persistent user-policy store, prompt cadence, project/editor grant inheritance, or native/browser permission UX. Live grants must not become authored/save authority tokens.
+
+Owner: SMX-007/012/014/016.
+
+### O-015 — Hardened custom Godot runtime requirement
+
+SMX-006 identifies concrete value in a custom web template with `javascript_eval=no`, but does not decide whether custom builds are mandatory for all targets or how their maintenance/performance cost compares with stock templates plus mediation.
+
+Owner: SMX-009/016/019.
 
 ## Maintenance rule
 
