@@ -1,0 +1,91 @@
+{
+  "schema": "splashmx-smx004-behaviour-fixtures-v1",
+  "issue": "SMX-004",
+  "status": "non-normative-research-fixtures",
+  "execution_invariants": [
+    "EXE-001",
+    "EXE-002",
+    "EXE-003",
+    "EXE-004",
+    "EXE-005",
+    "EXE-006",
+    "EXE-007",
+    "EXE-008",
+    "EXE-009",
+    "EXE-010",
+    "EXE-011",
+    "EXE-012",
+    "EXE-013",
+    "EXE-014",
+    "EXE-015"
+  ],
+  "fixtures": [
+    {
+      "id": "ET-001",
+      "cases": ["C-003", "C-004"],
+      "expected": ["EXE-001", "EXE-002", "EXE-003", "EXE-014"]
+    },
+    {
+      "id": "ET-002",
+      "cases": ["A-004"],
+      "expected": ["EXE-001", "EXE-009"]
+    },
+    {
+      "id": "ET-003",
+      "cases": ["C-024"],
+      "expected": ["EXE-007", "EXE-015"]
+    },
+    {
+      "id": "ET-004",
+      "cases": ["C-009"],
+      "expected": ["EXE-008", "EXE-015"]
+    },
+    {
+      "id": "ET-005",
+      "cases": ["C-022", "A-003"],
+      "expected": ["EXE-005", "EXE-006", "EXE-015"]
+    },
+    {
+      "id": "ET-006",
+      "cases": ["A-004"],
+      "expected": ["EXE-009"]
+    },
+    {
+      "id": "ET-007",
+      "cases": ["C-025"],
+      "expected": ["EXE-010", "EXE-011"]
+    },
+    {
+      "id": "ET-008",
+      "cases": ["C-025", "A-006"],
+      "expected": ["EXE-011", "EXE-012", "EXE-013"]
+    },
+    {
+      "id": "ET-009",
+      "cases": ["C-025", "A-006"],
+      "expected": ["EXE-011", "EXE-012", "EXE-013"]
+    },
+    {
+      "id": "ET-010",
+      "cases": ["C-005", "C-025"],
+      "expected": ["EXE-014"]
+    },
+    {
+      "id": "ET-011",
+      "cases": ["C-004"],
+      "expected": ["EXE-004", "EXE-014"]
+    }
+  ],
+  "direct_case_coverage": [
+    "C-003", "C-004", "C-005", "C-009", "C-022", "C-024", "C-025"
+  ],
+  "direct_adversarial_coverage": ["A-003", "A-004", "A-006"],
+  "not_proven": [
+    "canonical serialized IR encoding",
+    "browser or Godot executor performance",
+    "full capability sandbox against arbitrary hostile packages",
+    "network replication determinism across topologies",
+    "serialization and restore of executor queues",
+    "production compiler or textual syntax"
+  ]
+}

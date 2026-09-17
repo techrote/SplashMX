@@ -151,3 +151,13 @@ Evidence: `docs/research/SMX-003-COMPOSITION-DEFINITIONS.md`, `docs/research/SMX
 - **H-005 unresolved / no direct status change.** SMX-003 provides stable semantic loci for inherited/overridden behaviours, but executable hot-swap state transfer and behaviour compatibility remain SMX-004/007 work.
 
 No other hypothesis receives a status change from SMX-003.
+
+## SMX-004 review record — 2026-09-17
+
+Evidence: `docs/research/SMX-004-BEHAVIOUR-EXECUTION.md`, `docs/research/SMX-004-BEHAVIOUR-FIXTURES.json`, and `experiments/smx-004-behaviour-model/`.
+
+- **H-005 strengthened.** The bounded-turn model demonstrates stable attachment-private state, quiescent hot replacement, same-schema preservation, explicit private-state migration, continuation remapping, and atomic rejection without replacing Thing identity. Persistence across unload/restore and production package migration remain unproven.
+- **H-006 strengthened.** A compiled beginner event/action rule and a nontrivial hand-authored behaviour use the same validated handler/instruction IR type. Timers, conditions, private/public state, asynchronous services, and reusable behaviour do not require a second execution engine in the tested model. Full visual/text compilers and demanding workloads remain untested.
+- **H-009 strengthened narrowly at the execution-boundary level, still unresolved end-to-end.** Unknown opcodes fail validation, no arbitrary host-call instruction exists, runtime services are explicit/capability-mediated, optional capability denial can degrade cleanly, and hard execution budgets are demonstrated. SMX-006/016 must still test package/parser attacks, confused-deputy cases, memory amplification, target-specific host bridges, and real sandbox escape.
+
+No other hypothesis receives a status change from SMX-004.
