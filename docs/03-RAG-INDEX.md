@@ -20,7 +20,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 14. `docs/research/SMX-004-BEHAVIOUR-FIXTURES.json` — machine-addressable EXE-/ET-IDs and direct experimental coverage for SMX-004.
 15. `docs/research/SMX-005-CANONICAL-DOCUMENT.md` — canonical logical-record/identity/reference/chunk/transaction/migration semantics and encoding-family comparison.
 16. `docs/research/SMX-005-DOCUMENT-FIXTURES.json` — machine-addressable DOC-/DT-IDs and direct experimental coverage for SMX-005.
-17. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.\n18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.\n19. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -32,7 +32,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Composition/local classes/instances | SMX-003 composition research, H-002–H-005, CMP-001–CMP-012 | SMX-003 fixtures/experiment; C-002/C-006/C-007/C-011/C-017/C-018/C-021/C-027; A-001/A-008/A-016 |
 | Behaviour/rules/scripting/IR | SMX-004 behaviour execution, H-005/H-006/H-009, EXE-001–EXE-015 | SMX-004 fixtures/experiment; C-003/C-004/C-005/C-009/C-022/C-024/C-025; A-003/A-004/A-006 |
 | IDs/references/schema/canonical format | SMX-005 canonical document, H-007/H-008/H-018, DOC-001–DOC-016 | SMX-005 fixtures/experiment; C-006/C-011/C-012/C-018/C-023/C-025/C-026/C-027; A-001/A-002/A-008/A-010/A-012 |
-| Security/sandbox/capabilities | Constitution P9, H-009, SMX-002 K-005/K-006, SMX-004 EXE-005/006/009/015, SMX-005 DOC-013/DOC-016 | SMX-006/016 outputs; C-022/A-003/A-004/A-012/A-015; current platform primary docs |
+| Security/sandbox/capabilities | SMX-006 capability sandbox, H-006/H-009/H-014/H-015, SEC-001–SEC-018, plus SMX-004 service/budget and SMX-005 parser/migration boundaries | SMX-006 fixtures/experiment; SMX-016 attack campaign; C-011/C-022/C-026; A-003/A-004/A-012/A-015; current platform primary docs |
 | Lifecycle/serialization/determinism | H-008/H-010, SMX-005 document/runtime/save/context planes, SMX-004 continuation/PRNG/private-state handoff | SMX-007/015 outputs; C-024/A-002 |
 | Streaming/hot swap | H-005/H-010/H-011, SMX-005 catalog/chunk/reference-resolution model, SMX-003 public-interface/provenance model, SMX-004 EXE-010–EXE-013 | SMX-008/015 outputs; C-012/C-025/C-027 |
 | Godot mapping/browser limits | H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract, SMX-001 E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
@@ -103,6 +103,33 @@ When adding or changing corpus cases, preserve existing IDs and update both base
 - Semantic transactions target typed IDs/loci with preconditions and all-or-nothing commit; physical JSON pointers, DB rows, and tree paths are not the canonical edit language.
 - Migration is staged/deterministic/capability-free by default, validates target state before commit, preserves IDs/references unless explicitly remapped, and fails closed on unsupported required features.
 - Unknown optional extension data may be preserved only through explicit compatibility envelopes; unknown required semantics are not silently ignored.
+
+## SMX-006 security retrieval rules
+
+SMX-006 adds stable references for the provisional untrusted-content security contract:
+
+- `SEC-001` through `SEC-018` identify capability/sandbox invariants.
+- `ST-001` through `ST-012` identify disposable deterministic security fixture classes.
+- The Python model in `experiments/smx-006-security-model/` is **non-normative**; do not infer production cryptography, OS/browser handles, quota values, or API layouts from it.
+- Ordinary content has no ambient host authority. Host effects cross explicit asynchronous services authorized as the **originating principal**.
+- Containment does not imply privilege. Delegation is explicit, scope/lifetime narrowing, bounded, and revocable.
+- Package signatures establish provenance/integrity only; they do not grant capabilities.
+- Browser/OS permission is a second independent gate beneath SplashMX capability policy.
+- Ordinary community packages cannot introduce GDScript/C#/GDExtension/native code, JavaScriptBridge/eval, unrestricted ResourceLoader/PCK/mod semantics, shell/process access, unrestricted filesystem or raw sockets.
+- Parser, canonical migration, IR executor, runtime services, and network ingress are separate trust boundaries with independent hard limits.
+- SMX-016 must attack the real implementations; model-level passing tests are not an end-to-end sandbox proof.
+
+### Security/platform primary-source anchors — refreshed 2026-09-17
+
+- Godot web compilation / `javascript_eval=no`: https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_web.html
+- Godot untrusted PCK/mod security warning: https://docs.godotengine.org/en/latest/tutorials/export/exporting_pcks.html
+- Godot GDExtension native-library boundary: https://docs.godotengine.org/en/latest/engine_details/engine_api/gdextension/what_is_gdextension.html
+- W3C Permissions: https://www.w3.org/TR/permissions/
+- W3C Permissions Policy: https://www.w3.org/TR/permissions-policy/
+- Media Capture and Streams: https://www.w3.org/TR/mediacapture-streams/
+- Geolocation 2026 Recommendation: https://www.w3.org/TR/2026/REC-geolocation-20260324/
+- Clipboard API: https://www.w3.org/TR/clipboard-apis/
+- WHATWG Notifications: https://notifications.spec.whatwg.org/
 
 ## Initial external primary-source anchors
 
@@ -206,7 +233,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
