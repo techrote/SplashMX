@@ -20,7 +20,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 14. `docs/research/SMX-004-BEHAVIOUR-FIXTURES.json` — machine-addressable EXE-/ET-IDs and direct experimental coverage for SMX-004.
 15. `docs/research/SMX-005-CANONICAL-DOCUMENT.md` — canonical logical-record/identity/reference/chunk/transaction/migration semantics and encoding-family comparison.
 16. `docs/research/SMX-005-DOCUMENT-FIXTURES.json` — machine-addressable DOC-/DT-IDs and direct experimental coverage for SMX-005.
-17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.\n18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.\n19. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.\n18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.\n19. `docs/research/SMX-007-LIFECYCLE-RESTORE.md` — lifecycle axes, quiescent snapshot semantics, pending-work/timer classifications, staged restore, tombstones, and determinism/replay boundaries.\n20. `docs/research/SMX-007-LIFECYCLE-FIXTURES.json` — machine-addressable LIF-/LT-IDs and direct experimental coverage for SMX-007.\n21. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -33,7 +33,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Behaviour/rules/scripting/IR | SMX-004 behaviour execution, H-005/H-006/H-009, EXE-001–EXE-015 | SMX-004 fixtures/experiment; C-003/C-004/C-005/C-009/C-022/C-024/C-025; A-003/A-004/A-006 |
 | IDs/references/schema/canonical format | SMX-005 canonical document, H-007/H-008/H-018, DOC-001–DOC-016 | SMX-005 fixtures/experiment; C-006/C-011/C-012/C-018/C-023/C-025/C-026/C-027; A-001/A-002/A-008/A-010/A-012 |
 | Security/sandbox/capabilities | SMX-006 capability sandbox, H-006/H-009/H-014/H-015, SEC-001–SEC-018, plus SMX-004 service/budget and SMX-005 parser/migration boundaries | SMX-006 fixtures/experiment; SMX-016 attack campaign; C-011/C-022/C-026; A-003/A-004/A-012/A-015; current platform primary docs |
-| Lifecycle/serialization/determinism | H-008/H-010, SMX-005 document/runtime/save/context planes, SMX-004 continuation/PRNG/private-state handoff | SMX-007/015 outputs; C-024/A-002 |
+| Lifecycle/serialization/determinism | SMX-007 lifecycle/restore, H-008/H-010/H-018, LIF-001–LIF-018, plus SMX-004 scheduler state and SMX-005 authored/runtime/save/context planes | SMX-007 fixtures/experiment; SMX-015 destructive integration; C-002/C-006/C-012/C-024/C-025/A-002 |
 | Streaming/hot swap | H-005/H-010/H-011, SMX-005 catalog/chunk/reference-resolution model, SMX-003 public-interface/provenance model, SMX-004 EXE-010–EXE-013 | SMX-008/015 outputs; C-012/C-025/C-027 |
 | Godot mapping/browser limits | H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract, SMX-001 E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
 | Multiplayer | Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-003 CMP-012, SMX-004 ordered external-input/service boundary, SMX-005 runtime/document separation | SMX-010/017 outputs; C-013/C-014/C-020/C-021/A-009/A-011; current browser/Godot transport docs |
@@ -130,6 +130,22 @@ SMX-006 adds stable references for the provisional untrusted-content security co
 - Geolocation 2026 Recommendation: https://www.w3.org/TR/2026/REC-geolocation-20260324/
 - Clipboard API: https://www.w3.org/TR/clipboard-apis/
 - WHATWG Notifications: https://notifications.spec.whatwg.org/
+
+## SMX-007 lifecycle retrieval rules
+
+SMX-007 adds stable references for runtime lifecycle and save/restore semantics:
+
+- `LIF-001` through `LIF-018` identify lifecycle/snapshot/restore invariants.
+- `LT-001` through `LT-012` identify disposable deterministic lifecycle fixture classes.
+- The Python model in `experiments/smx-007-lifecycle-model/` is **non-normative**; do not infer production snapshot bytes, scheduler data structures, Godot object layout, or final migration APIs from it.
+- Lifecycle is modeled on orthogonal **existence**, **residency**, and **activity** axes; snapshot/save is an atomic operation, not a mutually exclusive Thing state.
+- Semantic dormancy may pause active-time processing. Hidden implementation sleep/LOD must remain observationally equivalent and cannot silently alter authored timer/behaviour semantics.
+- Snapshot cuts occur at bounded-turn quiescent boundaries and persist only explicitly selected runtime state; transient engine/network/capability context is rebound later.
+- Durable internal pending work is explicit. Previously issued external side effects are **not** automatically replayed during restore.
+- Clock domains remain explicit: `thing_active`, `world_logical`, and external wall-clock semantics are distinct.
+- References to absent Things distinguish loaded, known-unloaded, tombstoned, unknown, incompatible, and dependency-unavailable states.
+- Restore does not replay first-creation hooks by default and does not require a surviving Godot/process object.
+- Deterministic restore means reconstruction of the same declared state before new external inputs; it does not claim future replay without the same external input stream.
 
 ## Initial external primary-source anchors
 
@@ -233,7 +249,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
