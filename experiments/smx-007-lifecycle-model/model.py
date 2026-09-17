@@ -236,14 +236,14 @@ class World:
     def destroy(self, thing_id: str, *, reason: str | None = None) -> None:
         if thing_id not in self.things:
             raise LifecycleError("cannot destroy unknown Thing")
+        removed_attachment_ids = set(self.things[thing_id].behaviors)
         del self.things[thing_id]
         self.context.pop(thing_id, None)
         self.queue = [w for w in self.queue if w.target_id != thing_id]
         self.pending_deliveries = [w for w in self.pending_deliveries if w.target_id != thing_id]
         self.external_waits = [
             w for w in self.external_waits
-            if w.attachment_id not in {b.attachment_id for t in self.things.values() for b in t.behaviors.values()}
-            or True
+            if w.attachment_id not in removed_attachment_ids
         ]
         self.tombstones[thing_id] = Tombstone(
             thing_id=thing_id,
