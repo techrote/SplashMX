@@ -121,3 +121,11 @@ For each hypothesis touched by an issue, the PR should record one of:
 - **unresolved** — available evidence is insufficient.
 
 Architecture v1.0 must not silently convert unresolved hypotheses into facts.
+
+## SMX-001 review record — 2026-09-17
+
+SMX-001 reviewed H-001 through H-018 against the authoritative glossary, representative/adversarial corpus, scorecard, and current upstream-fact snapshot in `docs/research/SMX-001-RESEARCH-BASELINE.md`.
+
+**Status of every H-001–H-018 after SMX-001: unresolved.**
+
+No wording change is justified by baseline construction alone. The new C-/A-case corpus and S-scorecard make later falsification more concrete, but are not empirical support for the hypotheses. Later issues must update individual status only when they generate actual evidence.

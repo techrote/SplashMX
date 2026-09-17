@@ -1,0 +1,60 @@
+{
+  "schema": "splashmx-research-corpus-v1",
+  "issue": "SMX-001",
+  "established": "2026-09-17",
+  "status": "research-baseline-not-runtime-schema",
+  "cases": [
+    {"id":"C-001","name":"simple drawing and animation","domains":["visual","timeline"],"stresses":["authored-state","presentation","animation"]},
+    {"id":"C-002","name":"nested timeline clip instances","domains":["visual","timeline","composition"],"stresses":["nesting","definition-instance","instance-configuration"]},
+    {"id":"C-003","name":"UI button with states","domains":["ui","interaction"],"stresses":["presentation-state","input","output-interface"]},
+    {"id":"C-004","name":"slider controls audio","domains":["ui","audio","connections"],"stresses":["cross-thing-connection","nonownership-control"]},
+    {"id":"C-005","name":"player character","domains":["gameplay","physics","animation"],"stresses":["input-control","runtime-state","observation"]},
+    {"id":"C-006","name":"inventory key references door","domains":["gameplay","references","persistence"],"stresses":["durable-reference","reparent","unloaded-target"]},
+    {"id":"C-007","name":"vehicle crew and control transfer","domains":["gameplay","composition","networking"],"stresses":["deep-nesting","control-transfer","authority-independent-of-containment"]},
+    {"id":"C-008","name":"timeline and audio sequence","domains":["timeline","audio","text"],"stresses":["time-sequencing","media-synchronisation"]},
+    {"id":"C-009","name":"procedural generator","domains":["procedural","simulation"],"stresses":["seeded-randomness","generated-things","inspectability"]},
+    {"id":"C-010","name":"physics interaction","domains":["physics","interaction"],"stresses":["physics-state","sensor-events","engine-identity-separation"]},
+    {"id":"C-011","name":"reusable dialogue component","domains":["component","ui","audio"],"stresses":["nested-interface","portable-definition","encapsulation"]},
+    {"id":"C-012","name":"streamed town with retained external reference","domains":["streaming","references","world"],"stresses":["unload-reload","durable-reference","partial-loading"]},
+    {"id":"C-013","name":"peer-controlled shared toy","domains":["networking","multiplayer"],"stresses":["per-peer-control","shared-state","peer-topology"]},
+    {"id":"C-014","name":"authoritative shared object","domains":["networking","multiplayer"],"stresses":["simulation-authority","contention","reliable-transition"]},
+    {"id":"C-015","name":"persistent world","domains":["persistence","server","world"],"stresses":["save-world-separation","resume","server-lifetime"]},
+    {"id":"C-016","name":"collaboration delete versus edit","domains":["collaboration"],"stresses":["concurrent-delete-edit","tombstone","conflict"]},
+    {"id":"C-017","name":"collaboration reparent conflict","domains":["collaboration","composition"],"stresses":["concurrent-structure","reparent","relationship-independence"]},
+    {"id":"C-018","name":"definition versus instance collaboration conflict","domains":["collaboration","definitions"],"stresses":["definition-update","instance-override","concurrent-edit"]},
+    {"id":"C-019","name":"offline collaboration reconnect","domains":["collaboration","offline"],"stresses":["offline-edits","reconciliation","no-silent-loss"]},
+    {"id":"C-020","name":"local-only HUD in networked world","domains":["ui","networking"],"stresses":["local-context","authoritative-observation","nonreplicated-presentation"]},
+    {"id":"C-021","name":"network authority and control transfer","domains":["networking","gameplay"],"stresses":["authority-transfer","control-transfer","identity-stability"]},
+    {"id":"C-022","name":"denied-capability component","domains":["security","component"],"stresses":["capability-denial","fail-closed","partial-functionality"]},
+    {"id":"C-023","name":"schema and runtime migration","domains":["compatibility","migration"],"stresses":["old-content","versioning","unsupported-feature"]},
+    {"id":"C-024","name":"serialize and restore pending work","domains":["lifecycle","serialization"],"stresses":["timers","queued-events","private-state","references"]},
+    {"id":"C-025","name":"hot behaviour replacement","domains":["behaviour","lifecycle"],"stresses":["hot-swap","state-handoff","identity-stability"]},
+    {"id":"C-026","name":"missing or incompatible component dependency","domains":["component","packages","streaming"],"stresses":["missing-dependency","revocation","incompatible-version","recovery"]},
+    {"id":"C-027","name":"nested exposed interface across stream boundary","domains":["composition","streaming","connections"],"stresses":["exposed-port","nested-unload","external-reference"]},
+    {"id":"C-028","name":"many-instance media object","domains":["performance","visual"],"stresses":["instance-count","mandatory-overhead","proportionality"]}
+  ],
+  "adversarial_cases": [
+    {"id":"A-001","name":"reparent without semantic mutation","stresses":["hierarchy-independence","identity","control","authority","persistence"]},
+    {"id":"A-002","name":"unloaded target versus destroyed target","stresses":["reference-state","lifecycle"]},
+    {"id":"A-003","name":"hostile capability request","stresses":["sandbox","fail-closed"]},
+    {"id":"A-004","name":"event or timer storm","stresses":["resource-budget","runaway-execution"]},
+    {"id":"A-005","name":"cyclic or deep dependency graph","stresses":["dependency-resolution","resource-budget"]},
+    {"id":"A-006","name":"hot swap with incompatible private state","stresses":["behaviour-migration","rollback"]},
+    {"id":"A-007","name":"collaboration resurrection","stresses":["delete-edit","tombstone","offline-reconnect"]},
+    {"id":"A-008","name":"definition update versus structural override","stresses":["definition-instance","migration","conflict"]},
+    {"id":"A-009","name":"network authority loss","stresses":["disconnect","authority-transfer","identity"]},
+    {"id":"A-010","name":"unknown future schema fields or features","stresses":["compatibility","unknown-data","graceful-failure"]},
+    {"id":"A-011","name":"background-tab suspension","stresses":["browser-lifecycle","networking","time"]},
+    {"id":"A-012","name":"malformed or oversized package","stresses":["parser","decompression","path-traversal","resource-budget"]},
+    {"id":"A-013","name":"underlying engine upgrade","stresses":["compatibility-boundary","migration"]},
+    {"id":"A-014","name":"hidden manager removal","stresses":["explicit-context","semantic-reconstruction"]},
+    {"id":"A-015","name":"transitive capability confusion","stresses":["delegation","nested-component","confused-deputy"]},
+    {"id":"A-016","name":"multiple simultaneous relationships","stresses":["containment","control","authority","observation","persistence","replication"]}
+  ],
+  "required_domain_coverage": [
+    "visual","timeline","ui","audio","gameplay","physics","procedural","component","streaming","networking","persistence","collaboration","security","compatibility","lifecycle","performance"
+  ],
+  "scorecard_ids": [
+    "S-01","S-02","S-03","S-04","S-05","S-06","S-07","S-08","S-09","S-10","S-11","S-12","S-13","S-14","S-15","S-16"
+  ]
+}
