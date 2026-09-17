@@ -1,0 +1,93 @@
+{
+  "schema": "splashmx-smx002-kernel-fixtures-v1",
+  "issue": "SMX-002",
+  "status": "non-normative-research-fixtures",
+  "candidate": "faceted-thing-explicit-relations-v0",
+  "kernel_invariants": [
+    "K-001","K-002","K-003","K-004","K-005","K-006",
+    "K-007","K-008","K-009","K-010","K-011","K-012"
+  ],
+  "direct_case_coverage": [
+    "C-003","C-004","C-006","C-007","C-020","C-021","C-022","C-025"
+  ],
+  "direct_adversarial_coverage": ["A-001","A-003","A-014","A-016"],
+  "port_kinds_under_test": ["command","event","value"],
+  "relationship_kinds_under_test": [
+    "contains","references","observes","connects",
+    "controlled_by","authority_at","persisted_via","replicated_in"
+  ],
+  "fixtures": [
+    {
+      "id": "T-001",
+      "name": "reparent preserves unrelated semantics",
+      "cases": ["C-006","C-007","A-001"],
+      "expected": [
+        "thing identity unchanged",
+        "only contains relation changes",
+        "reference relation unchanged",
+        "controller binding unchanged",
+        "authority binding unchanged"
+      ]
+    },
+    {
+      "id": "T-002",
+      "name": "simultaneous relationship classes remain independent",
+      "cases": ["C-007","C-020","C-021","A-016"],
+      "expected": [
+        "containment independent of controller",
+        "controller independent of authority",
+        "observer independent of persistence service",
+        "replication session independent of containment"
+      ]
+    },
+    {
+      "id": "T-003",
+      "name": "capability request is not capability grant",
+      "cases": ["C-022","A-003"],
+      "expected": [
+        "requested capability stored in facet declaration",
+        "grant stored only in runtime context",
+        "changing grant does not mutate authored thing snapshot"
+      ]
+    },
+    {
+      "id": "T-004",
+      "name": "group and leaf share Thing kernel",
+      "cases": ["C-002","C-007","C-011","A-014"],
+      "expected": [
+        "group and leaf use same Thing type",
+        "group semantics expressed by containment and facets",
+        "no hidden category manager required"
+      ]
+    },
+    {
+      "id": "T-005",
+      "name": "behaviour facet replacement preserves Thing identity",
+      "cases": ["C-025"],
+      "expected": [
+        "Thing identity unchanged",
+        "unrelated live state unchanged",
+        "facet implementation may change independently"
+      ]
+    },
+    {
+      "id": "T-006",
+      "name": "command event and value ports cover basic interaction",
+      "cases": ["C-003","C-004"],
+      "expected": [
+        "event output can connect to command input",
+        "readable value can connect to writable value",
+        "connection identifies endpoints without hierarchy path"
+      ]
+    },
+    {
+      "id": "T-007",
+      "name": "engine runtime handle is not durable identity",
+      "cases": ["C-010","C-021"],
+      "expected": [
+        "runtime handle may change",
+        "Thing identity remains unchanged"
+      ]
+    }
+  ]
+}
