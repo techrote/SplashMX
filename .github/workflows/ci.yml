@@ -20,3 +20,5 @@ jobs:
         run: python tools/validate_repo.py
       - name: Run SMX-002 kernel falsification tests
         run: python -m unittest discover -s experiments/smx-002-kernel-model -p 'test_*.py'
+      - name: Run SMX-003 composition falsification tests
+        run: python -m unittest discover -s experiments/smx-003-composition-model -p 'test_*.py'
