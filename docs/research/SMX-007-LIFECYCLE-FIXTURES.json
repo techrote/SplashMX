@@ -1,0 +1,27 @@
+{
+  "schema": "splashmx-smx007-lifecycle-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "issue": "SMX-007",
+  "established": "2026-09-17",
+  "lifecycle_invariants": [
+    "LIF-001","LIF-002","LIF-003","LIF-004","LIF-005","LIF-006",
+    "LIF-007","LIF-008","LIF-009","LIF-010","LIF-011","LIF-012",
+    "LIF-013","LIF-014","LIF-015","LIF-016","LIF-017","LIF-018"
+  ],
+  "direct_case_coverage": ["C-002","C-006","C-012","C-024","C-025"],
+  "direct_adversarial_coverage": ["A-002"],
+  "fixtures": [
+    {"id":"LT-001","name":"Fresh-runtime snapshot restore","cases":["C-024"],"expected":["LIF-003","LIF-004","LIF-005","LIF-006","LIF-015"]},
+    {"id":"LT-002","name":"Reference to unloaded target","cases":["C-006","C-012"],"expected":["LIF-001","LIF-011"]},
+    {"id":"LT-003","name":"Snapshot is non-mutating lifecycle operation","cases":["C-024"],"expected":["LIF-002","LIF-003"]},
+    {"id":"LT-004","name":"Dormancy and timer clock domains","cases":["C-024"],"expected":["LIF-009","LIF-010"]},
+    {"id":"LT-005","name":"World timer matures while target unloaded","cases":["C-012"],"expected":["LIF-006","LIF-009","LIF-011"]},
+    {"id":"LT-006","name":"Restore does not reissue external effect","cases":["A-002"],"expected":["LIF-007"]},
+    {"id":"LT-007","name":"Transient authority and handles omitted from snapshot","cases":["A-002"],"expected":["LIF-004","LIF-008","LIF-017"]},
+    {"id":"LT-008","name":"Behaviour private-state compatibility gate","cases":["C-025"],"expected":["LIF-013","LIF-016"]},
+    {"id":"LT-009","name":"Definition instance provenance restores independently","cases":["C-002","C-024"],"expected":["LIF-004","LIF-005","LIF-016"]},
+    {"id":"LT-010","name":"Creation hook not replayed during restore","cases":["C-024","A-002"],"expected":["LIF-007","LIF-014"]},
+    {"id":"LT-011","name":"Tombstone and no ordinary ID reuse","cases":["C-006"],"expected":["LIF-012","LIF-018"]},
+    {"id":"LT-012","name":"Deterministic restore versus later external divergence","cases":["C-024"],"expected":["LIF-015"]}
+  ]
+}
