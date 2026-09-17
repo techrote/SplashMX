@@ -183,3 +183,14 @@ Evidence: `docs/research/SMX-006-CAPABILITY-SANDBOX.md`, `docs/research/SMX-006-
 - **H-015 strengthened narrowly from security architecture.** A generic player centralizes parser validation, capability mediation, quota enforcement, and platform hardening. Publishing/runtime performance evidence remains SMX-014/019.
 
 No other hypothesis receives a status change from SMX-006.
+
+
+## SMX-007 review record — 2026-09-17
+
+Evidence: `docs/research/SMX-007-LIFECYCLE-RESTORE.md`, `docs/research/SMX-007-LIFECYCLE-FIXTURES.json`, and `experiments/smx-007-lifecycle-model/`.
+
+- **H-008 strengthened further.** Stable Thing/reference identity now survives semantic dormancy, unload, JSON-round-tripped snapshot reconstruction in a fresh runtime model, and explicit tombstone resolution. No hierarchy path or engine/process object participates in restoration.
+- **H-010 strengthened substantially at model level.** A Thing can become known-unloaded and later be reconstructed from authored basis + persistent runtime snapshot while retaining public/private state, deterministic PRNG position, durable timers/queued work, provenance, references, and explicit absence states. Full object-centric streaming implementation remains SMX-008/015.
+- **H-018 strengthened further at runtime-snapshot layer, unresolved end-to-end.** Restore checks authored basis and behaviour/private-state versions and requires explicit migration/rejection rather than silently deserializing engine objects. Real cross-Godot-version compatibility remains for SMX-009/015/020.
+
+No other hypothesis receives a status change from SMX-007.
