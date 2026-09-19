@@ -20,7 +20,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 14. `docs/research/SMX-004-BEHAVIOUR-FIXTURES.json` — machine-addressable EXE-/ET-IDs and direct experimental coverage for SMX-004.
 15. `docs/research/SMX-005-CANONICAL-DOCUMENT.md` — canonical logical-record/identity/reference/chunk/transaction/migration semantics and encoding-family comparison.
 16. `docs/research/SMX-005-DOCUMENT-FIXTURES.json` — machine-addressable DOC-/DT-IDs and direct experimental coverage for SMX-005.
-17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.\n18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.\n19. `docs/research/SMX-007-LIFECYCLE-RESTORE.md` — lifecycle axes, quiescent snapshot semantics, pending-work/timer classifications, staged restore, tombstones, and determinism/replay boundaries.\n20. `docs/research/SMX-007-LIFECYCLE-FIXTURES.json` — machine-addressable LIF-/LT-IDs and direct experimental coverage for SMX-007.\n21. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.\n18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.\n19. `docs/research/SMX-007-LIFECYCLE-RESTORE.md` — lifecycle axes, quiescent snapshot semantics, pending-work/timer classifications, staged restore, tombstones, and determinism/replay boundaries.\n20. `docs/research/SMX-007-LIFECYCLE-FIXTURES.json` — machine-addressable LIF-/LT-IDs and direct experimental coverage for SMX-007.\n21. `docs/research/SMX-008-STREAMING-MIGRATION.md` — logical/physical stream-unit separation, exact dependency descriptors, staged acquisition, cache/eviction, hot replacement, typed failures, and migration-capsule semantics.\n22. `docs/research/SMX-008-STREAMING-FIXTURES.json` — machine-addressable STR-/SG-IDs and direct experimental coverage for SMX-008.\n23. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -34,7 +34,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | IDs/references/schema/canonical format | SMX-005 canonical document, H-007/H-008/H-018, DOC-001–DOC-016 | SMX-005 fixtures/experiment; C-006/C-011/C-012/C-018/C-023/C-025/C-026/C-027; A-001/A-002/A-008/A-010/A-012 |
 | Security/sandbox/capabilities | SMX-006 capability sandbox, H-006/H-009/H-014/H-015, SEC-001–SEC-018, plus SMX-004 service/budget and SMX-005 parser/migration boundaries | SMX-006 fixtures/experiment; SMX-016 attack campaign; C-011/C-022/C-026; A-003/A-004/A-012/A-015; current platform primary docs |
 | Lifecycle/serialization/determinism | SMX-007 lifecycle/restore, H-008/H-010/H-018, LIF-001–LIF-018, plus SMX-004 scheduler state and SMX-005 authored/runtime/save/context planes | SMX-007 fixtures/experiment; SMX-015 destructive integration; C-002/C-006/C-012/C-024/C-025/A-002 |
-| Streaming/hot swap | H-005/H-010/H-011, SMX-005 catalog/chunk/reference-resolution model, SMX-003 public-interface/provenance model, SMX-004 EXE-010–EXE-013 | SMX-008/015 outputs; C-012/C-025/C-027 |
+| Streaming/hot swap | SMX-008 streaming/migration, H-005/H-010/H-011/H-018, STR-001–STR-020, plus SMX-007 lifecycle and SMX-005 catalog/reference semantics | SMX-008 fixtures/experiment; SMX-015 destructive integration; C-006/C-011/C-012/C-015/C-024/C-025/C-026/C-027; A-006/A-012/A-015 |
 | Godot mapping/browser limits | H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract, SMX-001 E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
 | Multiplayer | Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-003 CMP-012, SMX-004 ordered external-input/service boundary, SMX-005 runtime/document separation | SMX-010/017 outputs; C-013/C-014/C-020/C-021/A-009/A-011; current browser/Godot transport docs |
 | Collaborative editing | Constitution P8, H-013/H-017, SMX-005 semantic transaction/base-revision model, SMX-003 base-revision/overlay/reconcile model | SMX-011/018 outputs; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
@@ -146,6 +146,32 @@ SMX-007 adds stable references for runtime lifecycle and save/restore semantics:
 - References to absent Things distinguish loaded, known-unloaded, tombstoned, unknown, incompatible, and dependency-unavailable states.
 - Restore does not replay first-creation hooks by default and does not require a surviving Godot/process object.
 - Deterministic restore means reconstruction of the same declared state before new external inputs; it does not claim future replay without the same external input stream.
+
+## SMX-008 streaming retrieval rules
+
+SMX-008 adds stable references for streaming, acquisition, and live replacement:
+
+- `STR-001` through `STR-020` identify streaming/dependency/hot-replacement invariants.
+- `SG-001` through `SG-012` identify disposable deterministic streaming fixture classes.
+- The Python model in `experiments/smx-008-streaming-model/` is **non-normative**; do not infer production package/container/cache/CDN/version-solver/Godot-loader APIs from it.
+- Logical identity/load targets are distinct from physical acquisition units. Object-centric streaming does **not** require one file/blob per Thing.
+- Durable references do not imply residency; `known_unloaded` remains valid and I/O is policy/operation-driven.
+- Required, optional, and lazy dependency edges are explicit. Runtime streaming consumes exact immutable resolved descriptors; version-range solving belongs SMX-013.
+- Acquisition is staged and atomically published only after bounded fetch/digest/trust/schema/feature/migration validation of the required closure.
+- Cache/prefetch/eviction are non-semantic. Active executable dependencies are pinned or execution is explicitly blocked/dormant.
+- Behaviour/definition implementation artifacts and concrete instance/attachment state have independent residency.
+- Hot replacement acquires the new artifact first, migrates at a quiescent boundary, maps stable interfaces/pending work explicitly, and rolls back to the old live version on failure.
+- Missing, offline, denied, incompatible, invalid/malicious, resource-exhausted, cancelled, and transient failure states remain distinct.
+- A portable host-migration capsule is a quiescent semantic snapshot + exact dependency requirements; it excludes peer IDs, authority tokens, live grants, and engine/native/browser handles.
+
+### Streaming/dependency primary-source anchors — refreshed 2026-09-19
+
+- Godot 4.7 ResourceLoader/threaded load/cache/dependency API: https://docs.godotengine.org/en/4.7/classes/class_resourceloader.html
+- OCI Image Specification manifest/descriptors: https://specs.opencontainers.org/image-spec/manifest/
+- The Update Framework specification: https://github.com/theupdateframework/specification/blob/master/tuf-spec.md
+- Semantic Versioning 2.0.0: https://semver.org/
+
+These are comparison precedents, not selected SplashMX public dependencies.
 
 ## Initial external primary-source anchors
 
