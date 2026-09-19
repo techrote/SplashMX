@@ -7,13 +7,14 @@ ROOT=Path(__file__).resolve().parents[1]
 DOC=ROOT/'docs/research'
 EXP=ROOT/'experiments/smx-022-storage-spike'
 SPEC=ROOT/'spec/production'
+RAG=ROOT/'docs/03-RAG-INDEX.md'
 required=[
  DOC/'SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md',
  DOC/'SMX-022-PHYSICAL-STORE-FIXTURES.json',
  DOC/'SMX-022-NATIVE-EVIDENCE.json',
  DOC/'SMX-022-BROWSER-EVIDENCE.json',
  EXP/'README.md',EXP/'spike.py',EXP/'test_spike.py',EXP/'browser_harness.mjs',
- ROOT/'.github/workflows/smx022-physical-store.yml',
+ ROOT/'.github/workflows/smx022-physical-store.yml',RAG,
 ]
 for p in required:
     if not p.is_file(): raise SystemExit(f'SMX-022 missing required file: {p.relative_to(ROOT)}')
@@ -84,6 +85,18 @@ for marker in ('playwright@1.55.0','browser_harness.mjs','spike.py','upload-arti
 ci=(ROOT/'.github/workflows/ci.yml').read_text()
 for marker in ('python tools/validate_smx022.py',"-p 'test_spike.py' -v"):
     if marker not in ci: raise SystemExit(f'CI missing SMX-022 marker: {marker}')
+rag=RAG.read_text()
+for marker in (
+    'SMX-022 physical encoding/store retrieval rules',
+    'deterministic CBOR',
+    'IndexedDB',
+    'OPFS',
+    'SQLite WAL',
+    'SMX-024/025',
+    'tools/validate_smx022.py',
+    '.github/workflows/smx022-physical-store.yml',
+):
+    if marker not in rag: raise SystemExit(f'RAG missing SMX-022 retrieval marker: {marker}')
 doc=(DOC/'SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md').read_text()
 for marker in ('SMX-024','SMX-025','known_unloaded','QuotaExceededError','synchronous=FULL','protected `AssetId`'):
     if marker not in doc: raise SystemExit(f'decision record missing {marker}')
