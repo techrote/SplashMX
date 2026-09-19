@@ -24,9 +24,10 @@ jobs:
           tar -xzf /tmp/smx019.tar.gz -C .
           sed -i 's/[[:space:]]\+$//' docs/research/SMX-019-BROWSER-VERTICAL-SLICE.md
           # The built-in Actions token has contents:write but not workflows:write.
-          # Materialize the reviewed non-workflow tree here; workflow changes are
-          # applied separately through the authenticated repository connection.
+          # Restore tracked workflows and remove newly extracted workflow files;
+          # the authenticated repository connection applies them separately.
           git restore --source=HEAD -- .github/workflows
+          rm -f .github/workflows/smx019-browser-slice.yml
           rm -f tools/_smx019_payload.*
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
