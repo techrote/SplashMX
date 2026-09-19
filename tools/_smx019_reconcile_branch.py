@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """One-shot branch helper. Appends SMX-019 reconciliation to large durable registers.
 Removed before merge; it exists only because API-only editing cannot apply textual patches.
+This revision deliberately leaves workflow files untouched; those are updated by the GitHub connector.
 """
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -136,9 +137,3 @@ for name,section in sections.items():
     marker=section.strip().splitlines()[0]
     if marker not in text:
         path.write_text(text.rstrip()+section+'\n',encoding='utf-8')
-
-ci=ROOT/'.github/workflows/ci.yml'
-text=ci.read_text(encoding='utf-8')
-step="""      - name: Validate SMX-019 browser vertical-slice artifacts\n        run: python tools/validate_smx019.py\n"""
-if 'python tools/validate_smx019.py' not in text:
-    ci.write_text(text.rstrip()+"\n"+step,encoding='utf-8')
