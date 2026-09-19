@@ -46,3 +46,7 @@ jobs:
         run: python tools/validate_smx009.py
       - name: Run SMX-009 Godot boundary falsification tests
         run: python -m unittest discover -s experiments/smx-009-godot-boundary-model -p 'test_*.py'
+      - name: Validate SMX-010 research fixtures
+        run: python tools/validate_smx010.py
+      - name: Run SMX-010 runtime multiplayer falsification tests
+        run: python -m unittest discover -s experiments/smx-010-multiplayer-model -p 'test_*.py'
