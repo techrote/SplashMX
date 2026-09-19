@@ -165,6 +165,16 @@ def validate_repository() -> tuple[int, int]:
     ]:
         require(path in rag, f"RAG index does not retrieve {path}")
 
+    require(
+        "| Architecture contradiction or change | `docs/architecture/ARCHITECTURE-V1-AUDIT.json`"
+        in rag,
+        "RAG architecture-change route must use the explicit architecture audit path",
+    )
+    require(
+        "not a self-contained frozen path namespace" in rag,
+        "RAG must warn that historical snapshots can contain now-live unsuffixed paths",
+    )
+
     log = text(LOG)
     require("SMX-020 Architecture v1.0 freeze register" in log, "decision/evidence log lacks SMX-020 freeze register")
     for marker in ["D-117", "D-118", "D-119", "D-120", "D-121", "D-122", "D-123", "E-088", "O-029"]:
