@@ -58,3 +58,7 @@ jobs:
         run: python tools/validate_smx012.py
       - name: Run SMX-012 authoring projection falsification tests
         run: python -m unittest discover -s experiments/smx-012-authoring-model -p 'test_*.py'
+      - name: Validate SMX-013 research fixtures
+        run: python tools/validate_smx013.py
+      - name: Run SMX-013 package/component falsification tests
+        run: python -m unittest discover -s experiments/smx-013-package-model -p 'test_*.py'
