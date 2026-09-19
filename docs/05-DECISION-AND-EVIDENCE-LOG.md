@@ -132,13 +132,15 @@ The selected mechanisms preserve whole-result validation-before-publication, pre
 
 **Evidence:** `docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`; RFC 8949; Protocol Buffers canonical-serialization warning; SQLite atomic-commit/durability documentation; current IndexedDB/OPFS/Storage API evidence.
 
-### E-089 — SMX-022 comparative native mechanism evidence is reproducible; real-browser campaign remains an explicit merge gate
+### E-089 — SMX-022 comparative native and real-browser mechanism evidence is reproducible
 
 **Status:** REPRODUCIBLE SPIKE EVIDENCE, 2026-09-19.
 
 The disposable SMX-022 harness compares canonical JSON and deterministic CBOR across tiny/nested/many fixtures, bounded shard policies across a 1,500-Thing/3,000-Connection project, and abrupt native publication recovery. Deterministic CBOR was 18–20% smaller than the canonical JSON projection in the captured fixtures. Stable-ID sharding made a direct partial read orders of magnitude cheaper than monolithic decode in the disposable oracle and falsified a 256 KiB default because tiny-edit write amplification rose to about 562x. SQLite WAL/FULL, rollback/FULL and careful atomic revision files all reopened coherently at the previous head before commit and the new head after completed publication.
 
-These timing observations are environment-specific evidence, not product SLOs. The dedicated pinned-Chromium workflow must pass before merge and its artifact is to be incorporated into the issue/PR evidence.
+Real Chromium evidence from workflow run `35470286634` / source head `596e48cf43aa267b5a2781ac6e80b0acff228784` is retained in `docs/research/SMX-022-BROWSER-EVIDENCE.json` and artifact `10592053378` (SHA-256 `33b472b3f769376c68e3a7af05edc9c758832d8363a34319556826721c070d5d`). Chromium 140.0.7339.16 reported strict IndexedDB durability; explicit abort and page interruption both reopened the old coherent `r0` Asset revision; a completed transaction reopened coherent `r1`; interrupting OPFS before writer close left `r0`, while close published `r1`. The CI origin did not obtain persistent-storage status, confirming that browser persistence/quota is a fallible platform condition rather than a semantic guarantee.
+
+Timing/quota observations are environment-specific evidence, not product SLOs or universal browser guarantees.
 
 ### O-030 — SMX-024/025 own productionization below the selected physical boundary
 
