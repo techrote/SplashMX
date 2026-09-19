@@ -8,6 +8,7 @@ from model import (
     CanonicalLeak,
     CapabilityDenied,
     CreationPackage,
+    DuplicateIdentity,
     GenericPlayer,
     HEADLESS,
     IntegrityError,
@@ -110,6 +111,39 @@ class GodotBoundaryTests(unittest.TestCase):
         spec = package(required=frozenset({"host.gdextension"}))
         with self.assertRaises(CapabilityDenied):
             self.player.load(spec, NATIVE, asset_payloads=PAYLOADS)
+
+    def test_optional_host_escape_request_is_not_silently_tolerated(self) -> None:
+        spec = package(optional=frozenset({"host.javascript_bridge"}))
+        with self.assertRaises(CapabilityDenied):
+            self.player.load(spec, WEB, asset_payloads=PAYLOADS)
+
+    def test_duplicate_thing_identity_fails_before_dict_collapse(self) -> None:
+        base = package()
+        duplicate = CreationPackage(
+            revision_id=base.revision_id,
+            things=(base.things[0], base.things[0]),
+            assets=base.assets,
+            required_features=base.required_features,
+            optional_features=base.optional_features,
+            network_semantics=base.network_semantics,
+            metadata=base.metadata,
+        )
+        with self.assertRaises(DuplicateIdentity):
+            self.player.load(duplicate, NATIVE, asset_payloads=PAYLOADS)
+
+    def test_duplicate_asset_identity_fails_before_descriptor_overwrite(self) -> None:
+        base = package()
+        duplicate = CreationPackage(
+            revision_id=base.revision_id,
+            things=base.things,
+            assets=(base.assets[0], base.assets[0]),
+            required_features=base.required_features,
+            optional_features=base.optional_features,
+            network_semantics=base.network_semantics,
+            metadata=base.metadata,
+        )
+        with self.assertRaises(DuplicateIdentity):
+            self.player.load(duplicate, NATIVE, asset_payloads=PAYLOADS)
 
     def test_asset_integrity_is_checked_before_any_runtime_is_published(self) -> None:
         spec = package()
