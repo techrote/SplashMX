@@ -29,7 +29,8 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 23. `docs/research/SMX-009-GODOT-BOUNDARY.md` and companion fixtures — current Godot/web/headless substrate boundary, target-private binding rules, and source/audio/provenance preservation.
 24. `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md` and companion fixtures — runtime authority/replication/relevance/topology semantics and the concrete SMX-017 equivalence handoff.
 25. `docs/research/SMX-011-COLLABORATION-SEMANTICS.md` and companion fixtures — human-visible conflict semantics, causal semantic transactions, local-first reconciliation, undo/history, transient presence separation, and the concrete SMX-018 handoff.
-26. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+26. `docs/research/SMX-012-AUTHORING-MODEL.md` and companion fixtures — progressive-disclosure author vocabulary, Stage/Timeline/Rules/Components responsibilities, simple/advanced multiplayer projection, People/collaboration separation, protected media authoring, and concrete SMX-019 gates.
+27. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -45,11 +46,11 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Lifecycle/serialization/determinism | SMX-007 lifecycle/restore, H-008/H-010/H-018, LIF-001–LIF-018, plus SMX-004 scheduler state and SMX-005 authored/runtime/save/context planes | SMX-007 fixtures/experiment; SMX-015 destructive integration; C-002/C-006/C-012/C-024/C-025/A-002 |
 | Streaming/hot swap | SMX-008 streaming/migration, H-005/H-010/H-011/H-018, STR-001–STR-020, plus SMX-007 lifecycle and SMX-005 catalog/reference semantics | SMX-008 fixtures/experiment; SMX-015 destructive integration; C-006/C-011/C-012/C-015/C-024/C-025/C-026/C-027; A-006/A-012/A-015 |
 | Godot mapping/browser limits | SMX-009 Godot boundary, H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract | SMX-009 fixtures/experiment; current Godot 4.7 primary docs/source |
-| Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
-| Collaborative editing | SMX-011 collaboration semantics, Constitution P8, H-013/H-017/H-018, SMX-005 semantic transactions, SMX-003 definition/instance reconciliation, SMX-010 NET-019 separation | SMX-011 fixtures/experiment; SMX-018 destructive harness; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
-| Editor UX/progressive disclosure | P1–P3, H-016, scorecard S-01/S-16, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010 beginner multiplayer projection | SMX-012/019 outputs |
-| Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-004 capability/service/budget hooks, SMX-005 cross-document qualification/assets | SMX-013/016 outputs; C-011/C-022/C-026 |
-| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations | SMX-014/017/019 outputs; C-015/C-023 |
+| Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-012 authoring projection; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
+| Collaborative editing | SMX-011 collaboration semantics, Constitution P8, H-013/H-017/H-018, SMX-005 semantic transactions, SMX-003 definition/instance reconciliation, SMX-010 NET-019 separation | SMX-011 fixtures/experiment; SMX-012 People/conflict projection; SMX-018 destructive harness; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
+| Editor UX/progressive disclosure | SMX-012 authoring model, AUTH-001–AUTH-028, UX-001–UX-028, P1–P3, H-016, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010/011 network+collaboration semantics | SMX-012 experiment/fixtures; UXG-001–UXG-012; SMX-019 browser vertical slice |
+| Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-012 ordinary-group promotion, SMX-004 capability/service/budget hooks, SMX-005 cross-document qualification/assets | SMX-013/016 outputs; C-011/C-022/C-026 |
+| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations, SMX-012 Publish contract | SMX-014/017/019 outputs; C-015/C-023 |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
 ## SMX-001 baseline retrieval rules
@@ -287,7 +288,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
@@ -380,3 +381,30 @@ SMX-011 adds the durable authoring-conflict semantics that editor, migration, pa
 - Ink & Switch, *Convergence Is Not Enough* (2026): https://www.inkandswitch.com/essay/convergence-is-not-enough/
 
 These are comparison precedents, not selected dependencies. `COL-###` and `CF-###` are stable RAG identifier families for collaboration semantics and fixtures.
+
+## SMX-012 authoring-projection retrieval rules
+
+SMX-012 adds the author-facing projection that component, publishing, multiplayer, collaboration, and browser vertical-slice work must retrieve before designing UI around lower-level implementation concepts:
+
+- `docs/research/SMX-012-AUTHORING-MODEL.md` — the Things/Behaviours/Connections vocabulary, progressive disclosure levels, view responsibilities, multiplayer/collaboration split, diagnostics, protected media authoring, rejected metaphors, and the concrete SMX-019 handoff.
+- `docs/research/SMX-012-AUTHORING-FIXTURES.json` — `AUTH-001` through `AUTH-028`, `UX-001` through `UX-028`, and `UXG-001` through `UXG-012` machine-addressable authoring invariants, corpus walkthroughs, and browser vertical-slice gates.
+- `experiments/smx-012-authoring-model/` — non-normative progressive-disclosure/canonical-workspace model plus adversarial/boundary tests; it is not production editor architecture.
+- Durable candidate: **Stage, Timeline, Behaviours, Rules, Connections, Components, Together, People, Publish and Inspect are progressively disclosed views over one SplashMX semantic fabric, not independent ownership systems.**
+- Timeline is optional. It owns authored time-based values/cues; interaction may be primarily Behaviour/Rule/Connection-driven.
+- An ordinary group can become a reusable local definition while preserving the first concrete instance Thing identities; SMX-013 must extend this path rather than invent a package-only component class.
+- Beginner Rule and advanced Behaviour authoring target the same accepted execution semantics/IR and capability boundary.
+- Runtime multiplayer presets (`local only`, `one per player`, `shared`, `authority controlled`) are projections of the same control/authority/replication/relevance declaration exposed by Advanced. Peer/session/transport/RPC details remain below the author contract.
+- People/presence/history/conflicts are collaborative-editing semantics and remain visibly separate from runtime Together controls. Presence stays transient.
+- Import/replacement preserves stable `AssetId` and the complete digest/source/audio/provenance revision bundle atomically; no authoring operation may synthesize mixed provenance.
+- Ordinary diagnostics use SplashMX author vocabulary; requiring engine, schema, package-manager, transport or build-system concepts in the core workflow is an architectural leak.
+- SMX-019 must execute all `UXG-###` gates and measure real discoverability/interaction friction rather than treating a cosmetically friendly mock-up as proof.
+
+### SMX-012 creative-tool comparison anchors — checked 2026-09-19
+
+- Adobe Animate time/Timeline: https://helpx.adobe.com/animate/desktop/using/time.html
+- Adobe Animate symbols/instances: https://helpx.adobe.com/animate/desktop/multimedia-and-video/symbols.html
+- Construct 3 events: https://www.construct.net/en/make-games/manuals/construct-3/project-primitives/events/how-events-work
+- Construct 3 families: https://www.construct.net/en/make-games/manuals/construct-3/project-primitives/objects/families
+- GameMaker object events: https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Reference/Asset_Management/Objects/Object_Events/Generating_Object_Events.htm
+
+These are interaction precedents, not selected runtime/public-model dependencies. `AUTH-###`, `UX-###`, and `UXG-###` are stable RAG identifier families for authoring projection and vertical-slice acceptance.
