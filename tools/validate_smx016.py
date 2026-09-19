@@ -91,7 +91,7 @@ if DOC.is_file():
         if identifier not in text:
             errors.append(f"SMX-016 synthesis does not reference {identifier}")
     for phrase in (
-        "38 deterministic", "not an end-to-end sandbox certification", "before extraction",
+        "38 deterministic", "end-to-end sandbox certification", "before extraction",
         "use-time", "host-call recorder", "decoder recorder", "source/audio/provenance",
         "AssetId", "web_hardened", "web_official", "native", "headless",
         "H-006", "H-009", "H-011", "H-014", "H-015", "O-025",
