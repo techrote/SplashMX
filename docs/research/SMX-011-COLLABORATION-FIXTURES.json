@@ -1,0 +1,221 @@
+{
+  "schema": "splashmx-smx011-collaboration-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "issue": "SMX-011",
+  "established": "2026-09-19",
+  "boundary_invariants": [
+    "COL-001",
+    "COL-002",
+    "COL-003",
+    "COL-004",
+    "COL-005",
+    "COL-006",
+    "COL-007",
+    "COL-008",
+    "COL-009",
+    "COL-010",
+    "COL-011",
+    "COL-012",
+    "COL-013",
+    "COL-014",
+    "COL-015",
+    "COL-016",
+    "COL-017",
+    "COL-018",
+    "COL-019",
+    "COL-020",
+    "COL-021",
+    "COL-022",
+    "COL-023",
+    "COL-024"
+  ],
+  "direct_case_coverage": [
+    "C-008",
+    "C-012",
+    "C-013",
+    "C-016",
+    "C-017",
+    "C-018",
+    "C-019",
+    "C-022",
+    "C-023",
+    "C-026",
+    "C-027"
+  ],
+  "direct_adversarial_coverage": [
+    "A-002",
+    "A-007",
+    "A-008",
+    "A-010"
+  ],
+  "fixtures": [
+    {
+      "id": "CF-001",
+      "cases": ["C-019"],
+      "expected": ["COL-003", "COL-013", "COL-024"],
+      "question": "Independent property edits merge regardless of receipt order."
+    },
+    {
+      "id": "CF-002",
+      "cases": ["C-016"],
+      "expected": ["COL-002", "COL-004", "COL-023"],
+      "question": "Concurrent same-property writes retain both proposals and prior coherent canonical value."
+    },
+    {
+      "id": "CF-003",
+      "cases": ["C-016", "A-007"],
+      "expected": ["COL-005", "COL-023"],
+      "question": "Delete/edit uses tombstone remove-wins without resurrection."
+    },
+    {
+      "id": "CF-004",
+      "cases": ["C-017"],
+      "expected": ["COL-006", "COL-023"],
+      "question": "Concurrent reparent proposals preserve prior legal parent until resolution."
+    },
+    {
+      "id": "CF-005",
+      "cases": ["C-018"],
+      "expected": ["COL-003", "COL-007"],
+      "question": "Compatible definition edit and instance overlay both survive."
+    },
+    {
+      "id": "CF-006",
+      "cases": ["C-018", "A-008"],
+      "expected": ["COL-007", "COL-023"],
+      "question": "Definition removal versus overlay is explicit conflict and atomic."
+    },
+    {
+      "id": "CF-007",
+      "cases": ["C-017", "C-027"],
+      "expected": ["COL-003", "COL-008"],
+      "question": "Reparent plus connection through stable port merges."
+    },
+    {
+      "id": "CF-008",
+      "cases": ["C-017", "C-027"],
+      "expected": ["COL-008", "COL-023"],
+      "question": "Port removal versus concurrent connection is protected structural conflict."
+    },
+    {
+      "id": "CF-009",
+      "cases": ["C-008", "C-019"],
+      "expected": ["COL-003", "COL-009"],
+      "question": "Independent keyframes merge."
+    },
+    {
+      "id": "CF-010",
+      "cases": ["C-008", "C-019"],
+      "expected": ["COL-009", "COL-023"],
+      "question": "Overlapping keyframe locus creates explicit conflict."
+    },
+    {
+      "id": "CF-011",
+      "cases": ["C-017"],
+      "expected": ["COL-006", "COL-010", "COL-023"],
+      "question": "Overlapping grouping commands remain atomic and conflict."
+    },
+    {
+      "id": "CF-012",
+      "cases": ["C-018", "C-026"],
+      "expected": ["COL-003", "COL-011"],
+      "question": "Compatible component update preserves local overlay."
+    },
+    {
+      "id": "CF-013",
+      "cases": ["C-018", "C-026", "A-008"],
+      "expected": ["COL-011", "COL-023"],
+      "question": "Incompatible component update is held while valid local edit survives."
+    },
+    {
+      "id": "CF-014",
+      "cases": ["C-027", "A-007"],
+      "expected": ["COL-012", "COL-023"],
+      "question": "Connection removal prevents same-ID recreate resurrection."
+    },
+    {
+      "id": "CF-015",
+      "cases": ["C-019"],
+      "expected": ["COL-013", "COL-014", "COL-024"],
+      "question": "Disconnected replicas exchange changes and converge after reunion."
+    },
+    {
+      "id": "CF-016",
+      "cases": ["C-008"],
+      "expected": ["COL-003", "COL-022"],
+      "question": "Asset rename and replacement merge while AssetId and full revision bundle are preserved."
+    },
+    {
+      "id": "CF-017",
+      "cases": ["C-008"],
+      "expected": ["COL-004", "COL-022", "COL-023"],
+      "question": "Concurrent asset replacements conflict as whole source/audio/provenance bundles."
+    },
+    {
+      "id": "CF-018",
+      "cases": ["C-019"],
+      "expected": ["COL-014", "COL-015"],
+      "question": "Selective undo is a compensating transaction and preserves remote work."
+    },
+    {
+      "id": "CF-019",
+      "cases": ["C-019"],
+      "expected": ["COL-015", "COL-023"],
+      "question": "Undo precondition failure cannot clobber later edit."
+    },
+    {
+      "id": "CF-020",
+      "cases": ["C-019", "C-022"],
+      "expected": ["COL-016"],
+      "question": "Offline edit authored under stale permission epoch is rejected from shared materialization but retained in history."
+    },
+    {
+      "id": "CF-021",
+      "cases": ["C-019"],
+      "expected": ["COL-017"],
+      "question": "Presence/cursor/selection stay outside persisted canonical and collaboration state."
+    },
+    {
+      "id": "CF-022",
+      "cases": ["C-013", "C-019"],
+      "expected": ["COL-020", "COL-021"],
+      "question": "Runtime multiplayer operations/peer identifiers are rejected as collaboration transactions."
+    },
+    {
+      "id": "CF-023",
+      "cases": ["C-019"],
+      "expected": ["COL-013", "COL-014"],
+      "question": "Identical transaction replay is idempotent; same ID with different payload is rejected."
+    },
+    {
+      "id": "CF-024",
+      "cases": ["C-012", "C-019", "A-002"],
+      "expected": ["COL-019"],
+      "question": "Known-unloaded target leaves edit pending until semantic target is available."
+    },
+    {
+      "id": "CF-025",
+      "cases": ["C-016", "A-002", "A-007"],
+      "expected": ["COL-005", "COL-019"],
+      "question": "Tombstoned target rejects late edit without resurrection."
+    },
+    {
+      "id": "CF-026",
+      "cases": ["C-019", "C-023", "A-010"],
+      "expected": ["COL-018"],
+      "question": "Schema-mismatched operation is quarantined for migration rather than guessed."
+    },
+    {
+      "id": "CF-027",
+      "cases": ["C-016", "C-019"],
+      "expected": ["COL-004", "COL-014", "COL-023"],
+      "question": "Explicit resolution transaction causally supersedes held proposals without rewriting history."
+    },
+    {
+      "id": "CF-028",
+      "cases": ["C-016", "C-019"],
+      "expected": ["COL-003", "COL-004", "COL-024"],
+      "question": "All arrival permutations produce same canonical and conflict snapshot."
+    }
+  ]
+}
