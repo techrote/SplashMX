@@ -26,6 +26,10 @@ class CapabilityDenied(BoundaryError):
     pass
 
 
+class DuplicateIdentity(BoundaryError):
+    pass
+
+
 FORBIDDEN_CANONICAL_KEYS = frozenset(
     {
         "node_path",
@@ -266,7 +270,16 @@ class GenericPlayer:
         # Validate the complete canonical shape before any substrate object is bound.
         canonical_digest = package.digest
 
-        forbidden = sorted(package.required_features & FORBIDDEN_ORDINARY_CONTENT_FEATURES)
+        thing_ids = [record.thing_id for record in package.things]
+        if len(thing_ids) != len(set(thing_ids)):
+            raise DuplicateIdentity("duplicate ThingId in canonical package")
+
+        asset_ids = [descriptor.asset_id for descriptor in package.assets]
+        if len(asset_ids) != len(set(asset_ids)):
+            raise DuplicateIdentity("duplicate AssetId in canonical package")
+
+        requested_features = package.required_features | package.optional_features
+        forbidden = sorted(requested_features & FORBIDDEN_ORDINARY_CONTENT_FEATURES)
         if forbidden:
             raise CapabilityDenied(
                 "ordinary content requested permanently forbidden host feature(s): "
