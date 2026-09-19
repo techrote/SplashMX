@@ -38,6 +38,13 @@
             "OH-017",
             "OH-018"
           ]
+        },
+        {
+          "path": "docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md",
+          "anchors": [
+            "deterministic CBOR",
+            "protected `AssetId`"
+          ]
         }
       ],
       "owner_modules": [
@@ -48,7 +55,9 @@
       ],
       "current_tests": [
         "tools/validate_smx020.py",
-        "experiments/smx-020-architecture-freeze/test_architecture_freeze.py"
+        "experiments/smx-020-architecture-freeze/test_architecture_freeze.py",
+        "tools/validate_smx022.py",
+        "experiments/smx-022-storage-spike/test_spike.py"
       ],
       "future_issue_codes": [
         "SMX-023",
@@ -364,6 +373,13 @@
           "anchors": [
             "schema"
           ]
+        },
+        {
+          "path": "docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md",
+          "anchors": [
+            "migration",
+            "previous coherent head"
+          ]
         }
       ],
       "owner_modules": [
@@ -379,7 +395,9 @@
         "tools/validate_smx005.py",
         "tools/validate_smx007.py",
         "tools/validate_smx014.py",
-        "tools/validate_smx018.py"
+        "tools/validate_smx018.py",
+        "tools/validate_smx022.py",
+        "experiments/smx-022-storage-spike/test_spike.py"
       ],
       "future_issue_codes": [
         "SMX-024",
