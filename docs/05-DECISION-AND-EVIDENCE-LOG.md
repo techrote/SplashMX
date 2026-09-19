@@ -1,7 +1,7 @@
 # SplashMX decision and evidence log — post Architecture v1.0
 
 **Status:** active post-freeze register from 2026-09-19.  
-**Exact pre-freeze decision/evidence chronology:** `docs/history/pre-v1/05-DECISION-AND-EVIDENCE-LOG-pre-v1.md`  
+**Exact pre-freeze decision/evidence chronology:** `docs/05-DECISION-AND-EVIDENCE-LOG.pre-v1.md`  
 **Frozen architecture:** `docs/architecture/ARCHITECTURE-V1.md`  
 **Machine-readable reconciliation:** `docs/architecture/ARCHITECTURE-V1-AUDIT.json`
 
@@ -122,6 +122,6 @@ Owner/order: `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md`. A later spike tha
 
 ## Historical decision/evidence retrieval
 
-Use `docs/history/pre-v1/05-DECISION-AND-EVIDENCE-LOG-pre-v1.md` for D-001 through D-116, E-001 through E-087, O-001 through O-028 and their exact dates/sources/wording. Those records are intentionally historical and must not be edited to make the final architecture appear predetermined.
+Use `docs/05-DECISION-AND-EVIDENCE-LOG.pre-v1.md` for D-001 through D-116, E-001 through E-087, O-001 through O-028 and their exact dates/sources/wording. Those records are intentionally historical and must not be edited to make the final architecture appear predetermined.
 
 The post-freeze RAG index maps current domains to the relevant retained research evidence. New decisions/evidence/open questions should continue numbering from this file rather than rewriting the archived pre-v1 chronology.
