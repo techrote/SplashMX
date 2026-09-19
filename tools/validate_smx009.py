@@ -111,7 +111,7 @@ if fixture_data:
             "SplashMX owns",
             "Godot supplies",
             "Godot 4.7.2",
-            "audio/source/provenance",
+            "source/audio/provenance",
             "javascript_eval=no",
         )
         for phrase in required_phrases:
