@@ -280,6 +280,7 @@ class RuntimeSession:
         thing = self.things[thing_id]
         thing.authority_principal = new_authority
         thing.authority_epoch += 1
+        self._purge_stale_pending(thing_id, thing.authority_epoch)
         return thing.authority_epoch
 
     def reparent(self, thing_id: str, new_parent: str | None) -> None:
@@ -366,6 +367,7 @@ class RuntimeSession:
             raise ReplayRejected("duplicate or stale state sequence")
         if thing.residency != "resident":
             self._queue_unloaded(update.thing_id, update)
+            self.last_state_sequence[key] = update.sequence
             return
         self.last_state_sequence[key] = update.sequence
         thing.state[update.field] = update.value
@@ -395,6 +397,7 @@ class RuntimeSession:
             if thing.authority_principal == old_host:
                 thing.authority_principal = new_host
                 thing.authority_epoch += 1
+                self._purge_stale_pending(thing.thing_id, thing.authority_epoch)
 
     def semantic_snapshot(self) -> dict[str, Any]:
         return {
@@ -413,9 +416,10 @@ class RuntimeSession:
 
     def _queue_unloaded(self, thing_id: str, message: StateUpdate | EventMessage) -> None:
         queue = self.pending_for_unloaded.setdefault(thing_id, [])
-        if len(queue) >= self.max_pending_per_thing:
-            raise QueueBudgetExceeded("pending network delivery budget exceeded")
         if isinstance(message, StateUpdate):
+            # Latest-state semantics supersede the prior queued value before capacity is
+            # evaluated, so a one-slot budget can still accept arbitrarily newer samples
+            # of the same state locus without becoming an accidental denial of service.
             queue[:] = [
                 item
                 for item in queue
@@ -425,7 +429,17 @@ class RuntimeSession:
                     and item.authority_epoch == message.authority_epoch
                 )
             ]
+        if len(queue) >= self.max_pending_per_thing:
+            raise QueueBudgetExceeded("pending network delivery budget exceeded")
         queue.append(message)
+
+    def _purge_stale_pending(self, thing_id: str, authority_epoch: int) -> None:
+        queue = self.pending_for_unloaded.get(thing_id)
+        if queue is None:
+            return
+        queue[:] = [item for item in queue if item.authority_epoch == authority_epoch]
+        if not queue:
+            self.pending_for_unloaded.pop(thing_id, None)
 
     def _present(self, thing_id: str) -> RuntimeThing:
         try:
