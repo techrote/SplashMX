@@ -1,0 +1,63 @@
+name: SMX-022 physical encoding/store evidence
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-spike:
+    name: Native encoding, sharding and recovery evidence
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Validate SMX-022 durable spike contracts
+        run: python tools/validate_smx022.py
+      - name: Run deterministic SMX-022 spike tests
+        run: python -m unittest discover -s experiments/smx-022-storage-spike -p 'test_spike.py' -v
+      - name: Re-run comparative native evidence
+        run: |
+          mkdir -p artifacts
+          python experiments/smx-022-storage-spike/spike.py --output artifacts/smx022-native-results.json
+          cat artifacts/smx022-native-results.json
+      - name: Upload native comparative evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx022-native-evidence
+          path: artifacts/smx022-native-results.json
+          retention-days: 30
+
+  browser-persistence:
+    name: Real Chromium persistence interruption campaign
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned browser harness
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Run real Chromium IndexedDB/OPFS campaign
+        run: node experiments/smx-022-storage-spike/browser_harness.mjs
+      - name: Print browser evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx022-browser-results.json ]; then
+            cat artifacts/smx022-browser-results.json
+          fi
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx022-browser-evidence
+          path: artifacts/smx022-browser-results.json
+          if-no-files-found: warn
+          retention-days: 30
