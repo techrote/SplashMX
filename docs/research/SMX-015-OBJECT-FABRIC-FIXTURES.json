@@ -1,0 +1,54 @@
+{
+  "schema": "splashmx-smx015-object-fabric-fixtures-v1",
+  "issue": "SMX-015",
+  "status": "non-normative-research-fixtures",
+  "boundary_invariants": ["OF-001","OF-002","OF-003","OF-004","OF-005","OF-006","OF-007","OF-008","OF-009","OF-010","OF-011","OF-012","OF-013","OF-014","OF-015","OF-016","OF-017","OF-018","OF-019","OF-020","OF-021","OF-022","OF-023","OF-024","OF-025","OF-026","OF-027","OF-028","OF-029","OF-030"],
+  "required_experiments": [
+    "P0-universal-kernel",
+    "P1-hot-behaviour-replacement",
+    "P2-nested-composition-local-definitions",
+    "P3-exact-serialize-restore",
+    "P4-stream-arbitrary-subgraphs"
+  ],
+  "required_acceptance_cases": [
+    "materially-different-corpus-objects",
+    "identity-and-independent-relationships",
+    "hot-swap-state-and-pending-work",
+    "nested-definition-instance-and-public-interface",
+    "fresh-runtime-restore",
+    "unloaded-reference-versus-destruction",
+    "failed-dependency-atomicity",
+    "protected-source-audio-provenance",
+    "non-normative-scope-and-failure-classification"
+  ],
+  "fixtures": [
+    {"id":"OH-001","cases":["C-001","C-003","C-004","C-005","C-009","C-015"],"expected":["OF-001","OF-002"],"purpose":"P0 cross-domain universal Thing kernel"},
+    {"id":"OH-002","cases":["C-007","C-021","A-001","A-016"],"expected":["OF-003","OF-004"],"purpose":"P0 independent relationships and reparenting"},
+    {"id":"OH-003","cases":["A-002"],"expected":["OF-002","OF-019"],"purpose":"P0 identity reuse and tombstone boundary"},
+    {"id":"OH-004","cases":["C-002","C-011"],"expected":["OF-005","OF-006"],"purpose":"P2 ordinary group to definition/instance promotion"},
+    {"id":"OH-005","cases":["C-011","C-027"],"expected":["OF-007","OF-008"],"purpose":"P2 stable public exposure through restructure"},
+    {"id":"OH-006","cases":["C-018","A-008"],"expected":["OF-008","OF-009"],"purpose":"P2 structural override/update conflict rollback"},
+    {"id":"OH-007","cases":["C-025"],"expected":["OF-010","OF-011"],"purpose":"P1 same-schema hot replacement"},
+    {"id":"OH-008","cases":["C-024","C-025","A-006"],"expected":["OF-011","OF-012","OF-014"],"purpose":"P1 incompatible state and pending continuation rollback"},
+    {"id":"OH-009","cases":["C-026","A-012"],"expected":["OF-013","OF-014"],"purpose":"P1 replacement dependency validation before commit"},
+    {"id":"OH-010","cases":["C-024","A-014"],"expected":["OF-015","OF-016","OF-017"],"purpose":"P3 fresh-runtime semantic restore without hidden live objects"},
+    {"id":"OH-011","cases":["C-023","A-010","A-013"],"expected":["OF-018","OF-029"],"purpose":"P3 compatibility failure before resident publication"},
+    {"id":"OH-012","cases":["C-006","C-012","A-002"],"expected":["OF-019","OF-020"],"purpose":"P4 inventory key retains reference to unloaded/destroyed door"},
+    {"id":"OH-013","cases":["C-012","C-027"],"expected":["OF-020","OF-021"],"purpose":"P4 selective subgraph reload without containment region"},
+    {"id":"OH-014","cases":["C-026","A-012"],"expected":["OF-021","OF-022"],"purpose":"P4 missing/corrupt dependency atomicity"},
+    {"id":"OH-015","cases":["C-025","C-026","A-006"],"expected":["OF-013","OF-023"],"purpose":"P4 unloaded compatible behavior migration and rehydrate"},
+    {"id":"OH-016","cases":["C-022","A-003","A-015"],"expected":["OF-017","OF-024"],"purpose":"cross-cutting transient capability/context non-persistence"},
+    {"id":"OH-017","cases":["C-004","C-008","C-011"],"expected":["OF-025","OF-026"],"purpose":"cross-cutting complete protected audio/media revision"},
+    {"id":"OH-018","cases":["C-008","C-012"],"expected":["OF-025","OF-027"],"purpose":"cross-cutting protected media snapshot/stream preservation"},
+    {"id":"OH-019","cases":["C-010","A-013","A-014"],"expected":["OF-015","OF-028","OF-029"],"purpose":"substrate identity exclusion and non-production boundary"},
+    {"id":"OH-020","cases":["C-028","A-004","A-005"],"expected":["OF-029","OF-030"],"purpose":"explicit scope: P0-P4 semantic falsification, not security/performance proof"}
+  ],
+  "downstream_handoffs": {
+    "SMX-016": "security attack surface and capability/resource budgets remain hostile-harness work",
+    "SMX-017": "network topology equivalence uses the now-integrated object/lifecycle/streaming semantics",
+    "SMX-018": "collaboration harness may rely on stable Thing/definition/instance/document loci but not this runtime model",
+    "SMX-019": "real Godot/browser object cost, simple editor/player workflow, storage and generic-player integration remain required",
+    "SMX-020": "use P0-P4 evidence and explicit residual risks when freezing Architecture v1.0"
+  },
+  "notes": "OH fixtures are machine-addressable falsification obligations. The Python harness is disposable and does not freeze production encoding or implementation."
+}
