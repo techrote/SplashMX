@@ -1,0 +1,688 @@
+{
+  "schema": "splashmx-smx022-native-evidence-v1",
+  "captured_at_utc": "2026-09-19T21:10:50Z",
+  "benchmark_evidence": [
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:encoding:tiny:canonical_json",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.encoding.tiny.canonical_json",
+        "description": "tiny authored project canonical JSON encode/decode"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "encoded_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 5983
+        },
+        {
+          "name": "encode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.059894
+        },
+        {
+          "name": "decode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.027429
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:encoding:tiny:deterministic_cbor",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.encoding.tiny.deterministic_cbor",
+        "description": "tiny authored project deterministic CBOR oracle encode/decode"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "encoded_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 4807
+        },
+        {
+          "name": "encode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.275122
+        },
+        {
+          "name": "decode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.297859
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:encoding:nested:canonical_json",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.encoding.nested.canonical_json",
+        "description": "nested authored graph canonical JSON encode/decode"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "encoded_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 54449
+        },
+        {
+          "name": "encode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.477212
+        },
+        {
+          "name": "decode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.25507
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:encoding:nested:deterministic_cbor",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.encoding.nested.deterministic_cbor",
+        "description": "nested authored graph deterministic CBOR oracle encode/decode"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "encoded_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 44108
+        },
+        {
+          "name": "encode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 2.391902
+        },
+        {
+          "name": "decode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 2.590694
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:encoding:many:canonical_json",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.encoding.many.canonical_json",
+        "description": "1500 Things + 3000 Connections canonical JSON encode/decode"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "encoded_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 1050729
+        },
+        {
+          "name": "encode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 9.111572
+        },
+        {
+          "name": "decode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 5.516344
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:encoding:many:deterministic_cbor",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.encoding.many.deterministic_cbor",
+        "description": "1500 Things + 3000 Connections deterministic CBOR oracle encode/decode"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "encoded_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 858578
+        },
+        {
+          "name": "encode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 45.027876
+        },
+        {
+          "name": "decode_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 49.622928
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:chunking:16384",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.chunking.16384",
+        "description": "many-record project single-record edit with 16 KiB shard target"
+      },
+      "sample_count": 30,
+      "metrics": [
+        {
+          "name": "chunk_count",
+          "unit": "count",
+          "statistic": "single",
+          "value": 128
+        },
+        {
+          "name": "root_manifest_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 11937
+        },
+        {
+          "name": "changed_chunk_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 9366
+        },
+        {
+          "name": "write_amplification",
+          "unit": "ratio",
+          "statistic": "single",
+          "value": 89.5084
+        },
+        {
+          "name": "partial_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.058115
+        },
+        {
+          "name": "monolithic_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 49.1467765
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:chunking:32768",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.chunking.32768",
+        "description": "many-record project single-record edit with 32 KiB shard target"
+      },
+      "sample_count": 30,
+      "metrics": [
+        {
+          "name": "chunk_count",
+          "unit": "count",
+          "statistic": "single",
+          "value": 64
+        },
+        {
+          "name": "root_manifest_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 5985
+        },
+        {
+          "name": "changed_chunk_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 16809
+        },
+        {
+          "name": "write_amplification",
+          "unit": "ratio",
+          "statistic": "single",
+          "value": 95.7731
+        },
+        {
+          "name": "partial_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.068147
+        },
+        {
+          "name": "monolithic_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 48.385313
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:chunking:65536",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.chunking.65536",
+        "description": "many-record project single-record edit with 64 KiB shard target"
+      },
+      "sample_count": 30,
+      "metrics": [
+        {
+          "name": "chunk_count",
+          "unit": "count",
+          "statistic": "single",
+          "value": 32
+        },
+        {
+          "name": "root_manifest_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 3009
+        },
+        {
+          "name": "changed_chunk_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 33672
+        },
+        {
+          "name": "write_amplification",
+          "unit": "ratio",
+          "statistic": "single",
+          "value": 154.1218
+        },
+        {
+          "name": "partial_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.0901505
+        },
+        {
+          "name": "monolithic_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 48.3270535
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:chunking:262144",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.chunking.262144",
+        "description": "many-record project single-record edit with 256 KiB shard target"
+      },
+      "sample_count": 30,
+      "metrics": [
+        {
+          "name": "chunk_count",
+          "unit": "count",
+          "statistic": "single",
+          "value": 8
+        },
+        {
+          "name": "root_manifest_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 808
+        },
+        {
+          "name": "changed_chunk_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 132908
+        },
+        {
+          "name": "write_amplification",
+          "unit": "ratio",
+          "statistic": "single",
+          "value": 561.8319
+        },
+        {
+          "name": "partial_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.2395145
+        },
+        {
+          "name": "monolithic_read_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 49.0116135
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:persistence:sqlite_wal_full",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.persistence.sqlite_wal_full",
+        "description": "SQLite WAL synchronous FULL, including abrupt pre/post publication recovery"
+      },
+      "sample_count": 12,
+      "metrics": [
+        {
+          "name": "commit_ms_median",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.0189115
+        },
+        {
+          "name": "commit_ms_p95",
+          "unit": "ms",
+          "statistic": "p95",
+          "value": 0.022021
+        },
+        {
+          "name": "db_bytes_initial",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 106496
+        },
+        {
+          "name": "wal_bytes_after_samples",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 197792
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:persistence:sqlite_delete_full",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.persistence.sqlite_delete_full",
+        "description": "SQLite rollback journal synchronous FULL, including abrupt pre/post publication recovery"
+      },
+      "sample_count": 12,
+      "metrics": [
+        {
+          "name": "commit_ms_median",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.049787
+        },
+        {
+          "name": "commit_ms_p95",
+          "unit": "ms",
+          "statistic": "p95",
+          "value": 0.061635
+        },
+        {
+          "name": "db_bytes_initial",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 106496
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:persistence:atomic_revision_files",
+      "captured_at_utc": "2026-09-19T21:10:50Z",
+      "target_profile": "native",
+      "runtime": {
+        "name": "CPython",
+        "version": "3.13.5",
+        "build_id": "main"
+      },
+      "environment": {
+        "os": "Linux 6.18.44",
+        "arch": "x86_64",
+        "hardware": {
+          "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+          "gpu": "none",
+          "memory_bytes": 6236913664
+        }
+      },
+      "workload": {
+        "id": "smx022.persistence.atomic_revision_files",
+        "description": "fsync + immutable revision file + atomic HEAD replacement"
+      },
+      "sample_count": 8,
+      "metrics": [
+        {
+          "name": "bytes_written_per_commit",
+          "unit": "bytes",
+          "statistic": "median",
+          "value": 44110
+        },
+        {
+          "name": "commit_ms_median",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 2.678146
+        },
+        {
+          "name": "commit_ms_p95",
+          "unit": "ms",
+          "statistic": "p95",
+          "value": 2.898686
+        }
+      ]
+    }
+  ],
+  "recovery_assertions": {
+    "sqlite_wal_full": {
+      "crash_before_commit_head": "r0",
+      "abrupt_after_commit_head": "r1"
+    },
+    "sqlite_delete_full": {
+      "crash_before_commit_head": "r0",
+      "abrupt_after_commit_head": "r1"
+    },
+    "atomic_revision_files": {
+      "crash_before_head": "r0",
+      "abrupt_after_head": "r1"
+    }
+  },
+  "interpretation": [
+    "Latency values are environment-specific observations, not product thresholds.",
+    "The pure-Python CBOR codec is a deterministic oracle, not a production performance implementation.",
+    "Recovery assertions and upstream SQLite guarantees carry more selection weight than container latency."
+  ]
+}

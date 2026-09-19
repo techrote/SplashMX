@@ -39,6 +39,7 @@ Disposable experiment implementations are not production architecture by inertia
 | Composition / definitions / overrides | `SMX-003-COMPOSITION-DEFINITIONS.md`, SMX-015, SMX-018 | group-as-Thing, stable definition loci, overlays, R-018-01 |
 | Behaviour / IR / hot swap | `SMX-004-BEHAVIOUR-EXECUTION.md`, `SMX-008-STREAMING-MIGRATION.md`, SMX-015/016 | bounded turns, common IR, transactional replacement, hostile budgets |
 | Canonical document / identity / migration | `SMX-005-CANONICAL-DOCUMENT.md`, SMX-007/008/015 | path-independent IDs, typed record graph, full-result validation, migrations |
+| Canonical physical encoding / local persistence | `SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`, `SMX-022-BROWSER-EVIDENCE.json` | deterministic CBOR profile; stable-ID hash shards; IndexedDB/OPFS browser split; SQLite WAL/FULL native recovery; SMX-024/025 handoff |
 | Security / capabilities | `SMX-006-CAPABILITY-SANDBOX.md`, `SMX-016-SECURITY-HARNESS.md` | ADV/AT fixtures, R-016-01..04, O-025 residual physical isolation |
 | Lifecycle / restore | `SMX-007-LIFECYCLE-RESTORE.md`, SMX-015 | authored/runtime/save/context split, pending work, fresh-runtime restore |
 | Streaming / exact acquisition | `SMX-008-STREAMING-MIGRATION.md`, SMX-013/015 | object-centric logical residency, exact descriptors/locks, rollback |

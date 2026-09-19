@@ -120,6 +120,34 @@ Architecture v1 does not pretend that research prototypes are production impleme
 
 Owner/order: `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md`. A later spike that discovers a semantic contradiction must amend Architecture v1 through an explicit ADR plus regression; selecting an implementation beneath the frozen boundary does not itself reopen the architecture.
 
+## SMX-022 physical representation/store selection register
+
+### D-124 — SMX-022 selects deterministic CBOR, stable-ID shards and target-specific transactional local stores
+
+**Status:** DECISION / production mechanism selection beneath Architecture v1.
+
+Canonical record/revision bytes use a SplashMX-owned deterministic-CBOR profile. Partial access uses bounded stable-semantic-ID hash shards with local indexes and a small immutable root manifest; physical shard/offset/database placement remains non-semantic. Browser editable-project ownership uses one IndexedDB revision/head transaction with prepared OPFS immutable blobs/chunks. Native editable-project ownership uses SQLite WAL with synchronous=FULL plus prepared immutable blob/chunk files. Rollback-journal FULL remains a compatible native fallback.
+
+The selected mechanisms preserve whole-result validation-before-publication, previous-head rollback, known-unloaded references, protected Asset revision atomicity, replaceable cache/chunk placement and future semantic collaboration/history loci. No canonical/core/storage production module is activated by this spike.
+
+**Evidence:** `docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`; RFC 8949; Protocol Buffers canonical-serialization warning; SQLite atomic-commit/durability documentation; current IndexedDB/OPFS/Storage API evidence.
+
+### E-089 — SMX-022 comparative native and real-browser mechanism evidence is reproducible
+
+**Status:** REPRODUCIBLE SPIKE EVIDENCE, 2026-09-19.
+
+The disposable SMX-022 harness compares canonical JSON and deterministic CBOR across tiny/nested/many fixtures, bounded shard policies across a 1,500-Thing/3,000-Connection project, and abrupt native publication recovery. Deterministic CBOR was 18–20% smaller than the canonical JSON projection in the captured fixtures. Stable-ID sharding made a direct partial read orders of magnitude cheaper than monolithic decode in the disposable oracle and falsified a 256 KiB default because tiny-edit write amplification rose to about 562x. SQLite WAL/FULL, rollback/FULL and careful atomic revision files all reopened coherently at the previous head before commit and the new head after completed publication.
+
+Real Chromium evidence from workflow run `35470286634` / source head `596e48cf43aa267b5a2781ac6e80b0acff228784` is retained in `docs/research/SMX-022-BROWSER-EVIDENCE.json` and artifact `10592053378` (SHA-256 `33b472b3f769376c68e3a7af05edc9c758832d8363a34319556826721c070d5d`). Chromium 140.0.7339.16 reported strict IndexedDB durability; explicit abort and page interruption both reopened the old coherent `r0` Asset revision; a completed transaction reopened coherent `r1`; interrupting OPFS before writer close left `r0`, while close published `r1`. The CI origin did not obtain persistent-storage status, confirming that browser persistence/quota is a fallible platform condition rather than a semantic guarantee.
+
+Timing/quota observations are environment-specific evidence, not product SLOs or universal browser guarantees.
+
+### O-030 — SMX-024/025 own productionization below the selected physical boundary
+
+**Status:** OPEN implementation detail, not a renewed broad mechanism-selection question.
+
+SMX-024 owns the production deterministic-CBOR implementation, exact record/schema layout, bounded parser, golden bytes, shard-policy identifier, migration fixtures and protected Asset serialization. SMX-025 owns IndexedDB/OPFS and SQLite adapters, typed quota/denial/corruption failures, reopen/interruption recovery, orphan GC, backup/export behavior, checkpoint/GC cadence and tuning. Neither may turn database rows, paths, DOM/FileSystem handles, cache keys, byte offsets or shard placement into canonical identity.
+
 ## Historical late-campaign regression anchors
 
 These compact anchors retain exact marker strings consumed by already-merged SMX-015/016/018/019 validators. They point to the byte-identical pre-v1 log for full text and do not re-open or duplicate the frozen decisions above.
