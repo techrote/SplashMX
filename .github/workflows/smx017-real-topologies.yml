@@ -20,7 +20,7 @@ jobs:
       image: barichello/godot-ci:4.7.2
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Install exact export templates from image
         shell: bash
         run: |
@@ -43,7 +43,7 @@ jobs:
           test -s "$GITHUB_WORKSPACE/build/web/index.html"
           test -s "$GITHUB_WORKSPACE/build/linux/smx017.x86_64"
       - name: Upload runtime exports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smx017-runtime-exports
           path: build
@@ -57,14 +57,14 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Download runtime exports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: smx017-runtime-exports
           path: build
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22.19.0'
       - name: Install pinned browser harness dependencies
@@ -83,7 +83,7 @@ jobs:
           fi
       - name: Upload measured topology evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smx017-topology-evidence
           path: artifacts
