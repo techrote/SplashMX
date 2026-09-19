@@ -32,7 +32,8 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 26. `docs/research/SMX-012-AUTHORING-MODEL.md` and companion fixtures — progressive-disclosure author vocabulary, Stage/Timeline/Rules/Components responsibilities, simple/advanced multiplayer projection, People/collaboration separation, protected media authoring, and concrete SMX-019 gates.
 27. `docs/research/SMX-013-COMPONENT-PACKAGES.md` and companion fixtures — portable component/package identity, exact dependency locks, update/migration rollback, transitive capability attribution, offline/cache, remix/licensing/provenance, and SMX-014/016/019 handoffs.
 28. `docs/research/SMX-014-PUBLISHING-RUNTIME.md` and companion fixtures — publishing artefact taxonomy, immutable creation revisions, generic-player/server/offline compatibility, exact pre-activation validation, protected media target projection, and concrete SMX-017/019 handoffs.
-29. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+29. `docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md`, companion fixtures, and `docs/research/SMX-015-DECISION-EVIDENCE.md` — destructive P0–P4 integration evidence, protected-media boundary, failure classification, O-020 scope, and SMX-016–020 handoffs.
+30. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -53,6 +54,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Editor UX/progressive disclosure | SMX-012 authoring model, AUTH-001–AUTH-028, UX-001–UX-028, P1–P3, H-016, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010/011 network+collaboration semantics | SMX-012 experiment/fixtures; UXG-001–UXG-012; SMX-014 publish/load contract; SMX-019 browser vertical slice |
 | Component ecosystem | SMX-013 component/package research, PKG-001–PKG-028, P9/P13, H-004/H-009/H-011/H-018, SMX-003 local-definition/public-interface model, SMX-006 capability boundary, SMX-008 exact acquisition, SMX-012 group→reusable projection | SMX-013 fixtures/experiment; SMX-014 publishing; SMX-016 hostile package campaign; SMX-019 browser UX; C-011/C-022/C-026 |
 | Publishing/player/server | SMX-014 publishing/runtime contract, PUB-001–PUB-030, P10–P14, H-014/H-015/H-018, SMX-005 canonical/version model, SMX-009 target profiles, SMX-010 topology declarations, SMX-013 exact package locks | SMX-014 fixtures/experiment; SMX-017 topology harness; SMX-019 browser slice; C-015/C-023 |
+| Object Fabric integration/destructive P0–P4 | SMX-015 harness, OF-001–OF-030, OH-001–OH-020, D-087–D-090/E-069 | SMX-002–009 contracts; SMX-013/014 protected-media/publishing carry-forward; SMX-016–020 handoffs |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
 ## SMX-001 baseline retrieval rules
@@ -290,7 +292,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`, `PKG-###`, `PK-###`, `PUB-###`, `PB-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`, `PKG-###`, `PK-###`, `PUB-###`, `PB-###`, `OF-###`, `OH-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
@@ -450,7 +452,7 @@ SMX-014 adds the publication and generic-runtime contract that topology, sandbox
 - Durable candidate: **ordinary publishing creates an immutable SplashMX `CreationRevisionId` consumed by a versioned precompiled generic runtime; it does not invoke a per-creation Godot export/compile step.**
 - `ProjectId`, `CreationId`, immutable `CreationRevisionId`, package IDs/revisions, `WorldId`, runtime build identity, hosted `ReleaseId`, URLs/aliases and blob digests are distinct roles. A locator, runtime build or engine resource cannot replace semantic content identity.
 - Generic-player launch resolves a mutable alias to an immutable release, then performs bounded parse/integrity, schema/IR/required-feature negotiation, capability-free staged migration, exact SMX-013 lock acquisition, protected asset verification and current capability policy **before activation**.
-- Runtime playback/offline use exact package locks; they do not run floating dependency resolution or substitute some other compatible cached revision.
+- Runtime playback/offline use exact package locks; they do not run floating version resolution or substitute some other compatible cached revision.
 - Unknown required semantic features/extensions/schema/IR fail closed. Explicit optional semantics may be omitted only under declared fallback/compatibility rules.
 - Web/native/headless consume the same canonical creation revision. Target payload differences are non-semantic; stripping follows SplashMX usage (`simulation_required`, `presentation_required`, `presentation_optional`) rather than file extension or Godot resource class.
 - Stable `AssetId` and the immutable digest/source/audio-or-media/provenance/licence/derivation bundle remain canonical across target omission/transcode/import/cache; target derivatives never replace canonical source meaning.
@@ -470,3 +472,19 @@ SMX-014 adds the publication and generic-runtime contract that topology, sandbox
 - Godot 4.7 browser persistence/background/network constraints: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html
 
 `PUB-###` and `PB-###` join the stable RAG identifier families for publishing/runtime research.
+
+## SMX-015 Object Fabric destructive-harness retrieval rules
+
+SMX-015 is the integration checkpoint for the accepted object-fabric contracts. Later hostile security, topology, collaboration, browser, performance, and final-architecture work must retrieve it rather than inferring P0–P4 behavior from isolated earlier proof models:
+
+- `docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md` — synthesis of P0 universal kernel, P1 hot behaviour replacement, P2 nested composition/local definitions, P3 fresh semantic restore, P4 arbitrary subgraph streaming, hypothesis effects, failure classification, and explicit evidence limits.
+- `docs/research/SMX-015-OBJECT-FABRIC-FIXTURES.json` — `OF-001` through `OF-030` invariants and `OH-001` through `OH-020` machine-addressable integration fixtures.
+- `docs/research/SMX-015-DECISION-EVIDENCE.md` — issue-level D-087–D-090/E-069 handoff plus the O-020 real-Godot/browser-performance boundary.
+- `experiments/smx-015-object-fabric-harness/` — non-normative integrated deterministic model and adversarial tests; it is not production runtime code, a Godot binding, a sandbox, a canonical byte format, or a performance benchmark.
+- Durable result: the tested P0–P4 paths preserve stable path-independent `ThingId`, explicit relationship semantics, attachment-private state, definition/instance identity, durable pending work, loaded/known-unloaded/tombstoned distinction, and transactional exact-artifact validation without requiring a surviving Godot object.
+- Hot replacement remains acquire/validate/migrate/map/commit with whole-operation rollback. Definition/instance and residency changes do not acquire authority by containment or provenance.
+- Protected media remains an indivisible stable `AssetId` revision bundle containing digest, source identity/metadata, audio/media semantics, provenance, licence, and derivation. Snapshot/restore, unload/reload, hot replacement, and target-private decoding may not field-mix or replace canonical source meaning.
+- The positive result is scoped: hostile parser/archive/IR/capability proof belongs to SMX-016; real topology equivalence to SMX-017; collaboration substrate/convergence to SMX-018; real Godot/browser editor/player/storage/performance and O-020 to SMX-019; final reconciliation to SMX-020.
+- `OF-030` is the correction rule: a future architecture contradiction must amend the authoritative upstream contract and gain a regression, not be hidden by a harness-only special case.
+
+`OF-###` and `OH-###` join the stable RAG identifier families for integrated Object Fabric falsification evidence.
