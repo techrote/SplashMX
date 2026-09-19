@@ -196,7 +196,7 @@ No other hypothesis receives a status change from SMX-018. Existing Thing, execu
 
 ## 10. Residual work and handoff
 
-SMX-018 does **not** choose the final collaboration substrate. O-021 remains open for:
+SMX-018 does **not** choose the final collaboration substrate. O-021 remains open for the underlying persistence questions; SMX-018 records the production collaboration handoff as **O-026**, including:
 
 - production CRDT/OT/semantic-log/database selection or hybridization;
 - checkpoint/compaction and tombstone/conflict-retention proof;
