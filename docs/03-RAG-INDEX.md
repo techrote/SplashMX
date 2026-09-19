@@ -16,8 +16,9 @@ For **all** production implementation, architecture maintenance, compatibility, 
 5. `docs/architecture/ARCHITECTURE-V1-AUDIT.json` — machine-readable H-001–H-018 closure, contradiction audit, corrective findings, protected-media fields, and residual-risk classes.
 6. `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md` — dependency-ordered production plan and conformance gates.
 7. `docs/implementation/PRODUCTION-PROGRAMME-V1.md` — active SMX-021–052 issue/dependency/concurrency execution map for production work; it is subordinate to the roadmap and Architecture v1.
-8. `docs/04-ISSUE-EXECUTION-PROTOCOL.md` — branch/PR/CI/merge/closure workflow.
-9. `docs/05-DECISION-AND-EVIDENCE-LOG.md` — compact post-freeze decision/evidence register and pointers to the full historical log.
+8. `docs/implementation/PRODUCTION-CONFORMANCE-V1.md` — Phase-0 production gate/evidence ownership, typed failure/version/benchmark meta-contracts, and durable-identity guardrails.
+9. `docs/04-ISSUE-EXECUTION-PROTOCOL.md` — branch/PR/CI/merge/closure workflow.
+10. `docs/05-DECISION-AND-EVIDENCE-LOG.md` — compact post-freeze decision/evidence register and pointers to the full historical log.
 
 Retrieve `docs/01-RESEARCH-ROADMAP.md` and `docs/02-ARCHITECTURE-HYPOTHESES.md` when reconstructing programme history or hypothesis disposition; both now contain post-freeze closure plus pointers to their exact pre-v1 versions.
 
