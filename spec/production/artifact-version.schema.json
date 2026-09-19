@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://splashmx.dev/schema/production/artifact-version-1.json",
+  "title": "SplashMX production artifact version metadata v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "artifact_kind",
+    "schema_family",
+    "schema_version",
+    "required_features",
+    "producer"
+  ],
+  "properties": {
+    "contract": {
+      "const": "splashmx.artifact-version/1"
+    },
+    "artifact_kind": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]*$"
+    },
+    "schema_family": {
+      "type": "string",
+      "pattern": "^splashmx\\.[a-z][a-z0-9_.-]*$"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$"
+    },
+    "required_features": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_.-]*$"
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "build_id"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "build_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
