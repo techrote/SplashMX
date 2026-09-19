@@ -24,9 +24,9 @@ A reconnect binds the same durable principal/Thing semantics to a new transient 
 
 A peer room may promote a surviving peer only from a confirmed checkpoint. A dedicated-authoritative room does not promote an ordinary browser client when the server disappears; it becomes explicitly unavailable. This is a trust/operations divergence, not a different Thing model.
 
-### D-109 — Real browser lifecycle evidence must state the mechanism actually exercised
+### D-109 — Browser lifecycle measurement and reconnect fault injection are reported separately
 
-The harness first attempts an ordinary background-tab visibility transition. If headless Chromium does not expose that transition, it uses Chromium's real lifecycle freeze primitive through CDP and records `cdp-frozen-fallback`. That fallback demonstrates process/lifecycle suspension and reconnect handling but is not relabelled as proof of every real browser's timer/background policy.
+The harness first attempts an ordinary background-tab visibility transition. If headless Chromium does not expose that transition, it uses Chromium's page lifecycle freeze primitive through CDP and records `cdp-frozen-fallback`. The harness then records whether that measured lifecycle interval actually caused the application transport timeout. If the tested headless Chromium/Godot combination keeps the transport alive, that negative result is retained and reconnect semantics are exercised with an explicitly labelled deterministic relay fault instead. A synthetic transport fault must never be relabelled as proof of browser background-tab disconnection.
 
 ### D-110 — Protected source/audio/provenance semantics are topology-invariant
 
@@ -44,7 +44,7 @@ The canonical fixture SHA-256 is `dd5e7bb8b33ab447b4234fb8036453b248c5721e22b9f0
 
 ### E-079 — Exported Godot/Chromium/headless topology run is the acceptance gate
 
-`.github/workflows/smx017-real-topologies.yml` exports one Godot 4.7.2 project to Web and Linux, runs the Linux export offline, runs exported Web instances as a peer-hosted browser room, runs the Linux export as dedicated authority with an exported Web client, destructively interrupts browser/server/peer lifecycle, and compares normalized semantic snapshots. The generated evidence JSON records exact runtime versions and measured observations.
+`.github/workflows/smx017-real-topologies.yml` exports one Godot 4.7.2 project to Web and Linux, runs the Linux export offline, runs exported Web instances as a peer-hosted browser room, runs the Linux export as dedicated authority with an exported Web client, destructively interrupts browser/server/peer lifecycle, and compares normalized semantic snapshots. The generated evidence JSON records exact runtime versions, the lifecycle mechanism and whether it naturally dropped the transport, the reconnect trigger actually used, and measured observations. The workflow must fail rather than converting a lifecycle non-disconnect into fabricated browser-failure evidence.
 
 ### E-080 — Network inconvenience is injected below semantics
 
