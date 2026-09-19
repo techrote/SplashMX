@@ -86,9 +86,11 @@ The exact terminology remains researchable, but the preferred conceptual vocabul
 
 Timeline, stage, rules, components, scenes, multiplayer, and scripting should be authoring views over those semantics rather than independent architectural islands.
 
-## Explicit non-goals during pre-architecture research
+## Historical pre-architecture non-goals — completed phase
 
-Do not prematurely:
+This section records constraints that governed the completed pre-Architecture-v1 research campaign. It remains historical evidence; current implementation work is governed by Architecture v1.0 and the production implementation roadmap.
+
+During that research phase, the project was instructed not to prematurely:
 
 - clone the Flash UI pixel-for-pixel;
 - make Godot scenes/resources canonical SplashMX documents;
@@ -99,9 +101,9 @@ Do not prematurely:
 - implement a production editor before the object fabric survives destructive prototypes;
 - choose a final textual language before execution semantics/IR are understood.
 
-## Success criterion for the research programme
+## Historical research-programme success criterion — met
 
-The pre-architecture campaign succeeds when the project can publish an evidence-backed Architecture v1.0 that:
+The pre-architecture campaign defined success as publishing an evidence-backed Architecture v1.0 that:
 
 1. explains the canonical object/document/runtime model;
 2. survives the defined destructive prototypes;
@@ -109,3 +111,6 @@ The pre-architecture campaign succeeds when the project can publish an evidence-
 4. supports a coherent path to streaming, runtime multiplayer, and collaborative editing;
 5. maps efficiently onto Godot without exposing Godot as the author-facing contract; and
 6. can still be projected into an editor simpler to approach than a conventional game engine.
+
+
+That criterion was met by the Architecture v1.0 freeze on 2026-09-19. These historical criteria remain provenance for the freeze rather than the active production roadmap.
