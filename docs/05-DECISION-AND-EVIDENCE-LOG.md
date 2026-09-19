@@ -1620,3 +1620,86 @@ The reproducible 256-edit research probe records exact serialized history and ma
 **Status: OPEN after SMX-018.** Semantic conflict/offline behavior is destructively exercised, but final CRDT/OT/log/database choice, checkpoint/compaction and tombstone/conflict retention, browser/native crash-consistent persistence, relay outage/backpressure/authentication, production multi-version migration, large-project history performance and conflict/offline UX remain unproven.
 
 Owner: SMX-019 for browser/editor integration and storage/latency/failure evidence where practical; SMX-020 for Architecture v1.0 reconciliation and any remaining research spike. Existing protected source/audio/provenance, capability, lifecycle, runtime-network and publishing contracts remain unchanged except for the explicit R-018-01–R-018-04 collaboration-integrity refinements above.
+
+## SMX-019 decision/evidence register — 2026-09-19
+
+This section is authoritative for the browser vertical-slice gate. Detailed evidence is in `docs/research/SMX-019-BROWSER-VERTICAL-SLICE.md` and its fixture/decision files.
+
+### D-111 — Progressive disclosure remains one semantic system in the real browser slice
+
+**Status:** DECISION strengthened by executable browser evidence.
+
+The browser editor directly manipulates accepted Thing/Behaviour/Connection/Definition/Timeline records. Stage, Rules, Together, People, Publish and Inspect are projections; none introduces a second beginner document or runtime taxonomy.
+
+### D-112 — Ordinary browser Publish is immutable data projection, not per-creation build
+
+**Status:** DECISION strengthened by real browser generic-player/offline evidence.
+
+Publish validates the editable semantic revision, computes an immutable `CreationRevisionId`, and hands data to a separately deployed generic web player. The author path contains no build/export operation, and hosted/offline playback uses the same exact revision.
+
+### D-113 — Editable save, preview runtime, presence and published runtime are separate planes
+
+**Status:** DECISION strengthened by browser round-trip evidence.
+
+Play mutates a transient runtime copy; Stop discards it. Selection, People presence, current peer/transport identity and play session are not canonical creation state. Durable collaboration conflict alternatives may remain editable-project history but are excluded from the published runtime package.
+
+### D-114 — Browser multiplayer controls project the existing topology-independent declaration
+
+**Status:** DECISION strengthened narrowly by one peer-hosted browser integration path.
+
+Shared and detailed Together views edit the same `spawn_scope/control/authority/replication/relevance` fields. Two generic-player pages can execute one shared-Thing input/state path over the same published revision while connection identity and current authority remain runtime context. SMX-017 remains the destructive reconnect/host-loss/topology evidence.
+
+### D-115 — Browser persistence/offline mechanisms remain non-semantic and fail typed
+
+**Status:** DECISION at browser projection boundary.
+
+LocalStorage, CacheStorage and service workers are implementation choices in the harness. Storage denial and incomplete offline closure produce typed author-language outcomes. Cache/storage keys never become Thing/Creation/Asset identity and offline playback does not float dependency/content versions.
+
+### D-116 — Protected source/audio/provenance remains an indivisible revision across browser authoring and playback
+
+**Status:** DECISION; carry-forward strengthened by end-to-end browser equality checks.
+
+Stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision. Save/reload, Publish, generic-player activation, service-worker cache and peer runtime paths cannot synthesize field-mixed revisions or replace canonical source meaning with derived/cache/runtime state.
+
+### E-083 — Thirty-four deterministic SMX-019 boundary tests execute the author/publish model
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`experiments/smx-019-browser-vertical-slice/test_model.mjs` exercises UXG-001–UXG-012 plus invalid ports/reuse shortcuts, dangling references, transient-state leakage, host/transport identity smuggling, required/optional capability denial, schema/feature incompatibility, deterministic publication and protected-media atomicity.
+
+### E-084 — Real Playwright campaign executes author → generic player → exact offline reload
+
+**Status:** REPRODUCIBLE REAL-BROWSER EVIDENCE; pinned CI environment.
+
+`browser_harness.mjs` drives blank canvas → Things → group/reuse → Behaviour/Rule/Connection/Timeline → Play/Stop → save/hard reload → Publish → generic player → offline reload. It records concrete startup/publish/package/frame/storage observations and fails on substrate vocabulary leakage, revision substitution, preview leakage or protected-media mutation.
+
+### E-085 — Same published revision reaches a bounded peer-hosted browser runtime path
+
+**Status:** REPRODUCIBLE INTEGRATION EVIDENCE, deliberately smaller than SMX-017.
+
+Two player pages load the identical `CreationRevisionId`; the relay assigns distinct transient connection identities; a non-authority principal sends input intent to the current peer authority; both pages converge on replicated shared-Thing state. Canonical content contains only the accepted topology-independent declaration.
+
+### E-086 — Browser storage/capability/compatibility failures are executable typed paths
+
+**Status:** REPRODUCIBLE BOUNDARY EVIDENCE.
+
+The campaign forces editable browser-storage denial and required capability denial with author-language diagnostics. Runtime schema/feature incompatibility fails before activation; exact offline closure is reused rather than substituted.
+
+### E-087 — Protected media equality is checked through publication and browser player input
+
+**Status:** REPRODUCIBLE BOUNDARY EVIDENCE.
+
+The research asset's stable AssetId and complete immutable digest/source/audio-media/provenance/licence/derivation record are compared before/after publication. Incomplete replacement is rejected atomically and leaves the prior revision unchanged.
+
+### R-019-01 — Semantic ConnectionId is distinct from transient transport connection identity
+
+The first recursive host-identity filter rejected canonical `connection_id` while attempting to ban transport context. The repaired boundary forbids explicit transport identity (`transport_id` / `transport_connection_id`) while retaining canonical SplashMX Connection identity, with regression coverage.
+
+### O-028 — Production browser editor/player implementation and human-usability envelope
+
+**Status:** OPEN after SMX-019; architectural destructive gate passed, implementation/product evidence remains.
+
+SMX-019 does not choose the production editor framework, durable working store, cache/quota/eviction recovery, final generic-player Godot binding, accessibility/localization system, large-project navigation, broad performance budgets or novice terminology. SMX-020 should freeze the semantic architecture without misclassifying these implementation/product obligations as unresolved object-model questions.
+
+Owner: SMX-020 for final Architecture v1.0 classification; subsequent implementation programme for product evidence.
+

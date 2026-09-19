@@ -1,0 +1,58 @@
+name: SMX-019 browser vertical slice
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  semantic-contract:
+    name: SMX-019 semantic and boundary contract
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Validate SMX-019 fixtures, contracts, RAG, and workflow
+        run: python tools/validate_smx019.py
+      - name: Run SMX-019 deterministic adversarial/boundary tests
+        run: node --test experiments/smx-019-browser-vertical-slice/test_model.mjs
+
+  browser-vertical-slice:
+    name: Real Chromium create-play-save-publish campaign
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned browser harness dependencies
+        run: |
+          npm install --no-save --no-package-lock ws@8.18.3 playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Run deterministic model oracle
+        run: node --test experiments/smx-019-browser-vertical-slice/test_model.mjs
+      - name: Run destructive browser vertical slice
+        run: node experiments/smx-019-browser-vertical-slice/browser_harness.mjs
+      - name: Print measured browser evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx019-browser-results.json ]; then
+            cat artifacts/smx019-browser-results.json
+          fi
+      - name: Upload measured browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smx019-browser-evidence
+          path: artifacts/smx019-browser-results.json
+          if-no-files-found: warn
+          retention-days: 30

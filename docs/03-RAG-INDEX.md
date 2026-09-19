@@ -524,3 +524,25 @@ SMX-018 is the destructive collaboration checkpoint for SMX-011. Browser/editor,
 - O-026 deliberately keeps production CRDT/OT/log/database selection, compaction/tombstone retention, browser/native crash-consistent storage, relay outage/backpressure/authentication, large-history performance and conflict UX open for SMX-019/020.
 
 `CH-###` and `CR-###` join the stable RAG identifier families for destructive collaboration invariants and traces.
+
+## SMX-019 browser vertical-slice retrieval rules
+
+For any Architecture v1.0 or implementation work involving browser authoring, progressive disclosure, generic-player publication, offline playback, author-facing diagnostics, runtime-multiplayer controls, collaboration projection, or browser performance, retrieve **all** of:
+
+- `docs/research/SMX-019-BROWSER-VERTICAL-SLICE.md` — executed browser synthesis and UXG-001–UXG-012 outcomes;
+- `docs/research/SMX-019-BROWSER-VERTICAL-SLICE-FIXTURES.json` — machine-addressable UXG and BV gates plus R-019-01;
+- `docs/research/SMX-019-DECISION-EVIDENCE.md` — D-111–D-116, E-083–E-087 and O-028;
+- `experiments/smx-019-browser-vertical-slice/` — trusted disposable editor/player/server/browser harness and 34 adversarial/boundary tests;
+- upstream `SMX-012-AUTHORING-MODEL.md` and `SMX-014-PUBLISHING-RUNTIME.md` — source contracts that SMX-019 executes rather than replacing;
+- `SMX-017-NETWORK-HARNESS.md` and `SMX-018-COLLABORATION-HARNESS.md` when multiplayer/collaboration claims are involved.
+
+Retrieval constraints:
+
+1. **UXG-001 through UXG-012 are hard gates.** Friendly copy does not excuse an underlying requirement to understand engine, transport, schema, package-manager or build concepts.
+2. **BV-001 through BV-020 are evidence fixtures, not a second architecture.** Their browser implementation is disposable; accepted Thing/Behaviour/Connection/Definition/Timeline/publication semantics remain authoritative.
+3. **R-019-01 is a semantic-name boundary repair.** Canonical SplashMX ConnectionId is durable; transient transport connection identity is runtime context. Do not ban canonical Connections while attempting to exclude transport identity.
+4. **Generic-player proof is data publication, not per-creation compilation.** Hosted and offline copies must resolve the same immutable `CreationRevisionId`.
+5. **Together and People remain separate.** Runtime multiplayer projects control/authority/replication/relevance; collaboration presence/conflicts remain edit-plane semantics.
+6. **Protected source/audio/provenance is indivisible.** Stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision across save, Publish, cache, offline and peer runtime paths.
+7. **Do not overread automated usability evidence.** The browser campaign proves executable workflow/projectability and measurable interaction seams, not novice comprehension, accessibility certification, final terminology, production persistence or broad performance budgets; those are O-028/product obligations.
+

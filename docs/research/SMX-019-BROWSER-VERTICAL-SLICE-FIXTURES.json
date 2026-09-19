@@ -1,0 +1,48 @@
+{
+  "issue": "SMX-019",
+  "date": "2026-09-19",
+  "upstream_hard_gates": [
+    {"id":"UXG-001","summary":"Blank canvas creates a Thing without substrate or build concepts.","evidence":["BV-001","BV-014"]},
+    {"id":"UXG-002","summary":"Timeline is optional; non-Timeline interaction remains valid.","evidence":["BV-002","BV-003"]},
+    {"id":"UXG-003","summary":"Beginner Rule and advanced Behaviour use the same Behaviour IR.","evidence":["BV-004"]},
+    {"id":"UXG-004","summary":"Connections use stable ports rather than hierarchy paths.","evidence":["BV-005","BV-006"]},
+    {"id":"UXG-005","summary":"Group to reusable Definition preserves the first concrete Thing identities.","evidence":["BV-007"]},
+    {"id":"UXG-006","summary":"Play/Stop keeps authored and runtime state separate.","evidence":["BV-008"]},
+    {"id":"UXG-007","summary":"Save/reload excludes selection, presence and play/session context.","evidence":["BV-009"]},
+    {"id":"UXG-008","summary":"Publish/load uses an immutable creation revision in a generic player without per-creation build/export.","evidence":["BV-010","BV-011"]},
+    {"id":"UXG-009","summary":"Simple and advanced Together controls project the same network declaration and exclude transport identity.","evidence":["BV-012","BV-017"]},
+    {"id":"UXG-010","summary":"People presence/conflicts remain separate from Together runtime multiplayer.","evidence":["BV-013"]},
+    {"id":"UXG-011","summary":"Ordinary failures use author-facing vocabulary rather than substrate/toolchain language.","evidence":["BV-014","BV-015","BV-016"]},
+    {"id":"UXG-012","summary":"Protected media keeps stable AssetId plus one indivisible complete immutable revision bundle.","evidence":["BV-018","BV-019","BV-020"]}
+  ],
+  "browser_gates": [
+    {"id":"BV-001","kind":"browser","action":"Create Button and Lamp Things from a blank canvas.","expect":"Stable ThingIds exist and visible author UI needs no engine/build vocabulary."},
+    {"id":"BV-002","kind":"model","action":"Create interactive Behaviour without Timeline.","expect":"Project validates and plays with zero Timeline tracks."},
+    {"id":"BV-003","kind":"browser","action":"Add a Timeline motion by ThingId/property.","expect":"Timeline is an optional projection over the same Thing."},
+    {"id":"BV-004","kind":"model","action":"Compile Rule and Advanced Behaviour projections.","expect":"Both produce the same versioned constrained IR shape."},
+    {"id":"BV-005","kind":"browser","action":"Connect Button activated port to Lamp toggle port.","expect":"Connection targets stable ThingId + PortId endpoints."},
+    {"id":"BV-006","kind":"adversarial","action":"Inject hierarchy path as a port.","expect":"Validation rejects it before use."},
+    {"id":"BV-007","kind":"browser","action":"Group two Things and Make reusable.","expect":"Definition/Element provenance is added while concrete first-instance ThingIds remain unchanged."},
+    {"id":"BV-008","kind":"browser","action":"Play, interact, then Stop.","expect":"Runtime state changes; editable authored state does not."},
+    {"id":"BV-009","kind":"browser","action":"Add People presence/conflict, Save, hard reload.","expect":"Presence/play context disappears; durable conflict alternatives and canonical authored records survive."},
+    {"id":"BV-010","kind":"browser","action":"Publish and launch separately deployed generic player.","expect":"Exact immutable CreationRevisionId loads without author-facing compile/export."},
+    {"id":"BV-011","kind":"browser","action":"Reload exact player while browser networking is disabled.","expect":"Service-worker/CacheStorage closure loads the exact same CreationRevisionId or fails typed; no substitution."},
+    {"id":"BV-012","kind":"browser","action":"Choose Shared Together preset and inspect advanced fields.","expect":"One spawn/control/authority/replication/relevance declaration is edited."},
+    {"id":"BV-013","kind":"browser","action":"Show collaborator and competing edit in People.","expect":"Presence/conflict state does not alter runtime multiplayer declaration."},
+    {"id":"BV-014","kind":"browser","action":"Inspect visible author surface and common failure text.","expect":"No Godot/SceneTree/NodePath/ResourceUID/RPC/package-manager/export/build-toolchain concepts are required."},
+    {"id":"BV-015","kind":"browser","action":"Force browser editable-storage denial.","expect":"Typed author-language save failure; canonical meaning unchanged."},
+    {"id":"BV-016","kind":"browser","action":"Force unsupported required feature and required capability denial.","expect":"Generic player fails before activation with author-language diagnostics."},
+    {"id":"BV-017","kind":"browser","action":"Load identical revision in two peer-hosted player pages and send non-authority input intent.","expect":"Both converge on shared Thing state while transient connection identity remains runtime context."},
+    {"id":"BV-018","kind":"adversarial","action":"Attempt incomplete protected-media replacement.","expect":"Replacement is rejected atomically and old complete revision remains unchanged."},
+    {"id":"BV-019","kind":"browser","action":"Publish protected fixture asset and load player.","expect":"AssetId and complete digest/source/media/provenance/licence/derivation revision are byte-for-byte equal at publication boundary."},
+    {"id":"BV-020","kind":"adversarial","action":"Inject host/transport identity or tamper immutable publication.","expect":"Validation rejects private runtime identity and digest/revision mismatch before activation."}
+  ],
+  "repairs": [
+    {
+      "id":"R-019-01",
+      "finding":"An early private-runtime identity filter treated every field named connection_id as transport state and would therefore reject canonical SplashMX ConnectionId records.",
+      "repair":"The canonical boundary now forbids explicit transport/session handles such as transport_peer_id and connection_handle while preserving semantic connection_id/ConnectionId.",
+      "regression":"test_model.mjs test 28 plus BV-005/BV-020"
+    }
+  ]
+}
