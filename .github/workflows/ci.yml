@@ -50,3 +50,7 @@ jobs:
         run: python tools/validate_smx010.py
       - name: Run SMX-010 runtime multiplayer falsification tests
         run: python -m unittest discover -s experiments/smx-010-multiplayer-model -p 'test_*.py'
+      - name: Validate SMX-011 research fixtures
+        run: python tools/validate_smx011.py
+      - name: Run SMX-011 collaboration falsification tests
+        run: python -m unittest discover -s experiments/smx-011-collaboration-model -p 'test_*.py'
