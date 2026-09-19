@@ -124,11 +124,11 @@ Instances record intentional departures/local additions/suppressions. Compatible
 
 ### D-017 — Definition updates reconcile transactionally and fail explicitly on invalidated targets
 
-**Status:** DECISION at semantic level; persisted concurrent-conflict representation remains SMX-011 work.
+**Status:** DECISION at semantic level; concurrent representation refined by SMX-011.
 
-Definition revision updates are planned before commit. Invalidated overrides/exposures/local attachments/protected destructive changes produce explicit conflicts and cannot leave half-migrated instances.
+Definition revision updates are planned before commit. Invalidated overrides/exposures/local attachments/protected destructive changes produce explicit conflicts and cannot leave half-migrated instances. SMX-011 carries this into concurrent collaboration: compatible definition/instance edits merge, while target-invalidating changes remain atomic held conflicts until explicit resolution.
 
-**Source:** SMX-003 CMP-008/CMP-009; SMX-005 DOC-011; CT-005/CT-006/CT-009/DT-007.
+**Source:** SMX-003 CMP-008/CMP-009; SMX-005 DOC-011; SMX-011 COL-007/COL-010/COL-023; CT-005/CT-006/CT-009/DT-007/CF-005/CF-006.
 
 ### D-018 — Public group/component interfaces are stable indirections over internal element ports
 
@@ -214,11 +214,11 @@ The editable project does not silently absorb live behaviour-private state, PRNG
 
 ### D-028 — Canonical edits are atomic semantic transactions targeting IDs/loci, not physical paths/rows
 
-**Status:** DECISION at sequential edit-semantic level; concurrent merge remains SMX-011.
+**Status:** DECISION at semantic level; concurrent semantics refined by SMX-011.
 
-Transactions carry base revision/preconditions and ordered semantic operations. They plan/validate before commit and apply all-or-nothing. JSON Pointer paths, hierarchy paths, array indexes, file offsets, and DB row IDs are not the durable edit contract.
+Transactions carry base revision/preconditions and ordered semantic operations. They plan/validate before commit and apply all-or-nothing. JSON Pointer paths, hierarchy paths, array indexes, file offsets, and DB row IDs are not the durable edit contract. SMX-011 retains this atomicity under concurrent collaboration and forbids pairwise winner rules from causing a multi-operation transaction to half-commit.
 
-**Source:** SMX-005 DOC-011; DT-007; carries SMX-003 D-017 into the document layer.
+**Source:** SMX-005 DOC-011; SMX-011 COL-001/COL-010/COL-023; DT-007 and SMX-011 boundary tests.
 
 ### D-029 — Partial loading and reference absence states are first-class
 
@@ -522,7 +522,7 @@ Ordinary behaviour does not receive raw WebSocket/WebRTC/ENet/UDP/Godot multipla
 
 Live simulation state/input/event/relevance/authority messages do not carry the canonical base-revision/precondition/merge/conflict semantics required for persistent multi-author edits. Multiplayer and collaboration may share authenticated infrastructure later, but remain separate consistency layers.
 
-**Source:** SMX-010 NET-019; NT-018. Collaboration semantics remain SMX-011/018.
+**Source:** SMX-010 NET-019; NT-018; strengthened further by SMX-011 COL-021/CF-022.
 
 ### D-067 — Network/topology transitions preserve protected source, audio, asset and provenance semantics
 
@@ -531,6 +531,38 @@ Live simulation state/input/event/relevance/authority messages do not carry the 
 Replication, reconnect, headless authority, peer-host migration and topology projection do not substitute or rewrite canonical `AssetId`, immutable source digest, source/audio identity, provenance/licensing or derivation records. Network transport payloads may reference these identities only through the validated canonical/package contract.
 
 **Source:** SMX-010 NET-020; NT-001/NT-016; SMX-009 GOD-012–GOD-014.
+
+### D-068 — Collaboration semantics are SplashMX semantic transactions/conflicts above a replaceable synchronization substrate
+
+**Status:** DECISION at pre-architecture collaboration-semantic level; subject to SMX-018 destructive implementation proof.
+
+Human-visible edit meaning is expressed using stable-ID semantic transactions, causal dependencies, preconditions, tombstones, retained alternatives and explicit resolution. A CRDT, OT engine, operation log, database or relay may implement storage/synchronization below this boundary, but cannot redefine SplashMX conflict policy by convenience.
+
+**Source:** `docs/research/SMX-011-COLLABORATION-SEMANTICS.md` COL-001–COL-004/COL-013/COL-020/COL-024; CF-001/CF-002/CF-015/CF-028.
+
+### D-069 — Invariant-sensitive collaboration conflicts preserve a coherent executable state rather than choosing arbitrary deterministic winners
+
+**Status:** DECISION at candidate collaboration-semantic level.
+
+Independent loci auto-merge. Same-property, incompatible reparent/group/timeline/interface/definition edits are held as explicit conflicts when automatic choice would hide author intent or violate invariants. Tombstone/delete cases use intentionally narrow remove-wins semantics to prevent identity resurrection. Multi-operation transactions remain atomic across pairwise conflict classes.
+
+**Source:** SMX-011 COL-003–COL-012/COL-023; CF-002–CF-014 and boundary transaction-atomicity test.
+
+### D-070 — Collaboration is local-first causal history with compensating undo and transient presence
+
+**Status:** DECISION at candidate authoring-semantic level; real persistence/sync proof remains SMX-018/019.
+
+Offline replicas may author changes without cloud document authority and later exchange causal work. Identical replay is idempotent, same-ID/different-content is corruption, collaborative undo/redo emits new preconditioned semantic transactions, and cursors/selections/typing/viewport presence remain transient awareness rather than canonical or durable edit history. Stale offline permissions are revalidated on reunion and cannot serialize/mint authority.
+
+**Source:** SMX-011 COL-013–COL-017; CF-015/CF-018–CF-023.
+
+### D-071 — Collaborative asset replacement preserves protected source/audio/provenance as an atomic revision bundle
+
+**Status:** DECISION, explicit carry-forward of D-031/D-058/D-067 into authoring collaboration.
+
+`AssetId` remains stable. A content replacement carries its immutable digest, logical source/audio identity, provenance/licensing and derivation metadata as one semantic alternative. Concurrent replacements cannot field-merge those protected records into a synthetic revision that no author produced.
+
+**Source:** SMX-011 COL-022; CF-016/CF-017 and incomplete-bundle boundary test.
 
 ## Primary-source and comparative evidence
 
@@ -866,6 +898,46 @@ Sources:
 
 This is deliberately **not** packet-loss, browser-suspension, WebRTC/WebSocket/ENet equivalence, production security or performance evidence. Those remain explicit SMX-017/019 obligations.
 
+### E-051 — Automerge demonstrates local-first merge and inspectable concurrent values, but its deterministic map-value winner is not SplashMX conflict UX
+
+**Status:** FACT / implementation-comparison input; checked 2026-09-19.
+
+Current Automerge documentation describes independently editable replicas that merge, and exposes concurrent conflicting property values through conflict inspection. A normal property read still yields one deterministic value; SplashMX therefore treats Automerge as a possible substrate precedent rather than adopting that winner as user-visible policy.
+
+Sources: https://automerge.org/docs/reference/documents/conflicts/ and https://automerge.org/docs/hello/
+
+### E-052 — Yjs separates convergent document updates from transient awareness and provides scoped undo precedent
+
+**Status:** FACT / implementation-comparison input; checked 2026-09-19.
+
+Yjs documents document updates as commutative, associative and idempotent; its Awareness protocol carries presence information separately from the document; `UndoManager` supplies scoped/origin-aware undo facilities.
+
+Sources: https://docs.yjs.dev/api/document-updates , https://docs.yjs.dev/api/about-awareness , https://docs.yjs.dev/api/undo-manager
+
+### E-053 — ShareDB provides an OT/history/offline comparison point with pluggable operation types
+
+**Status:** FACT / implementation-comparison input; checked 2026-09-19.
+
+ShareDB documents realtime JSON collaboration based on Operational Transformation, history/offline synchronization facilities and operation types. This is useful comparison evidence but does not solve SplashMX graph/definition/asset conflict semantics by itself.
+
+Sources: https://share.github.io/sharedb/ and https://share.github.io/sharedb/types/
+
+### E-054 — Convergent replicas can still violate higher-level application invariants
+
+**Status:** FACT / conceptual comparison input; checked 2026-09-19.
+
+Ink & Switch's 2026 *Convergence Is Not Enough* argues that structured collaborative applications need correctness properties above replica equality. That independently reinforces SplashMX's requirement to test grouping, references, atomic multi-object edits and protected asset bundles semantically rather than accepting byte/CRDT convergence as sufficient.
+
+Source: https://www.inkandswitch.com/essay/convergence-is-not-enough/
+
+### E-055 — SMX-011 model exercises user-visible conflict semantics and convergence without selecting a production sync algorithm
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`experiments/smx-011-collaboration-model/` exercises `CF-001`–`CF-028` plus adversarial boundary tests: independent-locus convergence, explicit same-locus conflicts, delete/edit tombstones, structural/definition/timeline/group/component conflicts, offline reunion, connection identity, selective undo, stale permission rejection, transient presence separation, schema quarantine, partial-loading states, runtime-multiplayer field rejection, complete source/audio/provenance asset bundles, explicit conflict resolution and all arrival permutations. Extra tests reject causal cycles/incomplete asset bundles and prove transaction atomicity dominates pairwise remove-wins behavior.
+
+This is deliberately **not** a production CRDT/OT implementation, persistent database, cloud relay, browser storage proof or multi-process destructive harness. Those remain SMX-018/019 obligations.
+
 ## Hypothesis review snapshots
 
 ### SMX-001
@@ -936,6 +1008,13 @@ Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion f
 - H-014: **strengthened further at network boundary** — Godot peer IDs, SceneTree authority, RPC annotations and transport transfer modes remain adapter context rather than public identity/protocol.
 - Existing source/audio/provenance, lifecycle, migration, security and canonical-document decisions remain unchanged.
 
+### SMX-011
+
+- H-013: **strengthened substantially** — collaboration now has causal semantic edit transactions, tombstones, retained alternatives, conflict/resolution and selective undo semantics that are explicitly rejected from the SMX-010 runtime-replication protocol.
+- H-017: **strengthened at model level, real persistence/synchronization pending** — offline replicas exchange causal work and converge for the deterministic corpus without cloud document authority or silent loss of valid independent edits.
+- H-018: **strengthened narrowly and constrained at collaboration-history level** — old-schema operations must migrate deterministically or quarantine before reconciliation; synchronization convergence cannot bypass canonical compatibility rules.
+- Existing source/audio/provenance, security, lifecycle, streaming and runtime-network decisions remain unchanged.
+
 ## Open architectural questions
 
 ### O-001 — Minimal universal port vocabulary
@@ -978,23 +1057,25 @@ Owner: SMX-017 for destructive topology equivalence; SMX-014/019 for packaging/p
 
 ### O-007 — Collaboration substrate
 
-SMX-005 supplies stable semantic transaction loci/base revisions/preconditions, not a convergence algorithm. Desired concurrent-edit/CRDT/OT/rebase/conflict semantics remain open.
+**Status:** NARROWED by SMX-011; semantic layer selected, production synchronization/storage substrate intentionally open.
 
-Owner: SMX-011/018.
+SplashMX authoring meaning is semantic transactions/conflicts over stable IDs with local-first causal history, tombstones, explicit resolution and transient presence separation. A CRDT, OT engine, operation log/database or hybrid may implement the lower synchronization/storage layer only if it preserves COL-001–COL-024. Real convergence, compaction, relay/storage failure, multi-version and performance behavior must be selected through SMX-018 evidence rather than library familiarity.
+
+Owner: SMX-018, with persistence/performance implications for SMX-019/020.
 
 ### O-008 — Durable identity namespace and tombstones
 
-**Status:** NARROWED FURTHER by SMX-007.
+**Status:** NARROWED FURTHER by SMX-007/011.
 
-Required semantic identity domains and non-path/non-content-hash invariants are explicit. Runtime destruction now produces an explicit tombstone, ordinary respawn does not reuse the ID, and historical rewind is distinguished from respawn. Concrete ID encoding, cross-package namespace syntax, and tombstone retention/compaction policy remain open.
+Required semantic identity domains and non-path/non-content-hash invariants are explicit. Runtime destruction produces an explicit tombstone, ordinary respawn does not reuse the ID, and collaboration delete/edit plus connection remove/recreate is remove-wins for that historical identity. Concrete ID encoding, cross-package namespace syntax, and tombstone retention/compaction policy remain open.
 
-Owner: SMX-013/014/020 with lifecycle/streaming evidence from SMX-008/015.
+Owner: SMX-013/014/018/020 with lifecycle/streaming evidence from SMX-008/015.
 
 ### O-009 — Canonical reconciliation/conflict transaction model
 
-**Status:** RESOLVED for sequential semantic transactions; concurrent conflicts remain open.
+**Status:** RESOLVED PROVISIONALLY at semantic level by SMX-011; real substrate/destructive proof remains SMX-018.
 
-Transactions are ID/locus-addressed, preconditioned, planned/validated, and atomic. SMX-011 defines concurrent merge/rebase/convergence and persisted conflict UX.
+Transactions are ID/locus-addressed, preconditioned and atomic. Independent loci auto-merge; invariant-sensitive overlaps use explicit conflict records or narrow tombstone/remove-wins rules; resolution and selective undo are later semantic transactions; unresolved conflict metadata stays separate from the coherent executable materialization. SMX-018 must prove these semantics under real reorder/duplicate/offline/compaction/migration schedules.
 
 ### O-010 — Executor-state serialization and restore semantics
 
@@ -1024,11 +1105,11 @@ Owner: SMX-013/014/016.
 
 ### O-014 — Capability grant persistence and permission UX
 
-**Status:** NARROWED by SMX-007.
+**Status:** NARROWED FURTHER by SMX-011.
 
-Live capability grants/host handles are explicitly excluded from authored/save authority. On restore, authored capability requests are re-evaluated against the current host/user policy and browser/OS permission state. The final persistent user-policy store, prompt cadence, editor/project grant inheritance, and UX remain open.
+Live capability grants/host handles are excluded from authored/save/collaboration authority. On restore or offline-collaboration reunion, authored requests/edits are re-evaluated against current host/user policy; stale permission epochs cannot mint authority, although rejected local work may remain recoverable. Final persistent policy store, prompt cadence, editor/project grant inheritance and UX remain open.
 
-Owner: SMX-012/014/016.
+Owner: SMX-012/014/016/018.
 
 ### O-015 — Hardened custom Godot runtime requirement
 
@@ -1073,6 +1154,14 @@ Owner: SMX-017, with publishing/server implications for SMX-014/019.
 SMX-009 establishes the semantic boundary and a reproducible non-Godot indirection microbenchmark, but deliberately does not claim measured Godot Node/RID/resource creation cost, renderer/physics/audio overhead, WebAssembly startup/heap cost, or browser frame-time scalability. The next real integration/destructive work must measure named Godot builds, browsers, hardware, object counts, workload, startup/memory/frame metrics, and binding lifecycle costs.
 
 Owner: SMX-015/019, with publishing implications for SMX-014/020.
+
+### O-021 — Collaboration history retention, compaction, and substrate selection
+
+**Status:** OPEN after SMX-011.
+
+SMX-011 defines what must survive semantically but deliberately does not choose a production CRDT/OT/log/database, relay topology, checkpoint cadence, tombstone/conflict retention interval, causal index encoding, garbage-collection proof, or browser/native persistence scheme. Compaction must not permit resurrection, erase unresolved alternatives, break selective undo guarantees that are still promised, mix protected asset provenance, or strand older-schema offline edits without a typed outcome.
+
+Owner: SMX-018 for destructive substrate/compaction evidence; SMX-019/020 for production persistence/performance/final architecture.
 
 ## Maintenance rule
 
