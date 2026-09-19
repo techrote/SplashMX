@@ -15,13 +15,15 @@ This file is the issue-local audit companion for the durable project register in
 
 - **E-083 — 34 deterministic model/boundary tests.** `test_model.mjs` covers UXG-001–UXG-012 and adversarial identity/reference/security/compatibility/media boundaries.
 - **E-084 — Real Playwright create→generic-player→offline campaign.** `browser_harness.mjs` executes the representative author flow in Chromium and emits reproducibility measurements.
-- **E-085 — Same immutable publication reaches two peer-hosted browser players.** Input intent is authority-applied and replicated while transient connection identity remains context.
-- **E-086 — Storage/capability/compatibility failures are executable typed paths.** Activation or save fails closed with author-facing outcomes.
+- **E-085 — Same immutable publication reaches two peer-hosted browser players.** Input intent is authority-applied and replicated while transient connection identity remains context. The browser oracle compares the declared replicated Thing-state projection; local executor event history is intentionally not a replicated-state equivalence requirement.
+- **E-086 — Storage/capability/compatibility failures are executable typed paths.** Activation or save fails closed with author-facing outcomes. Required-capability denial uses a separate immutable capability-probe publication so the ordinary Button/Lamp creation does not acquire a fabricated camera requirement merely to exercise a negative path.
 - **E-087 — Protected media equality is asserted through Publish/player input.** Partial replacement rollback is separately covered by deterministic adversarial tests.
 
 ## Corrective finding
 
 - **R-019-01 — Preserve canonical ConnectionId while excluding transport connection handles.** See the fixture file and deterministic test 28. The repair is a semantic-name boundary correction, not a weakening of host/transport isolation.
+
+Two CI-discovered harness defects were also corrected without changing accepted semantics: progressive-disclosure controls are now reached through their visible `Together`/`People` disclosure surfaces before hidden controls are exercised, and peer convergence is checked against the declared replicated Thing state rather than authority-local executor event history. These are test-oracle corrections, not new canonical records or weakened network invariants.
 
 ## Open boundary
 
