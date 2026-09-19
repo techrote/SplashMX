@@ -70,3 +70,7 @@ jobs:
         run: python tools/validate_smx015.py
       - name: Run SMX-015 Object Fabric falsification tests
         run: python -m unittest discover -s experiments/smx-015-object-fabric-harness -p 'test_*.py'
+      - name: Validate SMX-016 adversarial security fixtures
+        run: python tools/validate_smx016.py
+      - name: Run SMX-016 adversarial security falsification tests
+        run: python -m unittest discover -s experiments/smx-016-security-harness -p 'test_*.py'

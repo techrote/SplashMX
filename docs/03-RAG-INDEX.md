@@ -488,3 +488,20 @@ SMX-015 is the integration checkpoint for the accepted object-fabric contracts. 
 - `OF-030` is the correction rule: a future architecture contradiction must amend the authoritative upstream contract and gain a regression, not be hidden by a harness-only special case.
 
 `OF-###` and `OH-###` join the stable RAG identifier families for integrated Object Fabric falsification evidence.
+
+## SMX-016 adversarial-security retrieval rules
+
+SMX-016 is the hostile security checkpoint for the accepted execution, document, package, streaming, network and generic-runtime boundaries. Downstream topology, collaboration, browser, and final-architecture work must retrieve these artefacts rather than infer production security from the earlier positive proof models:
+
+- `docs/research/SMX-016-SECURITY-HARNESS.md` — synthesis of the destructive package/parser/IR/capability/network/target campaign, `ADV-001` through `ADV-028`, corrective findings R-016-01 through R-016-04, residual-risk boundary, protected source/audio/provenance rule, and downstream handoffs.
+- `docs/research/SMX-016-SECURITY-FIXTURES.json` — `AT-001` through `AT-028` machine-addressable hostile fixtures and attack-family coverage.
+- `docs/research/SMX-016-DECISION-EVIDENCE.md` — compact D-091–D-098/E-070–E-073/O-025 handoff for later agents.
+- `experiments/smx-016-security-harness/` — non-normative deterministic hostile model and 38 adversarial/boundary tests; it is not production parser, cryptography, decoder, process sandbox, or end-to-end Godot/browser security certification.
+- Durable result: ordinary content fails closed before unsafe extraction, migration, host invocation or decoder invocation when package paths/structure, exact locks, dependency closure, capability policy, IR budgets, network ingress, or media descriptors violate the accepted contract.
+- Raw JavaScript/Godot/PCK/GDExtension/process/filesystem/socket surfaces remain outside ordinary capabilities on web/native/headless. Physical TCB/isolation strength is target-specific and must not be conflated with semantic authority.
+- Delegation is narrowing and bounded; corrupt ancestry is non-live; capability authorization is rechecked immediately before host use so mid-flight revocation cannot cross the adapter boundary.
+- Protected source/audio/provenance remains atomic: stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision, never a field-mixed synthetic revision.
+- `ADV-028`/O-025 keep production archive/decoder/crypto/runtime isolation and calibrated quotas explicitly open; passing the Python harness is not an end-to-end sandbox claim.
+- SMX-017/018/019/020 may rely on the semantic fail-closed contract, but must retain the target/runtime residual risks appropriate to their scope.
+
+`ADV-###` and `AT-###` join the stable RAG identifier families for hostile security evidence.

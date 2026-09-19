@@ -1465,7 +1465,7 @@ This section is authoritative for SMX-015 and mirrors the detailed issue-level h
 
 **Status:** DECISION at integrated research-model level; production Godot/browser realization remains downstream.
 
-P0 universal-kernel, P1 live behaviour replacement, P2 local-definition/instance, P3 fresh restore, and P4 selective-streaming paths all use the same path-independent `ThingId` and explicit relationship/state contracts. Containment, controller, simulation authority, persistence, replication, observation, definition provenance, behaviour attachment, and residency remain distinct. No tested path required hierarchy or a live engine object to become ownership or identity.
+P0 universal-kernel, P1 live behaviour replacement, P2 local-definition/instance, P3 fresh semantic restore, and P4 selective-streaming paths all use the same path-independent `ThingId` and explicit relationship/state contracts. Containment, controller, simulation authority, persistence, replication, observation, definition provenance, behaviour attachment, and residency remain distinct. No tested path required hierarchy or a live engine object to become ownership or identity.
 
 **Source:** SMX-015 `OF-001`–`OF-010`, `OF-015`–`OF-021`, `OH-001`–`OH-020`, and the deterministic P0–P4 harness.
 
@@ -1518,3 +1518,61 @@ The integrated run found implementation hazards—publish-before-validation, par
 SMX-015 supplies a named semantic workload and integrated boundary, but the destructive harness intentionally invokes no Godot runtime, browser, native renderer, WebAssembly build, physics/audio/render binding, or production storage implementation. CPython execution time is therefore not evidence for Godot Node/RID/resource creation cost, browser startup/heap/frame time, instance materialization cost, restore latency, streaming/binding churn, or generic-player/editor performance.
 
 **Owner:** SMX-019 must measure real named Godot/browser builds and hardware for creation/binding, definition-instance materialization, hot replacement, fresh restore, selective residency, startup/memory/frame-time, and related generic-player/editor paths. SMX-020 must carry any unresolved performance risk into Architecture v1.0 rather than treating this model result as a benchmark.
+
+## SMX-016 decision/evidence register — 2026-09-19
+
+This section is authoritative for the SMX-016 hostile semantic-boundary campaign and mirrors `docs/research/SMX-016-DECISION-EVIDENCE.md`. It records the enforceable repair deltas without claiming end-to-end production sandbox certification.
+
+### D-091 — Package/container normalization is host-independent and collision-rejecting
+
+Ordinary package paths are normalized and collision-checked before extraction, including separator, Unicode NFC/case, traversal, absolute/drive/device/control and trailing-dot/space hazards. This is a security boundary rather than post-extraction filesystem cleanup.
+
+### D-092 — Forbidden authority/host fields are rejected recursively
+
+Canonical and network structured input reject live grants, host/browser/Godot handles, peer IDs, sockets, authority tokens and raw loader/code authority recursively within bounded input rather than only at an envelope top level.
+
+### D-093 — Delegation bounds and ancestry integrity are checked before allocation
+
+Delegation depth/count are enforced before child-grant creation. Missing/cyclic/corrupt ancestry is non-live; scope/lifetime remain monotonic-narrowing and ancestor revocation/expiry invalidates descendants.
+
+### D-094 — Capability policy is rechecked immediately before host use
+
+A request admitted earlier must still hold a live authorized grant at adapter-crossing time. Mid-flight revocation or expiry fails before the host call.
+
+### D-095 — Exact artifact/dependency/canonical validation precedes migration and activation
+
+Exact `PackageId + revision + digest + byte size`, bounded dependency closure and canonical structural/security checks complete before bounded capability-free migration or activation.
+
+### D-096 — Raw-host denial is target-independent while physical isolation strength is target-specific
+
+Ordinary content cannot name JavaScriptBridge/eval, GDScript/PCK loaders, GDExtension, process/shell, raw filesystem or raw sockets on web/native/headless. Hardened web may remove bridges from the TCB; native/headless still need deployment-level process/OS hardening.
+
+### D-097 — Resource limits are independent semantic counters checked before expensive work
+
+Archive, structured-input, dependency, delegation, IR instruction/allocation/emission/timer/queue/service, migration, network and decoder-input classes have independent ceilings. Production values remain a later runtime calibration concern.
+
+### D-098 — Protected source/audio/provenance remains indivisible under hostile paths
+
+Stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation bundle. Parser rejection, resolution, migration, network transport, target projection and decoder preflight may not synthesize field-mixed protected revisions.
+
+### E-070 — 38 deterministic hostile boundary tests pass
+
+The SMX-016 harness covers path/container attacks, malformed canonical data, exact-lock/dependency substitution, capability escalation/delegation/revocation/confused deputy, IR/allocation/event/timer/service amplification, migration ordering, hostile network ingress, target-host surfaces, decoder preflight and protected-media atomicity. Host/decoder/migration invocation counters prove relevant failures occur before the privileged/unsafe boundary.
+
+### E-071 — Four earlier enforcement ambiguities are now explicit regressions
+
+R-016-01 through R-016-04 cover host-independent path normalization, recursive authority-field rejection, pre-allocation delegation/ancestry checks and use-time revocation. These tighten existing fail-closed contracts rather than create new authority semantics.
+
+### E-072 — Godot 4.7.2 remains the stable security-sensitive baseline on 2026-09-19
+
+The current Godot release archive still identifies 4.7.2 stable, so the SMX-009/014 stable-runtime baseline does not require version migration during this campaign.
+
+### E-073 — Hardened-web bridge omission and hostile PCK boundaries remain current
+
+Current Godot documentation continues to support custom web builds without JavaScriptBridge/eval and continues to warn that executable PCK/mod content is not a safe untrusted-content boundary. These are defence-in-depth/platform facts, not substitutions for SplashMX capability enforcement.
+
+### O-025 — Real runtime sandbox and decoder assurance
+
+**Status:** OPEN after SMX-016.
+
+The deterministic model does not certify real Godot/browser/native process/origin isolation, production archive libraries, third-party image/audio/font/mesh/video decoders, cryptographic key/signature/revocation implementation, cross-browser permissions/lifecycle behavior, actual engine/GPU/audio memory accounting, or calibrated production quotas. These remain explicit downstream implementation/destructive-test obligations, primarily SMX-019 with final reconciliation in SMX-020.

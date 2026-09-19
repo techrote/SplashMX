@@ -1,0 +1,71 @@
+{
+  "schema": "splashmx-smx016-adversarial-security-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "security_invariants": [
+    "ADV-001", "ADV-002", "ADV-003", "ADV-004", "ADV-005", "ADV-006", "ADV-007", "ADV-008",
+    "ADV-009", "ADV-010", "ADV-011", "ADV-012", "ADV-013", "ADV-014", "ADV-015", "ADV-016",
+    "ADV-017", "ADV-018", "ADV-019", "ADV-020", "ADV-021", "ADV-022", "ADV-023", "ADV-024",
+    "ADV-025", "ADV-026", "ADV-027", "ADV-028"
+  ],
+  "required_attack_families": [
+    "package-path-and-container",
+    "canonical-structure-and-authority-fields",
+    "exact-lock-and-dependency-confusion",
+    "capability-escalation-delegation-revocation",
+    "nested-confused-deputy",
+    "ir-allocation-event-timer-service-exhaustion",
+    "migration-ordering-and-capability-freedom",
+    "network-forgery-replay-scope-and-resource",
+    "target-host-boundaries",
+    "protected-source-audio-provenance",
+    "decoder-preflight"
+  ],
+  "fixtures": [
+    {"id":"AT-001","purpose":"Reject Unicode/case-normalized path collisions before extraction.","cases":["A-012"],"expected":["ADV-001","ADV-002"]},
+    {"id":"AT-002","purpose":"Reject traversal, absolute, drive/device and trailing-dot/space paths.","cases":["A-012"],"expected":["ADV-001"]},
+    {"id":"AT-003","purpose":"Reject symlink/special entries and nested archives.","cases":["A-012"],"expected":["ADV-002"]},
+    {"id":"AT-004","purpose":"Bound entry count, compressed/expanded bytes and expansion ratio before allocation.","cases":["A-012"],"expected":["ADV-003"]},
+    {"id":"AT-005","purpose":"Reject duplicate canonical IDs and unknown required features.","cases":["A-012"],"expected":["ADV-004","ADV-006"]},
+    {"id":"AT-006","purpose":"Bound canonical tree depth, nodes, strings and records.","cases":["A-012"],"expected":["ADV-005"]},
+    {"id":"AT-007","purpose":"Reject durable capability/host/engine/session authority fields recursively.","cases":["A-003","A-015"],"expected":["ADV-006","ADV-020"]},
+    {"id":"AT-008","purpose":"Reject package identity, revision, digest and size substitution against exact locks.","cases":["C-026","A-012"],"expected":["ADV-007"]},
+    {"id":"AT-009","purpose":"Reject dependency cycles, missing nodes, excessive depth/count/bytes.","cases":["C-026","A-012"],"expected":["ADV-008"]},
+    {"id":"AT-010","purpose":"Deny raw JavaScript/Godot/PCK/GDExtension/process/filesystem/socket APIs on every target.","cases":["C-022","A-003"],"expected":["ADV-009","ADV-024"]},
+    {"id":"AT-011","purpose":"Prove signatures/provenance cannot create runtime authority.","cases":["C-026"],"expected":["ADV-010"]},
+    {"id":"AT-012","purpose":"Prove containment does not inherit parent capability.","cases":["C-011","A-003"],"expected":["ADV-011"]},
+    {"id":"AT-013","purpose":"Reject widened delegation scope/lifetime and bound delegation depth/count.","cases":["A-003","A-012"],"expected":["ADV-012"]},
+    {"id":"AT-014","purpose":"Treat forged cyclic grant ancestry as invalid/non-live without unbounded recursion.","cases":["A-003","A-012"],"expected":["ADV-012","ADV-013"]},
+    {"id":"AT-015","purpose":"Re-check live grant immediately before host invocation so revocation wins.","cases":["A-003"],"expected":["ADV-013","ADV-015"]},
+    {"id":"AT-016","purpose":"Bound per-principal service requests.","cases":["A-004"],"expected":["ADV-014"]},
+    {"id":"AT-017","purpose":"Allow only explicit validated trusted-proxy principal changes.","cases":["A-003"],"expected":["ADV-011","ADV-015"]},
+    {"id":"AT-018","purpose":"Contain recursive instruction and allocation amplification.","cases":["A-004","A-006"],"expected":["ADV-016","ADV-017"]},
+    {"id":"AT-019","purpose":"Contain event/timer/queue storms and reject unknown IR host opcodes.","cases":["A-004","A-006"],"expected":["ADV-016","ADV-018"]},
+    {"id":"AT-020","purpose":"Reject invalid exact-lock/dependency input before migration executes.","cases":["A-012"],"expected":["ADV-007","ADV-019"]},
+    {"id":"AT-021","purpose":"Forbid migration host/service access and bound migration cost/output.","cases":["A-012"],"expected":["ADV-019"]},
+    {"id":"AT-022","purpose":"Reject nested remote capability/host-authority injection.","cases":["A-015"],"expected":["ADV-020"]},
+    {"id":"AT-023","purpose":"Reject forged sender, cross-world/room and stale authority epochs.","cases":["A-009","A-011","A-015"],"expected":["ADV-021","ADV-022"]},
+    {"id":"AT-024","purpose":"Bound network bytes/tree/rate/queue independent of transport.","cases":["A-004","A-015"],"expected":["ADV-023"]},
+    {"id":"AT-025","purpose":"Make web/native/headless TCB differences explicit while keeping raw host denial invariant.","cases":["C-022","A-003"],"expected":["ADV-024","ADV-025"]},
+    {"id":"AT-026","purpose":"Reject incomplete protected AssetId revision bundle atomically.","cases":["C-026"],"expected":["ADV-026"]},
+    {"id":"AT-027","purpose":"Bound media compressed/decoded/pixel/audio sizes before decoder invocation.","cases":["A-012"],"expected":["ADV-027"]},
+    {"id":"AT-028","purpose":"Keep residual decoder/process/origin/cryptographic assurance explicit rather than claim sandbox proof.","cases":["A-012","A-015"],"expected":["ADV-028"]}
+  ],
+  "observed_repairs": [
+    {"id":"R-016-01","finding":"Archive normalization must reject Unicode/case/native-device collisions before extraction.","contract_effect":"clarifies SEC-008/B1; no semantic identity change"},
+    {"id":"R-016-02","finding":"Forbidden durable/network authority fields must be rejected recursively, not only at a top-level envelope.","contract_effect":"clarifies SEC-012/D-040/D-065"},
+    {"id":"R-016-03","finding":"Delegation depth/count and ancestry-cycle checks are pre-allocation enforcement, not advisory limits.","contract_effect":"clarifies SEC-004/SEC-008/D-034/D-039"},
+    {"id":"R-016-04","finding":"Capability is revalidated at use time immediately before the host adapter, so revocation between admission and execution fails closed.","contract_effect":"clarifies SEC-005/B4"}
+  ],
+  "protected_semantics": {
+    "asset_revision_bundle": ["AssetId","immutable digest","source identity","source metadata","audio/media semantics","provenance","licence","derivation"],
+    "rule": "indivisible; no security, migration, package, network, target or decode path may field-mix revisions"
+  },
+  "residual_risks": [
+    "real Godot/native/browser process and origin isolation",
+    "third-party image/audio/font/mesh decoder vulnerabilities",
+    "production archive/ZIP library implementation behavior",
+    "production signature/key/revocation implementation",
+    "browser permission and lifecycle behavior across engines",
+    "production quota values and adversarial performance calibration"
+  ]
+}
