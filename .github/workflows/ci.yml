@@ -92,3 +92,7 @@ jobs:
         run: python tools/validate_smx021.py
       - name: Run SMX-021 production guardrail tests
         run: python -m unittest discover -s tests/production -p 'test_smx021.py' -v
+      - name: Validate SMX-022 mechanism-selection evidence
+        run: python tools/validate_smx022.py
+      - name: Run SMX-022 deterministic storage spike checks
+        run: python -m unittest discover -s experiments/smx-022-storage-spike -p 'test_spike.py' -v
