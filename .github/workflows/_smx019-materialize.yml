@@ -30,3 +30,4 @@ jobs:
           git diff --cached --check
           git commit -m 'SMX-019 materialize browser vertical slice'
           git push origin HEAD:smx-019-browser-vertical-slice
+# Triggered after binary payload tree assembly.
