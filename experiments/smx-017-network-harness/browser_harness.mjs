@@ -303,9 +303,13 @@ async function main() {
 
     function measuredLatencies(clientRecords, authorityRecords) {
       const out = [];
-      for (const pred of clientRecords.filter((r) => r.event === 'prediction')) {
-        const accepted = authorityRecords.find((r) => r.event === 'input_accepted' && r.input_seq === pred.input_seq);
-        if (accepted) out.push({ input_seq: pred.input_seq, client_to_authority_wall_ms: accepted.wall_ms - pred.wall_ms });
+      for (const accepted of authorityRecords.filter((r) => r.event === 'input_accepted')) {
+        const pred = [...clientRecords].reverse().find((r) =>
+          r.event === 'prediction' &&
+          r.input_seq === accepted.input_seq &&
+          r.wall_ms <= accepted.wall_ms
+        );
+        if (pred) out.push({ input_seq: accepted.input_seq, client_to_authority_wall_ms: accepted.wall_ms - pred.wall_ms });
       }
       return out;
     }
