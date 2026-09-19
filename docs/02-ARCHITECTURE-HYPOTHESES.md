@@ -284,3 +284,15 @@ Evidence: `docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md`, `docs/research/SMX-0
 - **H-018 strengthened substantially at integrated model level.** Behaviour, definition, restore and dependency changes are explicit-version/migration/validation driven and rollback-safe rather than implicitly engine-version driven.
 
 H-012/H-013/H-015/H-016/H-017 receive no direct status change from SMX-015. Existing source/audio/provenance, capability, multiplayer, collaboration, publishing and authoring protections remain unchanged.
+
+## SMX-016 review — 2026-09-19
+
+Evidence: `docs/research/SMX-016-SECURITY-HARNESS.md`, `docs/research/SMX-016-SECURITY-FIXTURES.json`, `docs/research/SMX-016-DECISION-EVIDENCE.md`, and `experiments/smx-016-security-harness/`.
+
+- **H-006 strengthened at hostile model level.** Unknown/raw-host opcodes fail closed and recursive instruction, allocation, emitted-work, timer, queue and service-request amplification are independently budgeted without introducing a privileged second user execution path. Compiler completeness and real-runtime accounting remain later implementation work.
+- **H-009 strengthened substantially, still unresolved end-to-end.** The hostile campaign directly exercises no ambient authority, originating-principal attribution, narrowed and depth-bounded delegation, corrupt/cyclic ancestry, live revocation, raw-host denial, recursive authority-token rejection and target-independent semantic mediation. O-021 retains real Godot/browser/native escape resistance, decoder safety, process/origin hardening, production crypto/archive behavior and calibrated quotas.
+- **H-011 strengthened narrowly at hostile acquisition/dependency boundary.** Exact immutable package descriptors plus a bounded acyclic dependency closure reject substitution/confusion before migration or activation without executable Godot scene/PCK semantics.
+- **H-014 strengthened at semantic host-boundary level; physical target isolation remains target-specific.** The same raw-host deny rule holds even when a target physically exposes JavaScriptBridge/GDExtension/process/filesystem facilities to trusted host code. Real target integration remains SMX-019/O-021 evidence.
+- **H-015 strengthened from hostile-boundary centralization.** A versioned generic player provides one pre-activation enforcement point for exact-lock, parser, migration, capability, target and decoder checks. This does not prove browser startup/size/performance.
+
+No other hypothesis receives a status change from SMX-016. Protected source/audio/provenance semantics remain unchanged and indivisible.
