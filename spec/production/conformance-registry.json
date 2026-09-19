@@ -45,6 +45,13 @@
             "deterministic CBOR",
             "protected `AssetId`"
           ]
+        },
+        {
+          "path": "docs/research/SMX-022-BROWSER-EVIDENCE.json",
+          "anchors": [
+            "indexeddb_after_page_interruption",
+            "opfs_after_page_interruption"
+          ]
         }
       ],
       "owner_modules": [
@@ -379,6 +386,13 @@
           "anchors": [
             "migration",
             "previous coherent head"
+          ]
+        },
+        {
+          "path": "docs/research/SMX-022-BROWSER-EVIDENCE.json",
+          "anchors": [
+            "indexeddb_after_completed_commit",
+            "opfs_after_completed_close"
           ]
         }
       ],
