@@ -172,7 +172,6 @@ Evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md`, `docs/research/SMX-005-
 
 No other hypothesis receives a status change from SMX-005.
 
-
 ## SMX-006 review record — 2026-09-17
 
 Evidence: `docs/research/SMX-006-CAPABILITY-SANDBOX.md`, `docs/research/SMX-006-SECURITY-FIXTURES.json`, and `experiments/smx-006-security-model/`.
@@ -184,7 +183,6 @@ Evidence: `docs/research/SMX-006-CAPABILITY-SANDBOX.md`, `docs/research/SMX-006-
 
 No other hypothesis receives a status change from SMX-006.
 
-
 ## SMX-007 review record — 2026-09-17
 
 Evidence: `docs/research/SMX-007-LIFECYCLE-RESTORE.md`, `docs/research/SMX-007-LIFECYCLE-FIXTURES.json`, and `experiments/smx-007-lifecycle-model/`.
@@ -194,7 +192,6 @@ Evidence: `docs/research/SMX-007-LIFECYCLE-RESTORE.md`, `docs/research/SMX-007-L
 - **H-018 strengthened further at runtime-snapshot layer, unresolved end-to-end.** Restore checks authored basis and behaviour/private-state versions and requires explicit migration/rejection rather than silently deserializing engine objects. Real cross-Godot-version compatibility remains for SMX-009/015/020.
 
 No other hypothesis receives a status change from SMX-007.
-
 
 ## SMX-008 review record — 2026-09-19
 
@@ -238,3 +235,11 @@ Evidence: `docs/research/SMX-011-COLLABORATION-SEMANTICS.md`, `docs/research/SMX
 - **H-018 strengthened narrowly and constrained at collaboration-history level.** Historical edits are schema-aware and must deterministically migrate or quarantine before reconciliation; structural convergence in a CRDT/OT substrate cannot bypass SplashMX schema/feature compatibility. Multi-version history migration/compaction remains SMX-018/020.
 
 No other hypothesis receives a status change from SMX-011. Existing source/audio/provenance, lifecycle, migration, security, streaming and runtime-network protections remain unchanged.
+
+## SMX-012 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-012-AUTHORING-MODEL.md`, `docs/research/SMX-012-AUTHORING-FIXTURES.json`, and `experiments/smx-012-authoring-model/`.
+
+- **H-016 strengthened at authoring-projection/model level, still awaiting real browser usability evidence.** All 28 representative corpus cases project through one Things/Behaviours/Connections semantic fabric with Stage/Timeline/Rules/Components/Together/People/Publish/Inspect as progressively disclosed views rather than new ownership systems. Beginner Rules and advanced Behaviours target the same execution boundary, ordinary groups promote to reusable definitions without identity replacement, Timeline remains optional, multiplayer presets expose the same control/authority/replication/relevance declaration as Advanced, and collaborative editing remains visibly separate from runtime multiplayer. Twenty-seven executable boundary tests exercise the projection and reject identity reuse, hierarchy-as-ownership, second-model reuse/logic, invalid stable-port connections, transient-state persistence, collaboration/runtime conflation, and partial protected-media revisions. SMX-019 must still measure discoverability, interaction friction, diagnostics, browser constraints and end-to-end create→play→save/reload→publish/load usability before H-016 can be treated as production-proven.
+
+No other hypothesis receives a status change from SMX-012. Existing source/audio/provenance, lifecycle, migration, security, streaming, runtime-network and collaboration protections remain unchanged.
