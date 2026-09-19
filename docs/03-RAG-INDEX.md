@@ -31,7 +31,8 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 25. `docs/research/SMX-011-COLLABORATION-SEMANTICS.md` and companion fixtures — human-visible conflict semantics, causal semantic transactions, local-first reconciliation, undo/history, transient presence separation, and the concrete SMX-018 handoff.
 26. `docs/research/SMX-012-AUTHORING-MODEL.md` and companion fixtures — progressive-disclosure author vocabulary, Stage/Timeline/Rules/Components responsibilities, simple/advanced multiplayer projection, People/collaboration separation, protected media authoring, and concrete SMX-019 gates.
 27. `docs/research/SMX-013-COMPONENT-PACKAGES.md` and companion fixtures — portable component/package identity, exact dependency locks, update/migration rollback, transitive capability attribution, offline/cache, remix/licensing/provenance, and SMX-014/016/019 handoffs.
-28. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+28. `docs/research/SMX-014-PUBLISHING-RUNTIME.md` and companion fixtures — publishing artefact taxonomy, immutable creation revisions, generic-player/server/offline compatibility, exact pre-activation validation, protected media target projection, and concrete SMX-017/019 handoffs.
+29. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -47,11 +48,11 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Lifecycle/serialization/determinism | SMX-007 lifecycle/restore, H-008/H-010/H-018, LIF-001–LIF-018, plus SMX-004 scheduler state and SMX-005 authored/runtime/save/context planes | SMX-007 fixtures/experiment; SMX-015 destructive integration; C-002/C-006/C-012/C-024/C-025/A-002 |
 | Streaming/hot swap | SMX-008 streaming/migration, H-005/H-010/H-011/H-018, STR-001–STR-020, plus SMX-007 lifecycle and SMX-005 catalog/reference semantics | SMX-008 fixtures/experiment; SMX-015 destructive integration; C-006/C-011/C-012/C-015/C-024/C-025/C-026/C-027; A-006/A-012/A-015 |
 | Godot mapping/browser limits | SMX-009 Godot boundary, H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract | SMX-009 fixtures/experiment; current Godot 4.7 primary docs/source |
-| Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-012 authoring projection; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
+| Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-012 authoring projection; SMX-014 publication/runtime handoff; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
 | Collaborative editing | SMX-011 collaboration semantics, Constitution P8, H-013/H-017/H-018, SMX-005 semantic transactions, SMX-003 definition/instance reconciliation, SMX-010 NET-019 separation | SMX-011 fixtures/experiment; SMX-012 People/conflict projection; SMX-018 destructive harness; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
-| Editor UX/progressive disclosure | SMX-012 authoring model, AUTH-001–AUTH-028, UX-001–UX-028, P1–P3, H-016, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010/011 network+collaboration semantics | SMX-012 experiment/fixtures; UXG-001–UXG-012; SMX-019 browser vertical slice |
+| Editor UX/progressive disclosure | SMX-012 authoring model, AUTH-001–AUTH-028, UX-001–UX-028, P1–P3, H-016, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010/011 network+collaboration semantics | SMX-012 experiment/fixtures; UXG-001–UXG-012; SMX-014 publish/load contract; SMX-019 browser vertical slice |
 | Component ecosystem | SMX-013 component/package research, PKG-001–PKG-028, P9/P13, H-004/H-009/H-011/H-018, SMX-003 local-definition/public-interface model, SMX-006 capability boundary, SMX-008 exact acquisition, SMX-012 group→reusable projection | SMX-013 fixtures/experiment; SMX-014 publishing; SMX-016 hostile package campaign; SMX-019 browser UX; C-011/C-022/C-026 |
-| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations, SMX-012 Publish contract | SMX-013 exact package locks; SMX-014/017/019 outputs; C-015/C-023 |
+| Publishing/player/server | SMX-014 publishing/runtime contract, PUB-001–PUB-030, P10–P14, H-014/H-015/H-018, SMX-005 canonical/version model, SMX-009 target profiles, SMX-010 topology declarations, SMX-013 exact package locks | SMX-014 fixtures/experiment; SMX-017 topology harness; SMX-019 browser slice; C-015/C-023 |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
 ## SMX-001 baseline retrieval rules
@@ -289,7 +290,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`, `PKG-###`, `PK-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`, `PKG-###`, `PK-###`, `PUB-###`, `PB-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
@@ -438,3 +439,34 @@ SMX-013 adds the portable-component/distribution contract that publishing, sandb
 - SPDX 3.0.1 licence expressions: https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/
 
 These are implementation/security/provenance comparison inputs, not selected SplashMX dependencies or beginner product metaphors. `PKG-###` and `PK-###` are stable RAG identifier families for component/package semantics and fixtures.
+
+## SMX-014 publishing/runtime retrieval rules
+
+SMX-014 adds the publication and generic-runtime contract that topology, sandbox, browser-vertical-slice, offline and final-architecture work must retrieve before choosing package bytes or deployment infrastructure:
+
+- `docs/research/SMX-014-PUBLISHING-RUNTIME.md` — `PUB-001` through `PUB-030`, artefact taxonomy, immutable publication identity, generic-player launch sequence, compatibility/migration, target projection, hosted/offline/world semantics, exceptional trusted builds, and concrete SMX-017/019 handoffs.
+- `docs/research/SMX-014-PUBLISHING-FIXTURES.json` — `PB-001` through `PB-020` machine-addressable publishing/runtime fixtures.
+- `experiments/smx-014-publishing-model/` — non-normative deterministic publisher/generic-player/offline/share/world model with adversarial tests; it is not a production archive format, hosting service, registry, browser cache, cryptographic trust implementation or Godot player.
+- Durable candidate: **ordinary publishing creates an immutable SplashMX `CreationRevisionId` consumed by a versioned precompiled generic runtime; it does not invoke a per-creation Godot export/compile step.**
+- `ProjectId`, `CreationId`, immutable `CreationRevisionId`, package IDs/revisions, `WorldId`, runtime build identity, hosted `ReleaseId`, URLs/aliases and blob digests are distinct roles. A locator, runtime build or engine resource cannot replace semantic content identity.
+- Generic-player launch resolves a mutable alias to an immutable release, then performs bounded parse/integrity, schema/IR/required-feature negotiation, capability-free staged migration, exact SMX-013 lock acquisition, protected asset verification and current capability policy **before activation**.
+- Runtime playback/offline use exact package locks; they do not run floating dependency resolution or substitute some other compatible cached revision.
+- Unknown required semantic features/extensions/schema/IR fail closed. Explicit optional semantics may be omitted only under declared fallback/compatibility rules.
+- Web/native/headless consume the same canonical creation revision. Target payload differences are non-semantic; stripping follows SplashMX usage (`simulation_required`, `presentation_required`, `presentation_optional`) rather than file extension or Godot resource class.
+- Stable `AssetId` and the immutable digest/source/audio-or-media/provenance/licence/derivation bundle remain canonical across target omission/transcode/import/cache; target derivatives never replace canonical source meaning.
+- Hosted releases are immutable after resolution while friendly share/embed aliases may be retargeted intentionally without rewriting historical releases.
+- Offline launch requires a known exact content/dependency/target payload/runtime-compatible closure. Missing or evicted required bytes are typed unavailability/incompatibility, never silent re-resolution.
+- Persistent `WorldSave`/server-owned world state is a separate lineage tied to an explicit creation basis and excludes transient peer/session/Godot/capability handles. Updating content does not silently update a world.
+- Per-creation builds remain an exceptional trusted deployment class, not a fallback for unsupported ordinary content or an escape path into GDScript/C#/GDExtension/JavaScriptBridge/PCK authority.
+- SMX-017 must run the exact same `CreationRevisionId` and network declarations across offline, peer-hosted browser and dedicated-authoritative envelopes; SMX-019 must execute browser create→play→save/reload→publish→hosted generic-player→offline reload without exposing engine/build/package-manager internals.
+
+### SMX-014 primary-source anchors — refreshed 2026-09-19
+
+- Godot release archive / 4.7.2 stable and 4.8-dev6 context: https://godotengine.org/download/archive/
+- Godot 4.7 export presets/templates/packages and resource selection: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_projects.html
+- Godot stable runtime file/media loading: https://docs.godotengine.org/en/stable/tutorials/io/runtime_file_loading_and_saving.html
+- Godot stable PCK/mod loading and malicious-pack warning: https://docs.godotengine.org/en/stable/tutorials/export/exporting_pcks.html
+- Godot stable dedicated/headless server export: https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_dedicated_servers.html
+- Godot 4.7 browser persistence/background/network constraints: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html
+
+`PUB-###` and `PB-###` join the stable RAG identifier families for publishing/runtime research.

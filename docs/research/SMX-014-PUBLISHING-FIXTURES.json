@@ -1,0 +1,49 @@
+{
+  "schema": "splashmx-smx014-publishing-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "boundary_invariants": [
+    "PUB-001", "PUB-002", "PUB-003", "PUB-004", "PUB-005", "PUB-006", "PUB-007", "PUB-008", "PUB-009", "PUB-010",
+    "PUB-011", "PUB-012", "PUB-013", "PUB-014", "PUB-015", "PUB-016", "PUB-017", "PUB-018", "PUB-019", "PUB-020",
+    "PUB-021", "PUB-022", "PUB-023", "PUB-024", "PUB-025", "PUB-026", "PUB-027", "PUB-028", "PUB-029", "PUB-030"
+  ],
+  "required_acceptance_cases": [
+    "artifact-taxonomy",
+    "generic-player-no-author-export",
+    "compatibility-and-future-content",
+    "target-projection",
+    "pre-execution-security",
+    "offline-and-hosted",
+    "smx017-handoff",
+    "smx019-handoff",
+    "protected-media-preservation"
+  ],
+  "downstream_handoffs": {
+    "SMX-015": "real Godot object/runtime cost context for later browser proof",
+    "SMX-016": "hostile manifest/archive/trust/capability parser proof",
+    "SMX-017": "published creation + runtime/topology launch envelopes",
+    "SMX-019": "browser create-play-publish-load/offline vertical slice",
+    "SMX-020": "final package/runtime/compatibility reconciliation"
+  },
+  "fixtures": [
+    {"id":"PB-001","name":"ordinary generic-player publish","cases":["C-001","C-003"],"expected":["PUB-001","PUB-002","PUB-004","PUB-006"]},
+    {"id":"PB-002","name":"web/native/headless semantic equivalence","cases":["C-015","C-023"],"expected":["PUB-005","PUB-013","PUB-029"]},
+    {"id":"PB-003","name":"required future feature rejection","cases":["A-012"],"expected":["PUB-006","PUB-007","PUB-024"]},
+    {"id":"PB-004","name":"unknown optional future extension preservation","cases":["A-012"],"expected":["PUB-007","PUB-008"]},
+    {"id":"PB-005","name":"bounded capability-free schema migration","cases":["C-025"],"expected":["PUB-008","PUB-019"]},
+    {"id":"PB-006","name":"migration failure leaves content inactive","cases":["A-012"],"expected":["PUB-008","PUB-030"]},
+    {"id":"PB-007","name":"exact package lock at launch","cases":["C-011","C-026"],"expected":["PUB-009","PUB-010"]},
+    {"id":"PB-008","name":"corrupt dependency/asset rejected before activation","cases":["A-012","A-015"],"expected":["PUB-010","PUB-011","PUB-015"]},
+    {"id":"PB-009","name":"required capability denied before user IR","cases":["A-003","A-004"],"expected":["PUB-011","PUB-012"]},
+    {"id":"PB-010","name":"headless strips presentation-only payloads","cases":["C-015","C-023"],"expected":["PUB-013","PUB-014","PUB-016"]},
+    {"id":"PB-011","name":"headless retains simulation-required payloads","cases":["C-023"],"expected":["PUB-014","PUB-029"]},
+    {"id":"PB-012","name":"protected media revision remains indivisible","cases":["C-024","C-026"],"expected":["PUB-015","PUB-016"]},
+    {"id":"PB-013","name":"persistent world remains separate from creation","cases":["C-012","C-023"],"expected":["PUB-017","PUB-018","PUB-019"]},
+    {"id":"PB-014","name":"share alias resolves to immutable release","cases":["C-015"],"expected":["PUB-020","PUB-021","PUB-027"]},
+    {"id":"PB-015","name":"share alias retarget preserves old reproducibility","cases":["C-015"],"expected":["PUB-021","PUB-028"]},
+    {"id":"PB-016","name":"offline bundle exact closure launch","cases":["C-015"],"expected":["PUB-022","PUB-028"]},
+    {"id":"PB-017","name":"offline missing exact bytes fails typed","cases":["A-012"],"expected":["PUB-022","PUB-023"]},
+    {"id":"PB-018","name":"per-creation build stays exceptional trusted path","cases":["A-003","A-015"],"expected":["PUB-004","PUB-025","PUB-026"]},
+    {"id":"PB-019","name":"one publication feeds SMX-017 topology envelopes","cases":["C-013","C-014","C-023"],"expected":["PUB-005","PUB-029"]},
+    {"id":"PB-020","name":"SMX-019 publish/load flow contains no author export toolchain","cases":["C-001","C-015"],"expected":["PUB-004","PUB-020","PUB-027","PUB-030"]}
+  ]
+}

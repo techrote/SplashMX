@@ -1349,3 +1349,110 @@ This is deliberately **not** a production archive/parser, registry, signature/tr
 SMX-013 fixes semantic roles: `PackageId` is distribution namespace around the existing Definition lineage; human requirements resolve intentionally into exact locks; required/optional/lazy behavior and atomic update rollback are defined; transitive capabilities stay principal-attributed; signatures/provenance never grant authority; source/remix/licence/derivation and protected-media semantics are explicit. It deliberately does not choose final PackageId encoding, version-range language/solver, whether evidence eventually justifies parallel incompatible revisions, package/index/container bytes, repository discovery/federation/CDN/mirroring/vendoring, trust roots/signature rotation/revocation freshness, rollback/freeze implementation, persistent cache/store, or detach/materialize/uninstall-state UX.
 
 Owner: SMX-014 for publishing/container/delivery evidence; SMX-016 for hostile parser/trust/repository/capability proof; SMX-019 for browser author/player/offline/update UX; SMX-020 for final Architecture v1.0 reconciliation.
+
+## SMX-014 decision/evidence register — 2026-09-19
+
+This section is authoritative for SMX-014. It refines D-005/D-060 and the SMX-014-owned portions of O-012/O-016/O-017/O-018/O-023 without claiming production package bytes, hosting, trust roots, browser durability, or real Godot/browser performance are solved.
+
+### D-081 — Ordinary Publish creates an immutable SplashMX creation revision for a generic runtime, not a per-creation Godot build
+
+**Status:** DECISION at candidate publishing/runtime semantic level; destructive browser/server proof remains SMX-017/019.
+
+An accepted editable-project revision deterministically projects to a stable `CreationId` lineage plus immutable `CreationRevisionId`. The trusted generic web/native/headless runtime is built separately. Ordinary authors do not operate Godot export presets/templates or compile a project per creation. Unsupported ordinary content yields a typed compatibility outcome rather than silently falling back to privileged code generation. A per-creation build is reserved for an explicitly different trusted deployment/security class.
+
+**Source:** `docs/research/SMX-014-PUBLISHING-RUNTIME.md` PUB-001–PUB-005/PUB-025/PUB-026; PB-001/PB-018/PB-020 and publisher/generic-player tests; strengthens D-005/D-060.
+
+### D-082 — Generic-runtime activation is preceded by compatibility, exact-closure, migration and capability validation
+
+**Status:** DECISION at candidate launch-boundary level; hostile production implementation remains SMX-016.
+
+Launch resolves any mutable locator to an immutable release/revision, performs bounded parsing/integrity checks, negotiates required schema/IR/features/extensions, plans bounded capability-free migrations in staging, verifies the exact SMX-013 package/dependency lock and required asset bytes, and evaluates current capability policy before user IR executes or live substrate bindings become available. Runtime/offline playback does not run floating version resolution or substitute another compatible cached package.
+
+**Source:** SMX-014 PUB-006–PUB-012/PUB-030; PB-003–PB-009/PB-017 and prepare-before-activate adversarial tests; extends D-030/D-038/D-049/D-050/D-077/D-078.
+
+### D-083 — Web/native/headless target projection may vary payloads but not canonical creation or protected media semantics
+
+**Status:** DECISION, publishing-layer carry-forward of D-058/D-067/D-071/D-075/D-080.
+
+All target profiles consume the same `CreationRevisionId`, object/network semantics and exact package identities. Target-private transcodes/imports/placeholders/decoded resources and payload omission are non-semantic derivatives. Stripping is controlled by SplashMX semantic usage: simulation-required data cannot be dropped merely because its source looks visual/audio; presentation-only bytes may be omitted by a declared headless/non-presentation profile. Stable `AssetId` and the complete immutable digest/source/audio-or-media/provenance/licence/derivation bundle remain canonical.
+
+**Source:** SMX-014 PUB-005/PUB-013–PUB-016/PUB-024/PUB-029; PB-002/PB-010–PB-012/PB-019 and protected-media/headless boundary tests.
+
+### D-084 — Persistent worlds/saves are a separate revision lineage anchored to an explicit published-creation basis
+
+**Status:** DECISION at candidate publication/persistence boundary.
+
+A published creation describes executable authored basis; a `WorldSave`/persistent world stores selected runtime state under its own identity/schema and names the basis `CreationId`/`CreationRevisionId`. Publishing a new creation revision does not silently rewrite or advance a world. Basis changes require an explicit validated world/content migration. World records exclude peer/session/socket/Godot/capability handles and rebind current authority/context on restore.
+
+**Source:** SMX-014 PUB-017–PUB-019; PB-013 and world-basis/transient-handle tests; carries D-027/D-042/D-045 forward.
+
+### D-085 — Hosted aliases and offline bundles are distribution wrappers around immutable creation identity
+
+**Status:** DECISION at candidate distribution semantic level.
+
+A hosted `ReleaseId` resolves to an exact creation revision and runtime-selection policy; friendly share/embed aliases may intentionally retarget without mutating historical releases. An offline-capable bundle/installed set contains or names the exact creation/dependency/target-payload closure and an exact compatible runtime build/requirement. Offline launch verifies cached bytes, re-evaluates current capabilities, never re-solves versions, and reports typed unavailability/incompatibility when required closure is absent. URLs, aliases, cache keys and runtime builds never replace `CreationId`/`CreationRevisionId`.
+
+**Source:** SMX-014 PUB-020–PUB-023/PUB-027/PUB-028; PB-014–PB-017 and hosted/offline/reproducibility tests.
+
+### D-086 — Required future semantics fail closed; explicit optional semantics may degrade without rewriting the published revision
+
+**Status:** DECISION at compatibility boundary; real multi-version migration remains destructive/final-reconciliation work.
+
+A generic runtime advertises supported schema/IR/features/extensions. Unknown required semantics, missing migration paths or incompatible exact dependencies block activation with typed outcomes. Optional semantics may be omitted only through a declared compatibility/fallback envelope, and that omission does not mutate the immutable published revision. A reproducibility record pins exact content, dependency lock, runtime build/profile, target payload digests and applied migration chain.
+
+**Source:** SMX-014 PUB-006–PUB-008/PUB-024/PUB-028; PB-003–PB-006 and required/optional/migration/reproducibility tests; strengthens H-018 and D-030.
+
+### E-065 — Godot's normal project export is a build/package pipeline driven by export templates and presets
+
+**Status:** FACT, time-sensitive; checked 2026-09-19 against Godot 4.7.2 stable documentation.
+
+Godot's 4.7 export documentation describes installed export templates, target export presets, playable builds, PCK/ZIP export, command-line `--export-release`/`--export-pack`, and resource-selection options. Dedicated-server export can strip or placeholder presentation resources.
+
+Sources:
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_projects.html
+- https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_dedicated_servers.html
+
+**Implication:** this machinery is appropriate for producing trusted generic SplashMX runtime builds, but making it the ordinary per-creation author Publish step would expose a platform build toolchain and couple content distribution to engine exports.
+
+### E-066 — Godot supports runtime loading of external user-provided media/data without requiring a per-content editor export
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot documents runtime loading/saving of user-provided files including image/audio and ZIP inputs, with runtime HTTP acquisition as a related mechanism.
+
+Source: https://docs.godotengine.org/en/stable/tutorials/io/runtime_file_loading_and_saving.html
+
+**Implication:** current Godot substrate capabilities are compatible with a trusted precompiled generic player consuming separately validated SplashMX publication bytes and creating target-private decoded resources.
+
+### E-067 — Godot PCK/mod loading is not an ordinary untrusted-content security boundary
+
+**Status:** FACT, time-sensitive; refreshed 2026-09-19.
+
+Godot's PCK/ZIP documentation states packs can contain scripts/scenes/shaders and warns that malicious or replaced pack content can create security vulnerabilities.
+
+Source: https://docs.godotengine.org/en/stable/tutorials/export/exporting_pcks.html
+
+**Implication:** ordinary SplashMX community publications cannot simply be arbitrary executable Godot PCK/mod projects. They remain data plus constrained SplashMX logic validated behind the capability/IR boundary.
+
+### E-068 — SMX-014 model exercises publication, generic-runtime validation, target projection, hosted/offline and persistent-world boundaries before activation
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`experiments/smx-014-publishing-model/` exercises 39 deterministic tests over the `PB-001`–`PB-020` contract: deterministic no-export publication; stable creation versus project/runtime identities; web/native/headless projection of one revision; required/optional future-feature behavior; capability-free bounded migration and migration failures; exact package/blob checks and no floating substitution; capability denial before activation; semantic headless stripping; complete source/audio/provenance bundles; engine/capability-handle smuggling rejection; world-basis separation; immutable hosted releases and mutable aliases; exact offline runtime/closure; reproducibility records; release collisions; corruption/size amplification; and exceptional per-creation-build gating.
+
+This is deliberately **not** a production package parser/container, hosted service/CDN/registry, signature/trust-root implementation, browser cache/store proof, Godot startup/frame benchmark, native installer, or usability result. Those remain SMX-015/016/017/019/020 obligations.
+
+### SMX-014 hypothesis snapshot
+
+- H-014: **strengthened further at publishing/runtime-contract level; real integration/performance evidence remains SMX-015/019**.
+- H-015: **strengthened substantially at semantic/proof-model level, not production-proven** — one immutable creation revision is consumed by precompiled web/native/headless runtime profiles without an ordinary per-creation build; SMX-017/019 must still test real runtime behavior, startup/size/performance and author experience.
+- H-018: **strengthened further at publication/runtime-negotiation level** — compatibility is schema/IR/feature + explicit migration driven, with separate world basis/migration and typed unsupported-future outcomes rather than implicit Godot-version compatibility.
+- Existing source/audio/provenance, package/capability, lifecycle, multiplayer, collaboration and progressive-authoring decisions remain unchanged.
+
+### O-024 — Production publishing/container/hosting/runtime-compatibility implementation
+
+**Status:** OPEN after SMX-014; this entry supersedes the remaining SMX-014-owned portions of O-012/O-016/O-017/O-018/O-023 while retaining their unresolved implementation concerns.
+
+SMX-014 now fixes the semantic artefact taxonomy, immutable creation identity, generic-player ordinary publication path, pre-activation compatibility/security/exact-lock gates, web/native/headless projection rules, persistent-world separation, hosted immutable release + mutable alias semantics, offline exact-closure behavior, reproducibility inputs, and exceptional trusted-build boundary. It deliberately does **not** choose final creation/package/container/index bytes or compression, repository/CDN/discovery/federation/mirroring, signature/trust-root/rotation/revocation-freshness implementation, browser/native cache journaling/quota/eviction/crash consistency, target transcode/build-farm policy, historical runtime retention, native installers/app-store wrappers, or production compatibility-channel syntax. Real Godot/browser startup, memory, object-fabric and frame cost remains O-020 rather than being papered over by the Python proof.
+
+Owner: SMX-015 for real object/runtime integration cost; SMX-016 for hostile parser/trust/capability proof; SMX-017 for topology-equivalent generic-runtime execution; SMX-019 for browser create→publish→hosted/offline usability/performance/storage evidence; SMX-020 for final Architecture v1.0 reconciliation.
