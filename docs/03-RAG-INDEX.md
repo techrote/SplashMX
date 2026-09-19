@@ -1,7 +1,7 @@
 # SplashMX RAG index — Architecture v1.0
 
 **Status:** post-freeze retrieval authority, 2026-09-19.  
-**Exact pre-freeze research RAG index:** `docs/history/pre-v1/03-RAG-INDEX-pre-v1.md`
+**Exact pre-freeze research RAG index:** `docs/03-RAG-INDEX.pre-v1.md`
 
 This file is intentionally compact after SMX-020. The full pre-Architecture-v1 retrieval map is preserved byte-for-byte at the historical path above. Future autonomous work should start from the frozen architecture rather than reconstructing the research campaign unless evidence detail is actually needed.
 
@@ -22,7 +22,7 @@ Retrieve `docs/01-RESEARCH-ROADMAP.md` and `docs/02-ARCHITECTURE-HYPOTHESES.md` 
 
 ## Pre-freeze research is evidence, not competing authority
 
-The complete pre-v1 RAG map, hypothesis chronology, roadmap, and decision/evidence log are retained under `docs/history/pre-v1/`. Research specifications, fixtures, experiments and syntheses remain under `docs/research/` and `experiments/`.
+The complete pre-v1 RAG map, hypothesis chronology, roadmap, and decision/evidence log are retained beside their active counterparts as `docs/*.pre-v1.md`. Research specifications, fixtures, experiments and syntheses remain under `docs/research/` and `experiments/`.
 
 Use those materials when the current task touches a frozen decision and needs the falsification evidence, exact fixture IDs, rejected alternatives, measurements, or residual-risk boundary. Do **not** let provisional early wording override the constitution, Architecture v1, or an accepted post-freeze ADR.
 
@@ -86,10 +86,10 @@ The post-freeze architecture incorporates and production tests should retain:
 
 For archaeology, exact issue-era wording, old source lists, or legacy fixture-family lookup, start with:
 
-- `docs/history/pre-v1/01-RESEARCH-ROADMAP-pre-v1.md`;
-- `docs/history/pre-v1/02-ARCHITECTURE-HYPOTHESES-pre-v1.md`;
-- `docs/history/pre-v1/03-RAG-INDEX-pre-v1.md`;
-- `docs/history/pre-v1/05-DECISION-AND-EVIDENCE-LOG-pre-v1.md`.
+- `docs/01-RESEARCH-ROADMAP.pre-v1.md`;
+- `docs/02-ARCHITECTURE-HYPOTHESES.pre-v1.md`;
+- `docs/03-RAG-INDEX.pre-v1.md`;
+- `docs/05-DECISION-AND-EVIDENCE-LOG.pre-v1.md`.
 
 Those files are historical evidence snapshots. Their presence is deliberate; they must not be edited to make later decisions look inevitable.
 
