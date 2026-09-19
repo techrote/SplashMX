@@ -92,10 +92,10 @@ def main() -> None:
         if token not in workflow:
             fail(f"real-topology workflow missing pinned contract token: {token}")
 
-    # The one Godot runtime is deliberately policy-driven: peer/dedicated mode
-    # names belong to orchestration/configuration, not hard-coded canonical
-    # branches. Require the topology input and adapter implementation here, and
-    # require all three concrete executions in the external orchestrator.
+    # The one Godot runtime is policy-driven: peer/dedicated mode names belong
+    # to orchestration/configuration rather than topology-specific canonical
+    # branches. Require topology input/adapter here and all concrete executions
+    # in the external orchestrator.
     for token in (EXPECTED_SHA, '"topology": "offline"', "cfg.topology", "WebSocketPeer.new"):
         if token not in gd:
             fail(f"single Godot runtime missing expected policy token: {token}")
@@ -103,8 +103,8 @@ def main() -> None:
         if token not in browser:
             fail(f"real topology orchestrator missing execution mode token: {token}")
 
-    required_doc_phrases = (
-        "same canonical SplashMX creation",
+    required_doc_concepts = (
+        "one canonical SplashMX creation",
         "peer-hosted-browser",
         "dedicated-authoritative",
         "cdp-frozen-fallback",
@@ -114,9 +114,9 @@ def main() -> None:
         "not a production network stack",
     )
     doc_lower = doc.lower()
-    for phrase in required_doc_phrases:
-        if phrase.lower() not in doc_lower:
-            fail(f"research document missing scope/contract phrase: {phrase}")
+    for concept in required_doc_concepts:
+        if concept.lower() not in doc_lower:
+            fail(f"research document missing scope/contract concept: {concept}")
 
     for token in ("D-105", "D-110", "E-077", "E-081", "O-027"):
         if token not in decision:
