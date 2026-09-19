@@ -3,7 +3,7 @@
 **Status:** completed and superseded for active implementation planning on 2026-09-19.  
 **Frozen architecture:** `docs/architecture/ARCHITECTURE-V1.md`  
 **Production roadmap:** `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md`  
-**Exact pre-freeze roadmap:** `docs/history/pre-v1/01-RESEARCH-ROADMAP-pre-v1.md`
+**Exact pre-freeze roadmap:** `docs/01-RESEARCH-ROADMAP.pre-v1.md`
 
 The SMX-001 through SMX-020 pre-architecture research programme is complete. The original dependency graph, work-package descriptions, gates, and research questions are retained byte-for-byte at the historical path above so evidence provenance is not lost.
 
