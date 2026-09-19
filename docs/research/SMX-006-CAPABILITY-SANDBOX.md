@@ -995,3 +995,20 @@ https://www.w3.org/TR/clipboard-apis/
 https://notifications.spec.whatwg.org/
 
 These sources are evidence about the host platform. They are not the SplashMX public capability contract.
+
+## SMX-016 hostile-proof reconciliation — 2026-09-19
+
+SMX-016 executed the hostile attack plan above and keeps SEC-001–SEC-018 intact. The campaign found four enforcement ambiguities that are now part of the authoritative interpretation of this contract:
+
+- **R-016-01 — host-independent archive normalization:** path validation occurs before extraction; separator normalization plus Unicode NFC and collision rejection must prevent Unicode/case/native-device/trailing-dot-space aliases from resolving ambiguously on a target filesystem. This does not change the case semantics of SplashMX logical IDs.
+- **R-016-02 — recursive authority-field rejection:** canonical and network structured input must reject forbidden live capability, host/native/browser/Godot handle, peer/session authority, raw loader and code-authority fields **recursively** inside the bounded payload, not only in a top-level envelope.
+- **R-016-03 — delegation bounds are pre-allocation:** delegation depth and total grant count are checked before adding a child grant; ancestry traversal is cycle-safe, and missing/cyclic/corrupt ancestry is non-live. Scope/lifetime monotonic narrowing and ancestor revocation/expiry remain mandatory.
+- **R-016-04 — use-time reauthorization:** admission-time service authorization is insufficient for asynchronous staged requests. The broker rechecks the originating principal's live grant, scope and relevant policy **immediately before host invocation**, so revoke/expiry/policy change after staging fails closed before the adapter crosses the host boundary.
+
+The hostile harness also confirms the required ordering: exact package lock, bounded dependency closure and bounded canonical/security validation all precede capability-free migration and activation. Resource limits remain independent deterministic semantic counters; specific numerical quotas are implementation policy and require real target calibration.
+
+Target hardening is defence in depth, not an authority model. Ordinary user content has the same raw-host denial on web/native/headless even if trusted host code physically contains JavaScriptBridge, GDExtension, process or filesystem facilities. A hardened web template may remove JavaScriptBridge/eval from the TCB; native/headless still require separate OS/process/container hardening.
+
+Protected source/audio/provenance semantics remain unchanged: stable `AssetId` selects one indivisible immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision. Security failure, package resolution, migration, network transport, target projection and decode caches may not field-mix revisions.
+
+The residual real-runtime/decoder assurance gap is tracked as **O-021**: a deterministic Python harness does not prove Godot/browser/native process/origin escape resistance, production archive/crypto correctness, third-party decoder safety, cross-browser permission/lifecycle behavior, or calibrated production quotas. SMX-019 owns the real browser/generic-player evidence; Architecture v1.0 must retain this residual risk unless later evidence closes it.
