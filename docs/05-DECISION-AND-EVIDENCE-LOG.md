@@ -1243,3 +1243,109 @@ Owner: SMX-019, with component/publishing inputs from SMX-013/014 and real multi
 ## Maintenance rule
 
 When an issue resolves or materially changes an entry here, update this file in the same PR or explicitly supersede it with an ADR referenced here. Do not allow stale early assumptions to remain indistinguishable from current decisions.
+
+## SMX-013 decision/evidence register — 2026-09-19
+
+This section is authoritative for SMX-013 and explicitly supersedes the unresolved portions of O-013/O-018 above that assigned package namespace/resolution/trust semantics to SMX-013. The older entries are retained as historical context until final Architecture v1.0 reconciliation.
+
+### D-076 — Portable packages extend the same Definition/Thing model rather than introducing a package object taxonomy
+
+**Status:** DECISION at candidate component/distribution semantic level; real publishing/browser proof remains SMX-014/019.
+
+An ordinary local reusable definition becomes portable by adding a durable `PackageId` distribution namespace and immutable package revision around the same `DefinitionId`/`ElementId`/stable public-port lineage. Existing first-instance `ThingId` values are not rewritten by promotion, and consuming projects instantiate ordinary Things rather than package-specific runtime subclasses.
+
+**Source:** `docs/research/SMX-013-COMPONENT-PACKAGES.md` PKG-001–PKG-003; PK-001 and promotion tests; carries D-015–D-018/D-073 forward.
+
+### D-077 — Human dependency requirements resolve intentionally to one exact immutable project lock before runtime use
+
+**Status:** DECISION at candidate dependency semantic level; production solver/registry syntax remains open.
+
+Required, optional and lazy dependency edges are explicit. The current conservative candidate resolves one exact revision per `PackageId` per creation, bounds depth/count/bytes/work, rejects cycles and incompatible transitive constraints, and records exact revision/digest/size/feature/provenance descriptors. Runtime/streaming/publishing/offline reacquisition consume that exact lock; they do not float ranges or silently substitute another cached compatible version.
+
+**Source:** SMX-013 PKG-004–PKG-014; PK-002–PK-009 plus transitive-conflict/boundary tests; refines D-049/D-050/D-055.
+
+### D-078 — Package installation, dependency edges, signatures and provenance never mint host capability
+
+**Status:** DECISION, package-layer carry-forward of D-033–D-040.
+
+Capability declarations remain attributed to the requesting package/component principal, including transitive dependencies. Parent grants are not inherited; explicit live delegation can only narrow an existing delegable lease. Required denial blocks staged install/update, optional denial may use an explicit degraded path, and publisher signatures/source availability/remix/licence/provenance metadata remain trust/distribution inputs rather than authority.
+
+**Source:** SMX-013 PKG-015–PKG-017; PK-010–PK-012 and capability-laundering boundary tests.
+
+### D-079 — Component/package updates are staged semantic reconciliations with whole-update rollback
+
+**Status:** DECISION at candidate update/migration semantic level; production mixed-version policy remains open.
+
+A new dependency closure is resolved/acquired/verified/authorized before live publication. Compatible updates preserve concrete `ThingId`, valid sparse overlays, public interface identities and persistent state; schema changes require explicit bounded migration. Port/overlay/migration/capability incompatibility leaves the old exact lock, instances, state, interfaces and pending work coherent and active. Verified immutable bytes may remain inert in cache.
+
+**Source:** SMX-013 PKG-018–PKG-022; PK-013–PK-016 and multi-instance migration rollback tests; extends D-017/D-030/D-053.
+
+### D-080 — Package removal/cache/remix/protected-media semantics preserve project identity and provenance
+
+**Status:** DECISION, explicit distribution-layer carry-forward of D-031/D-051/D-058/D-071/D-075.
+
+Removing a project dependency is reference-aware while cache eviction is non-semantic. Source availability, remix permission, licence/attribution and derivation lineage remain explicit distribution metadata and do not alter execution trust. Stable `AssetId` points to an indivisible immutable digest/source/audio-or-media/provenance/licence/derivation revision; package update/publish/resolution cannot field-mix competing revisions or replace canonical source identity with imported/transcoded/cache artefacts.
+
+**Source:** SMX-013 PKG-023–PKG-028; PK-017–PK-020 and protected-media boundary tests.
+
+### E-060 — Cargo provides a current manifest-requirement versus exact-lock precedent
+
+**Status:** FACT / package-system comparison input; checked 2026-09-19.
+
+Current Cargo documentation separates dependency version requirements from exact resolution state recorded in `Cargo.lock`. SplashMX uses the separation as precedent while keeping final range syntax/solver and beginner UX open.
+
+Sources:
+- https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html
+- https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
+
+### E-061 — npm 11 package-lock records an exact reproducible dependency tree with resolved/integrity metadata
+
+**Status:** FACT / package-system comparison input; checked 2026-09-19.
+
+npm 11 documentation describes `package-lock.json` as the exact dependency-tree representation used to reproduce installs, including resolved locations and integrity metadata. SplashMX adopts the exact-lock lesson but explicitly rejects arbitrary install scripts/ambient host execution for ordinary packages.
+
+Sources:
+- https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/
+- https://docs.npmjs.com/cli/v11/configuring-npm/package-json/
+
+### E-062 — TUF names rollback/freeze/mix-and-match and bounded verified-repository threat classes relevant to component distribution
+
+**Status:** FACT / secure-distribution comparison input; refreshed 2026-09-19.
+
+The current TUF specification remains a primary precedent for signed repository metadata, target digests/sizes, freshness/version roles and rollback/freeze/mix-and-match defenses. SMX-013 does not select the complete TUF role architecture; SMX-016 must test whichever concrete trust/update mechanism is chosen.
+
+Source: https://theupdateframework.io/specification/latest/
+
+### E-063 — SLSA 1.2 provenance and SPDX 3.0.1 licence expressions provide machine-readable provenance/licensing precedents without implying runtime privilege
+
+**Status:** FACT / provenance and licensing comparison input; checked 2026-09-19.
+
+SLSA 1.2 describes provenance as verifiable information tracing artifact production, while SPDX 3.0.1 specifies licence-expression grammar and custom licence references. These support explicit package provenance/licensing metadata; neither source supports treating provenance or a signature as a host capability grant.
+
+Sources:
+- https://slsa.dev/spec/v1.2/provenance
+- https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/
+
+### E-064 — SMX-013 model exercises portable identity, exact dependencies, capability attribution, transactional update and protected-media boundaries
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`experiments/smx-013-package-model/` exercises 41 deterministic tests across `PK-001`–`PK-020`: local-definition promotion with identity preservation; exact locks; required/optional/lazy dependencies; cycle/depth/byte/range/revocation failures; offline exact-cache behavior; digest/revision collision checks; transitive capability attribution and non-inheritance; narrowed delegation; signature-without-privilege; compatible and schema-migrating updates; whole-update rollback; invalid overlay/port rejection; uninstall/cache separation; and atomic digest/source/audio-or-media/provenance/licence/derivation asset replacement.
+
+This is deliberately **not** a production archive/parser, registry, signature/trust-root implementation, browser cache/store proof, solver-performance benchmark, marketplace or author-usability result. Those remain SMX-014/016/019 obligations.
+
+### SMX-013 hypothesis snapshot
+
+- H-004: **strengthened substantially at semantic/package-model level; real browser/publishing proof pending**.
+- H-009: **strengthened further at package/dependency layer; real hostile package/trust/host escape proof remains SMX-016**.
+- H-011: **strengthened further at distribution/resolution layer** — exact package locks feed object-centric streaming while package/cache boundaries remain non-semantic.
+- H-018: **strengthened further at component-update layer** — compatibility is stable-locus/feature/schema/migration driven with rollback rather than engine-version implicit.
+- Existing source/audio/provenance, lifecycle, collaboration, multiplayer, Godot-boundary and progressive-authoring decisions remain unchanged.
+
+### O-023 — Production package ecosystem, resolver and distribution-trust implementation
+
+**Status:** OPEN after SMX-013; this entry supersedes the unresolved SMX-013-owned portions of O-013 and O-018.
+
+SMX-013 fixes semantic roles: `PackageId` is distribution namespace around the existing Definition lineage; human requirements resolve intentionally into exact locks; required/optional/lazy behavior and atomic update rollback are defined; transitive capabilities stay principal-attributed; signatures/provenance never grant authority; source/remix/licence/derivation and protected-media semantics are explicit. It deliberately does not choose final PackageId encoding, version-range language/solver, whether evidence eventually justifies parallel incompatible revisions, package/index/container bytes, repository discovery/federation/CDN/mirroring/vendoring, trust roots/signature rotation/revocation freshness, rollback/freeze implementation, persistent cache/store, or detach/materialize/uninstall-state UX.
+
+Owner: SMX-014 for publishing/container/delivery evidence; SMX-016 for hostile parser/trust/repository/capability proof; SMX-019 for browser author/player/offline/update UX; SMX-020 for final Architecture v1.0 reconciliation.
