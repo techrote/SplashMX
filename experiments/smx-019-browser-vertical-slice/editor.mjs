@@ -36,7 +36,7 @@ function loadSaved() {
 }
 
 function save() {
-  if (storageDenied()) throw Object.assign(new Error('This browser cannot save this project here.'), { code: 'storage_unavailable' });
+  if (storageDenied()) throw Object.assign(new Error('Save failed: this browser cannot save this project here.'), { code: 'storage_unavailable' });
   const snapshot = editableSnapshot(project);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
   setStatus('Saved.', 'ok');
