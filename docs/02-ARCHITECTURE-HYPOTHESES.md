@@ -3,7 +3,7 @@
 **Status:** hypothesis campaign closed by SMX-020 on 2026-09-19.  
 **Frozen architecture:** `docs/architecture/ARCHITECTURE-V1.md`  
 **Machine-readable closure:** `docs/architecture/ARCHITECTURE-V1-AUDIT.json`  
-**Exact pre-freeze hypothesis/evidence chronology:** `docs/history/pre-v1/02-ARCHITECTURE-HYPOTHESES-pre-v1.md`
+**Exact pre-freeze hypothesis/evidence chronology:** `docs/02-ARCHITECTURE-HYPOTHESES.pre-v1.md`
 
 The H-001–H-018 register began as deliberately falsifiable propositions. SMX-001 through SMX-019 accumulated model, destructive, hostile, real-topology, collaboration, and browser evidence. SMX-020 reconciled that chronology and freezes the dispositions below.
 
