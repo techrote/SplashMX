@@ -318,6 +318,64 @@ Canonical authored documents, save-state records, package signatures, and ordina
 
 **Source:** SMX-006 SEC-003/SEC-012/SEC-017; ST-009/ST-010.
 
+
+
+### D-041 — Lifecycle uses orthogonal existence, residency, and activity axes
+
+**Status:** DECISION at lifecycle semantic level; subject to SMX-015 integrated falsification.
+
+A Thing's existence, residency, and activity are distinct. Save/snapshot is an atomic operation over runtime state, not a mutually exclusive lifecycle state. This permits present+resident+active, present+resident+dormant, present+unloaded, and tombstoned semantics without conflation.
+
+**Source:** `docs/research/SMX-007-LIFECYCLE-RESTORE.md` LIF-001/LIF-002/LIF-010; LT-003/LT-004.
+
+### D-042 — Persistent snapshots are quiescent simulation-state projections, not serialized process objects
+
+**Status:** DECISION at runtime/save semantic level.
+
+Snapshots are captured at bounded-turn quiescent boundaries and contain selected persistable runtime state addressed by stable IDs: mutable public/private state, deterministic PRNG state, durable timers/continuations/queued work, selected physics/timeline state, provenance, and tombstones as applicable. Restore must work in a fresh runtime without a surviving Godot/process object.
+
+**Source:** SMX-007 LIF-003–LIF-006/LIF-013/LIF-016; LT-001/LT-009.
+
+### D-043 — Pending work is classified; already-issued external side effects are never implicitly replayed on restore
+
+**Status:** DECISION.
+
+Pending work is classified as durable internal, session-ephemeral, reconstructible, or external wait. A prior HTTP/file/notification/etc. service call is not automatically reissued by restore. External waits require explicit cancel, host-resume, session-only, or author-reissue policy and never serialize host authority/handles.
+
+**Source:** SMX-007 LIF-006–LIF-008; LT-005–LT-007.
+
+### D-044 — Timer semantics name their clock domain; semantic dormancy differs from hidden implementation sleep
+
+**Status:** DECISION.
+
+`thing_active` timers pause during semantic dormancy/unload, `world_logical` deadlines continue with the authoritative world and may create wake/pending-delivery obligations for unloaded targets, while wall-clock time enters as explicit external input/service policy. Engine sleeping/LOD is allowed only when observationally equivalent.
+
+**Source:** SMX-007 LIF-009/LIF-010; LT-004/LT-005.
+
+### D-045 — Restore rebinds transient authority/context from current policy rather than restoring it from save data
+
+**Status:** DECISION.
+
+Godot/physics/audio handles, current peer/session IDs, controller/authority bindings, transport state, live capability grants, browser/OS permission objects, sockets/files/devices and other host handles are not save authority. Restore reconstructs simulation state first, then rebinds current context under the current runtime/network/security policy.
+
+**Source:** SMX-007 LIF-004/LIF-008/LIF-017; SMX-006 D-040; LT-007.
+
+### D-046 — Destruction produces tombstone semantics and ordinary respawn does not reuse the destroyed ThingId
+
+**Status:** DECISION at lifecycle/reference semantic level; tombstone retention/compaction remains downstream.
+
+A destroyed Thing becomes explicitly tombstoned for reference resolution. Ordinary respawn creates a new ThingId. Recreating the same historical ID is allowed only by selecting/restoring an earlier world revision/branch, not by silent identifier reuse in the current lineage.
+
+**Source:** SMX-007 LIF-012/LIF-018; LT-011.
+
+### D-047 — Deterministic restore is required; deterministic future replay requires the same external input stream
+
+**Status:** DECISION at lifecycle determinism level.
+
+Given the same compatible authored basis and snapshot, restore must reconstruct the same declared simulation state, durable scheduler state, logical clocks and PRNG positions before new external inputs are admitted. Future execution can diverge when user/network/service/wall-clock/sensor/entropy inputs differ; a save file is not automatically a replay log.
+
+**Source:** SMX-007 LIF-015; LT-012.
+
 ## Primary-source and comparative evidence
 
 ### E-001 through E-014 — Godot/web/runtime baseline
@@ -538,6 +596,13 @@ Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion f
 - H-014: **strengthened narrowly** — current Godot host powers can remain behind adapters; JavaScriptBridge can be omitted and PCK/GDExtension paths excluded from ordinary content.
 - H-015: **strengthened narrowly from security architecture** — generic players centralize validation/capability mediation/hardening; performance/publishing proof remains later work.
 
+
+### SMX-007
+
+- H-008: **strengthened further** — identity survives dormancy, unload, fresh-runtime snapshot restore, and tombstone resolution without hierarchy/engine pointers.
+- H-010: **strengthened substantially at model level** — unloaded Things retain meaningful IDs/references/pending state and can be reconstructed without surviving process objects; full streaming remains SMX-008/015.
+- H-018: **strengthened further at runtime-snapshot layer, unresolved end-to-end** — authored/behaviour/private-state compatibility is migration/rejection-driven rather than engine-object deserialization.
+
 ## Open architectural questions
 
 ### O-001 — Minimal universal port vocabulary
@@ -548,9 +613,9 @@ Command/event/directional-value; no first-class synchronous cross-Thing query. R
 
 ### O-002 — Where behaviour state lives
 
-**Status:** RESOLVED at execution-semantic level; lifecycle projection remains open.
+**Status:** RESOLVED at execution and lifecycle semantic level.
 
-Private runtime state belongs to stable attachment identity. SMX-005 confirms it is not authored-document state by default. SMX-007 must define save/snapshot/restore policy.
+Private runtime state belongs to stable attachment identity. SMX-007 permits persistable private-state projection into save/snapshot records together with explicit behaviour/private-schema compatibility metadata; it remains separate from authored document state and transient engine/context handles.
 
 ### O-003 — Definition/instance model
 
@@ -584,11 +649,11 @@ Owner: SMX-011/018.
 
 ### O-008 — Durable identity namespace and tombstones
 
-**Status:** PARTIALLY RESOLVED by SMX-005.
+**Status:** NARROWED FURTHER by SMX-007.
 
-Required semantic identity domains and non-path/non-content-hash invariants are explicit. Concrete UUID/ULID/integer/etc. encoding, global/package namespace syntax, and tombstone lifetime/compaction/destruction semantics remain open.
+Required semantic identity domains and non-path/non-content-hash invariants are explicit. Runtime destruction now produces an explicit tombstone, ordinary respawn does not reuse the ID, and historical rewind is distinguished from respawn. Concrete ID encoding, cross-package namespace syntax, and tombstone retention/compaction policy remain open.
 
-Owner: SMX-007/013/014/020.
+Owner: SMX-013/014/020 with lifecycle/streaming evidence from SMX-008/015.
 
 ### O-009 — Canonical reconciliation/conflict transaction model
 
@@ -598,9 +663,9 @@ Transactions are ID/locus-addressed, preconditioned, planned/validated, and atom
 
 ### O-010 — Executor-state serialization and restore semantics
 
-**Status:** NARROWED by SMX-005.
+**Status:** RESOLVED PROVISIONALLY by SMX-007 at semantic level.
 
-Authored document, live runtime, save/world, and context planes are separate. Exact snapshot representation/lifecycle of private state, timers/continuations, PRNG state, queues, correlations, faults, and restore side effects remains SMX-007.
+Snapshots are quiescent projections of selected runtime state: private/public state, deterministic PRNG position, durable timers/continuations/queued work, selected physics/timeline state, provenance and tombstones. External waits carry only non-authoritative descriptors and are never blindly reissued. Production encoding, crash consistency and Godot mapping remain downstream.
 
 ### O-011 — Hard-budget quota values and quarantine/throttling policy
 
@@ -624,15 +689,25 @@ Owner: SMX-013/014/016.
 
 ### O-014 — Capability grant persistence and permission UX
 
-SMX-006 defines principals/scopes/delegation/revocation but not the final persistent user-policy store, prompt cadence, project/editor grant inheritance, or native/browser permission UX. Live grants must not become authored/save authority tokens.
+**Status:** NARROWED by SMX-007.
 
-Owner: SMX-007/012/014/016.
+Live capability grants/host handles are explicitly excluded from authored/save authority. On restore, authored capability requests are re-evaluated against the current host/user policy and browser/OS permission state. The final persistent user-policy store, prompt cadence, editor/project grant inheritance, and UX remain open.
+
+Owner: SMX-012/014/016.
 
 ### O-015 — Hardened custom Godot runtime requirement
 
 SMX-006 identifies concrete value in a custom web template with `javascript_eval=no`, but does not decide whether custom builds are mandatory for all targets or how their maintenance/performance cost compares with stock templates plus mediation.
 
 Owner: SMX-009/016/019.
+
+
+
+### O-016 — Production snapshot/store crash-consistency and performance
+
+SMX-007 defines semantic snapshot cuts and staged atomic restore but not the final on-disk journal/transaction implementation, incremental snapshot algorithm, compression, crash recovery, snapshot compaction, or performance envelope.
+
+Owner: SMX-008/009/014/019/020.
 
 ## Maintenance rule
 
