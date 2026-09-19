@@ -172,15 +172,18 @@ class ArtifactManager:
         self.attempt_counter += 1
 
         closure: list[str] = []
-        seen: set[str] = set()
+        processed_requiredness: dict[str, bool] = {}
         optional_failures: dict[str, str] = {}
         required_stack: list[tuple[str, bool]] = [(root, True) for root in roots]
 
         while required_stack:
             logical_id, required = required_stack.pop()
-            if logical_id in seen:
+            previous = processed_requiredness.get(logical_id)
+            if previous is True:
                 continue
-            seen.add(logical_id)
+            if previous is False and not required:
+                continue
+            processed_requiredness[logical_id] = required or bool(previous)
 
             status, descriptor = self._descriptor_status(logical_id)
             if status != "ok" or descriptor is None:
@@ -193,7 +196,8 @@ class ArtifactManager:
                 optional_failures[logical_id] = status
                 continue
 
-            closure.append(logical_id)
+            if logical_id not in closure:
+                closure.append(logical_id)
             if len(closure) > self.max_artifacts:
                 return AcquisitionResult(
                     status="resource_exhausted",
@@ -388,7 +392,7 @@ class StreamingWorld:
     def _hard_artifacts_for(self, thing: ThingRecord) -> list[str]:
         result: list[str] = []
         for attachment in thing.behaviors.values():
-            if attachment.active:
+            if attachment.active and thing.activity == "active":
                 result.append(attachment.implementation_id)
         for value in thing.provenance.values():
             if isinstance(value, str) and value.startswith(("def:", "component:")):
@@ -419,7 +423,7 @@ class StreamingWorld:
 
         for thing in staged_things.values():
             for attachment in thing.behaviors.values():
-                if attachment.active:
+                if attachment.active and thing.activity == "active":
                     self.artifacts.pin(attachment.implementation_id)
 
         # Atomic publication point for requested Thing set.
