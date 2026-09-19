@@ -82,7 +82,7 @@ Sources:
 
 ## Open residual risks
 
-### O-021 — Real runtime sandbox and decoder assurance
+### O-025 — Real runtime sandbox and decoder assurance
 
 SMX-016 does **not** prove:
 
