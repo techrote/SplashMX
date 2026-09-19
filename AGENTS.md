@@ -12,9 +12,10 @@ For every issue, read the issue body and all documents it names. Unless an issue
 4. `docs/architecture/ARCHITECTURE-V1-AUDIT.json`
 5. `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md` for production implementation work
 6. `docs/implementation/PRODUCTION-PROGRAMME-V1.md` for the active SMX-021–052 dependency/concurrency execution map
-7. `docs/03-RAG-INDEX.md`
-8. `docs/04-ISSUE-EXECUTION-PROTOCOL.md`
-9. `docs/05-DECISION-AND-EVIDENCE-LOG.md`
+7. `docs/implementation/PRODUCTION-CONFORMANCE-V1.md` for production gate/evidence ownership, typed meta-contracts and durable-identity guardrails
+8. `docs/03-RAG-INDEX.md`
+9. `docs/04-ISSUE-EXECUTION-PROTOCOL.md`
+10. `docs/05-DECISION-AND-EVIDENCE-LOG.md`
 
 `docs/01-RESEARCH-ROADMAP.md` and `docs/02-ARCHITECTURE-HYPOTHESES.md` now contain post-freeze closure and point to exact historical pre-v1 snapshots. Retrieve historical research/specifications/fixtures when a task touches their domain, but do not let provisional research wording override the constitution, Architecture v1, or a later accepted ADR.
 
