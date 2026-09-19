@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://splashmx.dev/schema/production/benchmark-evidence-1.json",
+  "title": "SplashMX benchmark evidence metadata v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "evidence_id",
+    "captured_at_utc",
+    "target_profile",
+    "runtime",
+    "environment",
+    "workload",
+    "sample_count",
+    "metrics"
+  ],
+  "properties": {
+    "contract": {
+      "const": "splashmx.benchmark-evidence/1"
+    },
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "captured_at_utc": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "target_profile": {
+      "type": "string",
+      "enum": [
+        "browser",
+        "native",
+        "headless"
+      ]
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "build_id"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "build_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "browser": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "os",
+        "arch",
+        "hardware"
+      ],
+      "properties": {
+        "os": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hardware": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpu",
+            "gpu",
+            "memory_bytes"
+          ],
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "minLength": 1
+            },
+            "gpu": {
+              "type": "string",
+              "minLength": 1
+            },
+            "memory_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]+$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sample_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "unit",
+          "statistic",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "statistic": {
+            "type": "string",
+            "enum": [
+              "single",
+              "min",
+              "max",
+              "mean",
+              "median",
+              "p50",
+              "p90",
+              "p95",
+              "p99"
+            ]
+          },
+          "value": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}
