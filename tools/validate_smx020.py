@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Validate the SMX-020 Architecture v1 freeze artefacts.
 
-This validator checks the machine-addressable closure rather than attempting to
-prove the prose architecture correct.  It exists to prevent accidental loss of
-hypothesis disposition, contradiction reconciliation, protected-media fields,
-authority-chain links, or implementation-roadmap gates.
+The machine-readable audit validator is intentionally factored so boundary tests
+can mutate an in-memory audit and prove that incomplete/contradictory freezes are
+rejected without modifying repository files.
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,6 +51,13 @@ EXPECTED_CORRECTIONS = {
     "R-018-04",
     "R-019-01",
 }
+AUTHORITY_PATHS = {
+    "constitution": "docs/00-PROJECT-CONSTITUTION.md",
+    "architecture": "docs/architecture/ARCHITECTURE-V1.md",
+    "freeze_adr": "docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md",
+    "implementation_roadmap": "docs/architecture/IMPLEMENTATION-ROADMAP-V1.md",
+    "research_index": "docs/03-RAG-INDEX.md",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -58,16 +65,14 @@ def require(condition: bool, message: str) -> None:
         raise AssertionError(message)
 
 
-def read(path: Path) -> str:
-    require(path.is_file(), f"missing required file: {path.relative_to(ROOT)}")
+def read(path: Path, root: Path = ROOT) -> str:
+    require(path.is_file(), f"missing required file: {path.relative_to(root)}")
     return path.read_text(encoding="utf-8")
 
 
-def main() -> None:
-    for path in REQUIRED_FILES:
-        require(path.is_file(), f"missing required file: {path.relative_to(ROOT)}")
+def validate_audit(audit: dict[str, Any], *, check_paths: bool = True, root: Path = ROOT) -> tuple[int, int]:
+    """Validate freeze closure invariants; return hypothesis and seam counts."""
 
-    audit = json.loads(read(AUDIT))
     require(audit.get("schema") == "splashmx.architecture-v1-audit/1", "unexpected audit schema")
     require(audit.get("architecture_version") == "1.0", "architecture version must be 1.0")
     require(audit.get("freeze_date") == "2026-09-19", "freeze date mismatch")
@@ -104,17 +109,22 @@ def main() -> None:
     require(len(audit.get("post_freeze_residual_classes", [])) >= 8, "residual implementation risks were collapsed or lost")
 
     authority = audit.get("authority", {})
-    for key, expected in {
-        "constitution": "docs/00-PROJECT-CONSTITUTION.md",
-        "architecture": "docs/architecture/ARCHITECTURE-V1.md",
-        "freeze_adr": "docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md",
-        "implementation_roadmap": "docs/architecture/IMPLEMENTATION-ROADMAP-V1.md",
-        "research_index": "docs/03-RAG-INDEX.md",
-    }.items():
+    for key, expected in AUTHORITY_PATHS.items():
         require(authority.get(key) == expected, f"authority entry {key} changed")
-        require((ROOT / expected).exists(), f"authority target does not exist: {expected}")
+        if check_paths:
+            require((root / expected).exists(), f"authority target does not exist: {expected}")
 
-    arch = read(ARCH)
+    return len(hypotheses), len(audit_rows)
+
+
+def validate_repository(root: Path = ROOT) -> tuple[int, int]:
+    for path in REQUIRED_FILES:
+        require(path.is_file(), f"missing required file: {path.relative_to(root)}")
+
+    audit = json.loads(read(AUDIT, root))
+    hypothesis_count, seam_count = validate_audit(audit, check_paths=True, root=root)
+
+    arch = read(ARCH, root)
     required_architecture_text = [
         "# SplashMX Architecture v1.0",
         "## 2. Product and authoring contract",
@@ -141,7 +151,7 @@ def main() -> None:
     for hid in EXPECTED_HYPOTHESES:
         require(hid in arch, f"Architecture v1 missing final disposition for {hid}")
 
-    roadmap = read(ROADMAP)
+    roadmap = read(ROADMAP, root)
     for needle in [
         "canonical core and protected assets",
         "bounded execution and capabilities",
@@ -157,17 +167,17 @@ def main() -> None:
     ]:
         require(needle.lower() in roadmap.lower(), f"implementation roadmap missing gate/topic: {needle}")
 
-    adr = read(ADR)
+    adr = read(ADR, root)
     require("Status:** Accepted" in adr, "freeze ADR must be Accepted")
     require("ARCHITECTURE-V1-AUDIT.json" in adr, "freeze ADR must point at machine-readable contradiction audit")
     require("research documents" in adr.lower() and "evidence" in adr.lower(), "freeze ADR must preserve historical research as evidence")
 
-    hypothesis_text = read(HYPOTHESES)
+    hypothesis_text = read(HYPOTHESES, root)
     require("Architecture v1.0 final closure" in hypothesis_text, "hypothesis register lacks final Architecture-v1 closure")
     for hid in EXPECTED_HYPOTHESES:
         require(hid in hypothesis_text, f"hypothesis register missing {hid}")
 
-    rag = read(RAG)
+    rag = read(RAG, root)
     require("Architecture v1.0 post-freeze retrieval rules" in rag, "RAG index lacks post-freeze authority chain")
     for path in [
         "docs/architecture/ARCHITECTURE-V1.md",
@@ -177,18 +187,31 @@ def main() -> None:
     ]:
         require(path in rag, f"RAG index does not retrieve {path}")
 
-    log = read(LOG)
+    log = read(LOG, root)
     require("SMX-020 Architecture v1.0 freeze register" in log, "decision/evidence log lacks SMX-020 freeze register")
     for marker in ["D-117", "D-118", "D-119", "D-120", "D-121", "D-122", "D-123", "E-088", "O-029"]:
         require(marker in log, f"decision/evidence log lacks {marker}")
 
-    agents = read(AGENTS)
+    agents = read(AGENTS, root)
     require("docs/architecture/ARCHITECTURE-V1.md" in agents, "AGENTS.md does not include frozen Architecture v1 authority")
     require("docs/architecture/IMPLEMENTATION-ROADMAP-V1.md" in agents, "AGENTS.md does not point implementation work to the production roadmap")
 
+    for historical in [
+        "docs/history/pre-v1/01-RESEARCH-ROADMAP-pre-v1.md",
+        "docs/history/pre-v1/02-ARCHITECTURE-HYPOTHESES-pre-v1.md",
+        "docs/history/pre-v1/03-RAG-INDEX-pre-v1.md",
+        "docs/history/pre-v1/05-DECISION-AND-EVIDENCE-LOG-pre-v1.md",
+    ]:
+        require((root / historical).is_file(), f"historical pre-v1 authority snapshot missing: {historical}")
+
+    return hypothesis_count, seam_count
+
+
+def main() -> None:
+    hypothesis_count, seam_count = validate_repository()
     print(
-        f"SMX-020 validation passed: {len(hypotheses)} hypotheses closed, "
-        f"{len(audit_rows)} cross-domain seams resolved, protected-media contract intact."
+        f"SMX-020 validation passed: {hypothesis_count} hypotheses closed, "
+        f"{seam_count} cross-domain seams resolved, protected-media contract intact."
     )
 
 
