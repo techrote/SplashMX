@@ -218,3 +218,13 @@ Evidence: `docs/research/SMX-009-GODOT-BOUNDARY.md`, `docs/research/SMX-009-GODO
 - **H-018 strengthened further.** Snapshots and migration state exclude engine handles; target projection and derived/imported resources preserve canonical revision and source/provenance identity. Actual migration across future Godot versions remains for SMX-015/020.
 
 No other hypothesis receives a status change from SMX-009.
+
+## SMX-010 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md`, `docs/research/SMX-010-RUNTIME-MULTIPLAYER-FIXTURES.json`, and `experiments/smx-010-multiplayer-model/`.
+
+- **H-012 strengthened substantially at model level, still awaiting the real topology harness.** One canonical creation and one authored network declaration are exercised unchanged under offline, peer-hosted, and dedicated-authoritative policies. Control, simulation authority, relevance, reconnect, and host migration are runtime relationships/context rather than network-specific object subclasses. SMX-017 must still test real browser/server transports, packet loss/latency, tab suspension, reconnect, and host-loss failure.
+- **H-013 strengthened.** Runtime replication uses state/event/input/baseline/relevance/authority semantics and deliberately contains no canonical edit-transaction, base-revision, or collaboration-conflict protocol. Collaboration remains a separate consistency layer even if later implementations share authentication or transport infrastructure.
+- **H-014 strengthened further at the network boundary.** Godot peer IDs, SceneTree authority, RPC annotations, and transport transfer modes remain target-private adapter data. Current WebSocket/WebRTC/headless facilities can implement topology policy without entering durable Thing identity or canonical network meaning.
+
+No other hypothesis receives a status change from SMX-010. Existing source/audio/provenance, lifecycle, migration, security, and canonical-document protections remain unchanged.

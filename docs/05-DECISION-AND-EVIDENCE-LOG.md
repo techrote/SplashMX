@@ -476,6 +476,62 @@ A versioned generic SplashMX runtime may load one canonical creation revision on
 
 **Source:** SMX-009 GOD-004–GOD-007/GOD-015/GOD-018; GB-002–GB-004/GB-011.
 
+### D-061 — Multiplayer topology is runtime policy over one canonical Thing/network declaration
+
+**Status:** DECISION at pre-architecture runtime-network semantic level; subject to the real SMX-017 topology harness.
+
+Offline/local, peer-hosted room, and dedicated-authoritative execution consume the same canonical creation and network declarations. Topology selects current authority, replication/relevance context, session services and transport adapters; it does not replace ordinary Things with network-specific subclasses or rewrite canonical source/audio/provenance meaning.
+
+**Source:** `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md` NET-001/NET-013/NET-020; NT-001/NT-016.
+
+### D-062 — Network control, simulation authority, relevance/replication, containment, persistence and peer identity are distinct
+
+**Status:** DECISION at runtime-network semantic level.
+
+`ThingId`, authenticated principal/player, runtime session, transient peer/connection ID, controller binding, simulation-authority binding/epoch, relevance set and persistence service are separate semantic roles. Reparenting, reconnecting or changing relevance cannot silently transfer authority/control or destroy a Thing.
+
+**Source:** SMX-010 NET-002/NET-003/NET-009/NET-011; NT-002/NT-008/NT-009.
+
+### D-063 — Runtime network message classes have explicit authority, ordering, replay and supersession semantics
+
+**Status:** DECISION at candidate network-semantic level.
+
+Authoritative state, discrete events, participant input/commands, join/reconnect baselines, and derived prediction/interpolation are distinct classes. Client input is intent rather than final state under authoritative policy; state uses monotonic sequence/watermark semantics, reliable semantic events require bounded deduplication identity, and authority transfer uses an epoch/generation that invalidates prior-authority traffic.
+
+**Source:** SMX-010 NET-004–NET-008/NET-014/NET-015; NT-003–NT-007/NT-010/NT-011.
+
+### D-064 — Join/reconnect/host migration rebind transient context while stable Thing identity survives
+
+**Status:** DECISION at candidate network-lifecycle level; real failure behavior remains SMX-017.
+
+Reconnect may bind the same authenticated principal to a new transient peer ID. Peer-host migration is an explicit quiescent/checkpointed authority transition that bumps authority epochs; queued prior-epoch traffic is invalidated. If a coherent checkpoint cannot be established, policy must fail/rollback/terminate explicitly rather than creating split-brain.
+
+**Source:** SMX-010 NET-007/NET-011/NET-012/NET-018; NT-007/NT-009/NT-014/NT-020; carries SMX-008 D-056 forward.
+
+### D-065 — Network ingress remains hostile, bounded and capability-mediated; transport is adapter detail
+
+**Status:** DECISION at network/security boundary.
+
+Ordinary behaviour does not receive raw WebSocket/WebRTC/ENet/UDP/Godot multiplayer objects. Ingress independently validates schema/version, sender/session identity, authority epoch, declared target/locus, lifecycle/reference state, size/rate/queue budget and capability policy. Remote messages cannot mint host capability grants. Semantic delivery requirements sit above transport/channel selection.
+
+**Source:** SMX-010 NET-006/NET-008/NET-010/NET-016/NET-017; NT-004/NT-005/NT-012/NT-013/NT-015/NT-017/NT-019; extends D-038–D-040 and D-059.
+
+### D-066 — Runtime replication is not the collaborative-edit transaction protocol
+
+**Status:** DECISION, strengthening D-003.
+
+Live simulation state/input/event/relevance/authority messages do not carry the canonical base-revision/precondition/merge/conflict semantics required for persistent multi-author edits. Multiplayer and collaboration may share authenticated infrastructure later, but remain separate consistency layers.
+
+**Source:** SMX-010 NET-019; NT-018. Collaboration semantics remain SMX-011/018.
+
+### D-067 — Network/topology transitions preserve protected source, audio, asset and provenance semantics
+
+**Status:** DECISION, explicit carry-forward of D-031/D-058.
+
+Replication, reconnect, headless authority, peer-host migration and topology projection do not substitute or rewrite canonical `AssetId`, immutable source digest, source/audio identity, provenance/licensing or derivation records. Network transport payloads may reference these identities only through the validated canonical/package contract.
+
+**Source:** SMX-010 NET-020; NT-001/NT-016; SMX-009 GOD-012–GOD-014.
+
 ## Primary-source and comparative evidence
 
 ### E-001 through E-014 — Godot/web/runtime baseline
@@ -778,6 +834,38 @@ Source: https://docs.godotengine.org/en/stable/engine_details/development/compil
 
 The accompanying Python mapping microbenchmark records CPython 3.13.5/Linux 6.18.44 x86_64 and 7-round 1k/10k/100k bookkeeping workloads. It is explicitly **not** Godot Node/render/physics/frame-time evidence; real Godot measurements remain SMX-015/019.
 
+### E-048 — Godot high-level multiplayer exposes useful peer/RPC/authority primitives but engine-specific identity and scene semantics
+
+**Status:** FACT, time-sensitive; refreshed 2026-09-19.
+
+Godot 4.7 high-level multiplayer is configured through `MultiplayerAPI`/SceneTree and uses transient peer IDs, RPC authority/mode declarations and reliable/unreliable transfer modes. Current guidance also treats client input as untrusted for authoritative/competitive or persistent games and recommends validating intent rather than accepting client-authored critical state.
+
+Source: https://docs.godotengine.org/en/4.7/tutorials/networking/high_level_multiplayer.html
+
+**Implication:** these facilities are candidate transport/runtime adapters, not canonical SplashMX Thing identity, object taxonomy or wire semantics.
+
+### E-049 — Browser network topology must tolerate transport constraints and background suspension
+
+**Status:** FACT, time-sensitive; refreshed 2026-09-19.
+
+Godot 4.7 browser exports support WebSocket client/WebRTC rather than low-level sockets; native WebRTC requires the separate native implementation/plugin, and inactive browser tabs may suspend enough processing to break a network session.
+
+Sources:
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#networking
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#background-processing
+- https://docs.godotengine.org/en/4.7/tutorials/networking/websocket.html
+- https://docs.godotengine.org/en/4.7/tutorials/networking/webrtc.html
+
+**Implication:** reconnect and adapter negotiation are architectural runtime obligations; canonical content cannot assume one transport or uninterrupted browser execution.
+
+### E-050 — SMX-010 model preserves one canonical creation across offline/peer-hosted/authoritative policy while rejecting network-semantic boundary violations
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`experiments/smx-010-multiplayer-model/` exercises `NT-001`–`NT-020`: topology-invariant canonical digest, containment/control/authority separation, intent-vs-state checks, authority epochs, replay rejection, reconnect peer rebinding, relevance, bounded/coalesced unloaded delivery, tombstones, host migration, transport-ID leakage rejection, capability mediation, collaboration-protocol separation, and source/audio/provenance preservation.
+
+This is deliberately **not** packet-loss, browser-suspension, WebRTC/WebSocket/ENet equivalence, production security or performance evidence. Those remain explicit SMX-017/019 obligations.
+
 ## Hypothesis review snapshots
 
 ### SMX-001
@@ -841,6 +929,13 @@ Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion f
 - H-015: **strengthened at model/package-loading level** — one canonical revision projects to web/native/headless target profiles with explicit required/optional feature outcomes; production startup/distribution/UX remains SMX-014/019.
 - H-018: **strengthened further** — snapshots/target projection exclude engine handles and preserve canonical source/audio/provenance meaning; actual future cross-Godot-version migration remains for SMX-015/020.
 
+### SMX-010
+
+- H-012: **strengthened substantially at model level, still awaiting real topology harness** — one canonical creation/network declaration is exercised under offline, peer-hosted and dedicated-authoritative policy without network-specific Thing subclasses.
+- H-013: **strengthened** — runtime replication intentionally lacks canonical edit-transaction/base-revision/conflict semantics and remains separate from collaboration.
+- H-014: **strengthened further at network boundary** — Godot peer IDs, SceneTree authority, RPC annotations and transport transfer modes remain adapter context rather than public identity/protocol.
+- Existing source/audio/provenance, lifecycle, migration, security and canonical-document decisions remain unchanged.
+
 ## Open architectural questions
 
 ### O-001 — Minimal universal port vocabulary
@@ -875,9 +970,11 @@ Validated bounded-turn handler IR; production encoding/compiler/Godot mapping/pe
 
 ### O-006 — Multiplayer replication boundary
 
-State/event/input/snapshot/hybrid replication must align with Thing authority and browser/server topology.
+**Status:** RESOLVED PROVISIONALLY at semantic level by SMX-010; real topology equivalence remains open.
 
-Owner: SMX-010/017.
+State, event, input/command, baseline/snapshot and derived prediction/interpolation are distinct message classes above transport; controller, simulation authority, relevance and transient peer identity are distinct context/relationships; authority transfer uses epochs. The exact wire encoding, transport mapping, congestion/MTU behavior, authentication service and large-room scaling remain implementation research.
+
+Owner: SMX-017 for destructive topology equivalence; SMX-014/019 for packaging/performance.
 
 ### O-007 — Collaboration substrate
 
@@ -963,9 +1060,11 @@ Owner: SMX-013/014/016.
 
 ### O-019 — Execution-host/server migration handoff
 
-SMX-008 demonstrates a portable semantic migration capsule but does not define source/destination authority transfer, in-flight network cut, duplicate-authority prevention, replication pause/resume, crash recovery, or consensus between server regions.
+**Status:** NARROWED by SMX-010; destructive failure proof remains open.
 
-Owner: SMX-010/017.
+A successful authority/host transfer uses a quiescent semantic state/checkpoint, exact dependency requirements, accepted input/event watermarks and an incremented authority epoch, while destination peer/session/host handles are newly bound. Prior-epoch queued traffic is invalid. SMX-010 deliberately does not define cluster consensus/leader election, crash recovery from an uncheckpointed host, or distributed persistent-world failover; these are explicit SMX-017/production-server questions.
+
+Owner: SMX-017, with publishing/server implications for SMX-014/019.
 
 ### O-020 — Real Godot object-fabric and browser player performance
 
