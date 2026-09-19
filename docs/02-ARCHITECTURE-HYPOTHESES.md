@@ -296,3 +296,15 @@ Evidence: `docs/research/SMX-016-SECURITY-HARNESS.md`, `docs/research/SMX-016-SE
 - **H-015 strengthened from hostile-boundary centralization.** A versioned generic player provides one pre-activation enforcement point for exact-lock, parser, migration, capability, target and decoder checks. This does not prove browser startup/size/performance.
 
 No other hypothesis receives a status change from SMX-016. Protected source/audio/provenance semantics remain unchanged and indivisible.
+
+## SMX-018 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-018-COLLABORATION-HARNESS.md`, `docs/research/SMX-018-COLLABORATION-HARNESS-FIXTURES.json`, `docs/research/SMX-018-DECISION-EVIDENCE.md`, and `experiments/smx-018-collaboration-harness/`.
+
+- **H-013 strengthened further at destructive integration level.** The executable multi-replica path requires causal edit ancestry, explicit conflicts/resolutions, selective undo/redo, schema/history handling, permission revalidation and durable tombstones. Runtime peer/session IDs, authority epochs, replication traffic and capability grants are recursively rejected from collaboration data, reinforcing that runtime multiplayer and collaborative authoring are separate consistency layers.
+- **H-017 strengthened substantially at destructive model level; production durability remains open.** Independent offline batches survive reunion under opposite delivery orders and duplicate delivery without a cloud document becoming canonical authority or a server copy silently winning. Missing causal ancestry pends; stale-permission work remains recoverable history but is rejected from shared materialization. O-026 retains real durable storage, relay failure, compaction and production sync evidence.
+- **H-018 strengthened narrowly at collaboration-history level.** Schema-incompatible transactions are quarantined pending deterministic semantic migration rather than being merged merely because a transport/storage substrate converges. Production multi-version history migration and compaction remain O-026/SMX-020 work.
+
+The destructive harness also records R-018-01 through R-018-04: DefinitionId-scoped definition/instance conflict detection; Thing-delete/new-connection endpoint remove-wins handling; whole-document semantic validation before transaction publication; and atomic tombstoning of incident live connections when a Thing is tombstoned. These refine the executable collaboration integrity boundary without changing hierarchy/control/authority ownership semantics.
+
+No other hypothesis receives a status change from SMX-018. Protected source/audio/provenance semantics remain indivisible: stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision. O-026 keeps production collaboration substrate, compaction, persistence, relay and UX evidence open.

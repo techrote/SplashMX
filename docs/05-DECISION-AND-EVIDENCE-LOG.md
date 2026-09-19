@@ -1576,3 +1576,47 @@ Current Godot documentation continues to support custom web builds without JavaS
 **Status:** OPEN after SMX-016.
 
 The deterministic model does not certify real Godot/browser/native process/origin isolation, production archive libraries, third-party image/audio/font/mesh/video decoders, cryptographic key/signature/revocation implementation, cross-browser permissions/lifecycle behavior, actual engine/GPU/audio memory accounting, or calibrated production quotas. These remain explicit downstream implementation/destructive-test obligations, primarily SMX-019 with final reconciliation in SMX-020.
+
+## SMX-018 decision/evidence register
+
+### D-099 — Collaboration transport is subordinate to SplashMX semantic transactions
+
+The destructive harness uses a content-checked serialized causal relay with no document merge policy. A future CRDT/OT/log/database may supply synchronization/storage, but cannot redefine SplashMX conflict, tombstone, undo, permission, schema or protected-media semantics.
+
+### D-100 — Convergence and canonical document validity are independent gates
+
+Every candidate transaction is staged atomically and the resulting SplashMX document is validated before publication. Mechanically equal replicas are not acceptable evidence if they converge on an invalid graph. This is the general enforcement form of R-018-03.
+
+### D-101 — Definition/instance conflict loci include actual DefinitionId
+
+R-018-01 corrects false conflicts caused by comparing coincident local element names without definition provenance. Definition-removal versus instance-overlay conflict applies only when the instance actually derives from the affected `DefinitionId` and element locus.
+
+### D-102 — Thing tombstones have explicit connection referential-integrity semantics
+
+R-018-02 makes concurrent new connections that name a deleted Thing participate in tombstone remove-wins. R-018-04 tombstones incident live ConnectionIds in the same atomic Thing-deletion transaction, retaining history while preventing dangling active edges or later accidental resurrection.
+
+### D-103 — Offline permission evidence is not serialized authority
+
+Reunion revalidates current permission policy. An edit authored under a stale permission epoch remains recoverable history but cannot enter shared canonical materialization. Peer/session IDs, runtime authority epochs, capability grants and host handles remain forbidden collaboration data.
+
+### D-104 — Protected asset revisions remain indivisible collaboration alternatives
+
+Stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision. Label metadata may merge independently, but concurrent replacement revisions may not be field-mixed and incomplete replacements are rejected before history admission.
+
+### E-074 — 39 deterministic multi-editor destructive tests execute the SMX-011 conflict corpus
+
+CR-001–CR-028 plus eleven boundary/adversarial tests exercise offline partition/reunion, opposite arrival order, duplicate delivery, transaction-ID collision, missing causal ancestry, delete/edit, reparent, definitions/instances, stable ports/connections, timeline overlap, grouping, component update, selective undo/redo, stale permission, transient presence, schema mismatch, known-unloaded/tombstoned targets, explicit resolution, protected-media replacement, transaction atomicity and causal-cycle rejection.
+
+### E-075 — Destructive execution produced four concrete collaboration-integrity repairs
+
+R-018-01 through R-018-04 cover DefinitionId-scoped conflict detection, Thing-delete/new-connection interaction, whole-document validation before transaction commit, and atomic tombstoning of incident connections. They are regression-tested rather than hidden in topology/order-specific special cases.
+
+### E-076 — Collaboration history footprint is observable but the Python model is not a production benchmark
+
+The reproducible 256-edit research probe records exact serialized history and materialized snapshot sizes plus CPython rematerialization timing. The development reference run produced 53,394 bytes transaction history, 10,922 bytes persisted collaboration snapshot and 6,208 bytes canonical snapshot; median rematerialization was 139.8 ms across 15 runs on CPython 3.13.5/Linux x86_64. These numbers justify keeping production storage/index/compaction/performance work explicit, not selecting this O(n²)-class research materializer.
+
+### O-026 — Production collaboration substrate, compaction and durable synchronization
+
+**Status: OPEN after SMX-018.** Semantic conflict/offline behavior is destructively exercised, but final CRDT/OT/log/database choice, checkpoint/compaction and tombstone/conflict retention, browser/native crash-consistent persistence, relay outage/backpressure/authentication, production multi-version migration, large-project history performance and conflict/offline UX remain unproven.
+
+Owner: SMX-019 for browser/editor integration and storage/latency/failure evidence where practical; SMX-020 for Architecture v1.0 reconciliation and any remaining research spike. Existing protected source/audio/provenance, capability, lifecycle, runtime-network and publishing contracts remain unchanged except for the explicit R-018-01–R-018-04 collaboration-integrity refinements above.
