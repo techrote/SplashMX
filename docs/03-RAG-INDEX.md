@@ -26,6 +26,8 @@ Retrieve `docs/01-RESEARCH-ROADMAP.md` and `docs/02-ARCHITECTURE-HYPOTHESES.md` 
 
 The complete pre-v1 RAG map, hypothesis chronology, roadmap, and decision/evidence log are retained beside their active counterparts as `docs/*.pre-v1.md`. Research specifications, fixtures, experiments and syntheses remain under `docs/research/` and `experiments/`.
 
+Historical snapshots preserve their original text verbatim, including unsuffixed repository paths that may now resolve to newer post-freeze documents. They are therefore historical evidence, **not a self-contained frozen path namespace**. When reconstructing pre-v1 context, prefer the explicit `.pre-v1.md` counterparts named by this active index and use commit-era evidence where exact historical dependency resolution matters.
+
 Use those materials when the current task touches a frozen decision and needs the falsification evidence, exact fixture IDs, rejected alternatives, measurements, or residual-risk boundary. Do **not** let provisional early wording override the constitution, Architecture v1, or an accepted post-freeze ADR.
 
 Disposable experiment implementations are not production architecture by inertia. Machine-readable fixtures and adversarial cases are expected to migrate into production conformance testing where their semantics remain applicable.
@@ -50,7 +52,7 @@ Disposable experiment implementations are not production architecture by inertia
 | Components / packages | `SMX-013-COMPONENT-PACKAGES.md`, SMX-016 | local Definition→Package lineage, exact locks, capability attribution, hostile acquisition |
 | Publishing / generic player / worlds | `SMX-014-PUBLISHING-RUNTIME.md`, SMX-017/019 | immutable `CreationRevisionId`, prepare-before-activate, exact offline closure, `WorldSave` separation |
 | Browser editor/player projection | `SMX-019-BROWSER-VERTICAL-SLICE.md` plus SMX-012/014/017/018 | create→play→save/reload→publish/load, Together/People separation, R-019-01 |
-| Architecture contradiction or change | `ARCHITECTURE-V1-AUDIT.json`, relevant SMX evidence, latest accepted ADRs | correction rule: amend authority + add regression; never hide a contradiction in an adapter |
+| Architecture contradiction or change | `docs/architecture/ARCHITECTURE-V1-AUDIT.json`, relevant SMX evidence, latest accepted ADRs | correction rule: amend authority + add regression; never hide a contradiction in an adapter |
 
 Paths in the table without a directory prefix refer to files under `docs/research/`.
 
@@ -92,11 +94,11 @@ The post-freeze architecture incorporates and production tests should retain:
 
 ### SMX-021 production-conformance retrieval rules
 
-Retrieve `docs/implementation/PRODUCTION-CONFORMANCE-V1.md`, `spec/production/conformance-registry.json`, the production schemas under `spec/production/`, `src/MODULES.json`, and `tests/production/test_smx021.py` when work touches gate ownership, typed failures, version metadata, benchmark evidence, module ownership, or durable identity classes. Treat SMX-021 as guardrail infrastructure: it does not by itself activate later production modules or select their implementation mechanisms.
+Retrieve `docs/implementation/PRODUCTION-CONFORMANCE-V1.md`, `spec/production/conformance-registry.json`, the production schemas under `spec/production/`, `src/MODULES.json`, `tests/production/test_smx021.py`, and `tools/validate_smx021.py` when work touches gate ownership, typed failures, version metadata, benchmark evidence, module ownership, or durable identity classes. Treat SMX-021 as guardrail infrastructure: it does not by itself activate later production modules or select their implementation mechanisms.
 
 ### SMX-022 physical encoding/store retrieval rules
 
-Retrieve `docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`, and `SMX-022-BROWSER-EVIDENCE.json` for canonical serialization, local persistence, partial access, migration-store interaction, browser storage, or crash-recovery work. The selected broad mechanism is deterministic CBOR records/revisions + bounded stable-ID hash shards, IndexedDB-owned browser revision/head publication with OPFS prepare-before-publish backing, and SQLite WAL/`synchronous=FULL` native revision/head publication. SMX-024/025 should implement and falsify within that selected boundary rather than silently re-run broad mechanism selection; contradictory evidence must be recorded explicitly.
+Retrieve `docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`, `SMX-022-BROWSER-EVIDENCE.json`, `tools/validate_smx022.py`, and `.github/workflows/smx022-physical-store.yml` for canonical serialization, local persistence, partial access, migration-store interaction, browser storage, crash-recovery work, or evidence reproduction. The selected broad mechanism is deterministic CBOR records/revisions + bounded stable-ID hash shards, IndexedDB-owned browser revision/head publication with OPFS prepare-before-publish backing, and SQLite WAL/`synchronous=FULL` native revision/head publication. SMX-024/025 should implement and falsify within that selected boundary rather than silently re-run broad mechanism selection; contradictory evidence must be recorded explicitly.
 
 ## Historical late-campaign retrieval anchors
 
@@ -109,6 +111,10 @@ Retrieve `docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md`, `docs/research/SMX-01
 ## SMX-016 adversarial-security retrieval rules
 
 Retrieve `docs/research/SMX-016-SECURITY-HARNESS.md`, its fixtures, `SMX-016-DECISION-EVIDENCE.md`, and the SMX-006 capability contract. Preserve ADV-001 through ADV-028, AT-001 through AT-028, R-016-01 through R-016-04, and protected source/audio/provenance semantics.
+
+## SMX-017 real-topology retrieval rules
+
+Retrieve `docs/research/SMX-017-NETWORK-HARNESS.md`, `docs/research/SMX-017-NETWORK-HARNESS-FIXTURES.json`, and `docs/research/SMX-017-DECISION-EVIDENCE.md` for runtime-topology, reconnect, host-migration, browser-lifecycle, or dedicated-authority claims. Preserve the bounded evidence statement: the real campaign proves semantic topology equivalence on the tested Godot 4.7.2 + Chromium environment, not a production network stack, WAN/NAT/signalling design, cross-browser certification, or final transport choice. In the passing lifecycle campaign headless Chromium did **not** naturally drop the transport during the measured freeze path; reconnect was then exercised with the explicitly labelled deterministic relay fault. Do not restate that injected reconnect case as evidence of ordinary browser background-tab disconnection.
 
 ## SMX-018 collaboration-harness retrieval rules
 
