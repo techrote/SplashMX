@@ -75,6 +75,12 @@ jobs:
         run: python -m unittest discover -s experiments/smx-017-network-harness -p 'test_model.py' -v
       - name: Run real Godot/browser/server topology campaign
         run: node experiments/smx-017-network-harness/browser_harness.mjs "$GITHUB_WORKSPACE"
+      - name: Print measured topology evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx017-integration-results.json ]; then
+            cat artifacts/smx017-integration-results.json
+          fi
       - name: Upload measured topology evidence
         if: always()
         uses: actions/upload-artifact@v4
