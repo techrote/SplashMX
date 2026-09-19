@@ -139,7 +139,13 @@ async function boot() {
     window.parent?.postMessage(message, location.origin);
     window.__SMX019_PLAYER__ = {
       getCreation: () => structuredClone(creation),
-      getState: () => structuredClone(active.runtime),
+      // Expose the declared replicated state projection to the browser harness.
+      // Local executor event history is intentionally not replica state: only the
+      // authority records the originating activation event, while all peers must
+      // converge on the resulting Thing state.
+      getState: () => ({
+        things: active.runtime.things.map(thing => ({ thing_id:thing.thing_id, state:structuredClone(thing.state) }))
+      }),
       getContext: () => ({ topology, principal, authorityPrincipal, transportConnectionId })
     };
   } catch (error) {
