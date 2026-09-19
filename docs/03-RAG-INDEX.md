@@ -505,3 +505,22 @@ SMX-016 is the hostile security checkpoint for the accepted execution, document,
 - SMX-017/018/019/020 may rely on the semantic fail-closed contract, but must retain the target/runtime residual risks appropriate to their scope.
 
 `ADV-###` and `AT-###` join the stable RAG identifier families for hostile security evidence.
+
+## SMX-018 collaboration-harness retrieval rules
+
+SMX-018 is the destructive collaboration checkpoint for SMX-011. Browser/editor, migration, package, final-architecture and future collaboration work must retrieve it instead of treating replica equality or a CRDT/OT library's sync result as sufficient proof:
+
+- `docs/research/SMX-018-COLLABORATION-HARNESS.md` — destructive synthesis, executable conflict corpus, R-018-01 through R-018-04, offline/reconnect results, footprint evidence, hypothesis effects and residual O-026 boundary.
+- `docs/research/SMX-018-COLLABORATION-HARNESS-FIXTURES.json` — `CH-001` through `CH-028` semantic invariants and `CR-001` through `CR-028` machine-addressable conflict/reconnect traces.
+- `docs/research/SMX-018-DECISION-EVIDENCE.md` — compact D-099–D-104/E-074–E-076/O-026 handoff.
+- `experiments/smx-018-collaboration-harness/` — non-normative serialized causal-relay/materialization model, 39 deterministic adversarial/boundary tests and a reproducible research-model footprint probe. It is not a selected production CRDT, OT engine, database, relay or browser store.
+- Durable result: semantic transaction/conflict meaning stays SplashMX-owned above a replaceable causal transport/store. Convergence and canonical document validity are separate gates.
+- Offline edits can reunite under reorder/duplicate delivery without silent loss; missing ancestors pend; same-ID/different-content transactions are corruption; stale permission epochs cannot mint authority.
+- Definition/instance conflict loci include actual `DefinitionId`; identically named elements in unrelated definitions must not false-conflict (R-018-01).
+- Thing tombstones remove-win over concurrent new connection endpoints, and incident live connections tombstone atomically so no dangling active edge survives (R-018-02/R-018-04).
+- Every transaction is staged and the complete resulting document is semantically validated before commit; invalid endpoint/port/overlay/structure cannot half-materialize (R-018-03).
+- Presence remains transient. Runtime multiplayer/session/capability handles are forbidden collaboration data.
+- Protected source/audio/provenance remains atomic: stable `AssetId` selects one complete digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision; concurrent replacements are complete alternatives, never field-mixed synthetic revisions.
+- O-026 deliberately keeps production CRDT/OT/log/database selection, compaction/tombstone retention, browser/native crash-consistent storage, relay outage/backpressure/authentication, large-history performance and conflict UX open for SMX-019/020.
+
+`CH-###` and `CR-###` join the stable RAG identifier families for destructive collaboration invariants and traces.

@@ -382,3 +382,14 @@ Ink & Switch's 2026 article **Convergence Is Not Enough** is a useful current wa
 ## Research disposition
 
 SMX-011 selects the collaboration **semantic boundary**, not a library. The current candidate is semantic transactions/conflicts above a replaceable causal substrate, transient awareness beside it, and runtime multiplayer beside—not inside—it. SMX-018 is responsible for trying to break this model with a real multi-editor implementation before Architecture v1.0 treats it as settled.
+
+## SMX-018 destructive-harness reconciliation
+
+SMX-018 executed this semantic contract through a serialized multi-replica causal relay and added four narrow integrity refinements. They supersede any looser behavior implied by the disposable SMX-011 Python model while preserving COL-001–COL-024's product intent:
+
+- **R-018-01 — DefinitionId-scoped conflict loci.** A definition-removal/instance-overlay conflict requires the instance's actual `DefinitionId` plus element locus to match. Coincident element names in unrelated definitions do not conflict.
+- **R-018-02 — Thing-delete versus new connection endpoint.** A concurrent connection creation naming a tombstoned Thing is held under the same remove-wins identity rule; a connection's different `ConnectionId` does not hide its semantic endpoint dependency.
+- **R-018-03 — post-transaction canonical validation.** Causal convergence never bypasses SplashMX document validity. The complete candidate transaction is staged and validated; an invalid endpoint, port, overlay, structure or other canonical invariant holds the whole transaction rather than partially applying it.
+- **R-018-04 — incident connection tombstones.** Tombstoning a Thing tombstones its incident live connections in the same atomic semantic transaction. Connection history/identity remains available, but no active edge may target a destroyed Thing.
+
+The destructive harness also carries the later protected-media wording explicitly: stable `AssetId` selects one complete immutable digest + source identity/metadata + audio/media semantics + provenance + licence + derivation revision. Concurrent replacements remain complete alternatives and cannot field-mix. See `docs/research/SMX-018-COLLABORATION-HARNESS.md` and its fixtures for executable evidence and O-026 production-substrate residuals.
