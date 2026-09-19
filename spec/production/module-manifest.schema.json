@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://splashmx.dev/schema/production/module-manifest-1.json",
+  "title": "SplashMX production module responsibility manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "architecture_version",
+    "forbidden_canonical_identity_classes",
+    "modules"
+  ],
+  "properties": {
+    "contract": {
+      "const": "splashmx.module-manifest/1"
+    },
+    "architecture_version": {
+      "const": "1.0"
+    },
+    "forbidden_canonical_identity_classes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "module_id",
+          "owner_issue",
+          "status",
+          "responsibilities",
+          "gate_ids",
+          "canonical_identity_inputs",
+          "forbidden_identity_classes"
+        ],
+        "properties": {
+          "module_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "owner_issue": {
+            "type": "string",
+            "pattern": "^SMX-[0-9]{3}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "planned",
+              "active",
+              "implemented"
+            ]
+          },
+          "responsibilities": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "gate_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "pattern": "^GATE-[0-9]{2}$"
+            }
+          },
+          "canonical_identity_inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z][A-Za-z0-9_.:-]*$"
+            }
+          },
+          "forbidden_identity_classes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}
