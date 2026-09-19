@@ -204,6 +204,11 @@ export function startRelay(port = 8877) {
       if (!member) throw new Error(`unknown connection ${connId} in room ${roomName}`);
       member.ws.close(code, reason);
     },
+    clearCheckpoint(roomName) {
+      const room = rooms.get(roomName);
+      if (!room) throw new Error(`unknown room ${roomName}`);
+      room.checkpoint = null;
+    },
     roomSnapshot(roomName) {
       const room = rooms.get(roomName);
       if (!room) return null;
