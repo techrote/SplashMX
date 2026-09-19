@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate the SMX-017 topology-equivalence research contract.
 
-This validator is intentionally structural.  Real Godot/browser execution is a
+This validator is intentionally structural. Real Godot/browser execution is a
 separate required workflow; this script prevents that workflow from silently
 changing the canonical fixture, protected-media semantics or documented scope.
 """
@@ -11,7 +11,6 @@ import hashlib
 import json
 import pathlib
 import re
-import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 EXP = ROOT / "experiments" / "smx-017-network-harness"
@@ -21,6 +20,7 @@ DEC = ROOT / "docs" / "research" / "SMX-017-DECISION-EVIDENCE.md"
 WORKFLOW = ROOT / ".github" / "workflows" / "smx017-real-topologies.yml"
 TESTS = EXP / "test_model.py"
 MAIN = EXP / "godot" / "main.gd"
+BROWSER = EXP / "browser_harness.mjs"
 EXPECTED_SHA = "dd5e7bb8b33ab447b4234fb8036453b248c5721e22b9f0e1c19cc57438e71580"
 
 
@@ -40,6 +40,7 @@ def main() -> None:
     workflow = require(WORKFLOW)
     tests = require(TESTS)
     gd = require(MAIN)
+    browser = require(BROWSER)
     canonical_path = EXP / "creation.json"
     embedded_path = EXP / "godot" / "creation.json"
     canonical = canonical_path.read_bytes()
@@ -91,9 +92,16 @@ def main() -> None:
         if token not in workflow:
             fail(f"real-topology workflow missing pinned contract token: {token}")
 
-    for token in (EXPECTED_SHA, '"offline"', '"peer"', '"dedicated"', "WebSocketPeer.new"):
+    # The one Godot runtime is deliberately policy-driven: peer/dedicated mode
+    # names belong to orchestration/configuration, not hard-coded canonical
+    # branches. Require the topology input and adapter implementation here, and
+    # require all three concrete executions in the external orchestrator.
+    for token in (EXPECTED_SHA, '"topology": "offline"', "cfg.topology", "WebSocketPeer.new"):
         if token not in gd:
-            fail(f"single Godot runtime missing expected topology token: {token}")
+            fail(f"single Godot runtime missing expected policy token: {token}")
+    for token in ("runOffline()", "'peer'", "'dedicated'", "spawnDedicated", "chromium.launch"):
+        if token not in browser:
+            fail(f"real topology orchestrator missing execution mode token: {token}")
 
     required_doc_phrases = (
         "same canonical SplashMX creation",
