@@ -206,3 +206,15 @@ Evidence: `docs/research/SMX-008-STREAMING-MIGRATION.md`, `docs/research/SMX-008
 - **H-018 strengthened further.** Exact immutable source artifacts plus explicit bounded state/interface/pending-work migration support hot replacement without engine-object deserialization or silent state reinterpretation.
 
 No other hypothesis receives a status change from SMX-008.
+
+## SMX-009 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-009-GODOT-BOUNDARY.md`, `docs/research/SMX-009-GODOT-BOUNDARY-FIXTURES.json`, and `experiments/smx-009-godot-boundary-model/`.
+
+- **H-007 strengthened further.** Current Godot 4.7.2 facilities are useful behind adapters, but the same canonical package can be projected across web/native/headless without NodePath/RID/ResourceUID identity, and the adversarial model rejects such engine identities from canonical data.
+- **H-009 strengthened further at the mapping layer, still unresolved end-to-end.** Ordinary content remains unable to request GDScript/C#/GDExtension/JavaScriptBridge/eval/raw-host authority; current web builds can additionally remove JavaScriptBridge/eval as defence in depth. Real host escape resistance remains SMX-016.
+- **H-014 strengthened substantially at model/platform-boundary level.** Rendering, audio, input, physics, resource decode/import, storage and transport can be treated as target-private services while SplashMX owns stable identity, behaviour, canonical state, source/audio/provenance semantics and network meaning. Real Godot frame/object cost remains unmeasured.
+- **H-015 strengthened at model/package-loading level.** One canonical revision loads through generic web/native/headless target profiles with explicit required/optional feature outcomes; current Godot/web constraints do not require per-creation builds for ordinary constrained content. Startup, distribution and authoring UX remain SMX-014/019 work.
+- **H-018 strengthened further.** Snapshots and migration state exclude engine handles; target projection and derived/imported resources preserve canonical revision and source/provenance identity. Actual migration across future Godot versions remains for SMX-015/020.
+
+No other hypothesis receives a status change from SMX-009.
