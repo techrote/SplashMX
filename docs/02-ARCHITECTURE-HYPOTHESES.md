@@ -194,3 +194,15 @@ Evidence: `docs/research/SMX-007-LIFECYCLE-RESTORE.md`, `docs/research/SMX-007-L
 - **H-018 strengthened further at runtime-snapshot layer, unresolved end-to-end.** Restore checks authored basis and behaviour/private-state versions and requires explicit migration/rejection rather than silently deserializing engine objects. Real cross-Godot-version compatibility remains for SMX-009/015/020.
 
 No other hypothesis receives a status change from SMX-007.
+
+
+## SMX-008 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-008-STREAMING-MIGRATION.md`, `docs/research/SMX-008-STREAMING-FIXTURES.json`, and `experiments/smx-008-streaming-model/`.
+
+- **H-005 strengthened further.** Streaming acquisition now composes with the bounded-turn hot-swap model: replacement artifacts are acquired/validated before a quiescent transactional migration, pending continuations are explicitly mapped, and failed migration leaves the old live implementation/state/pins intact.
+- **H-010 strengthened further.** The town/inventory, code-eviction, nested-interface, and migration-capsule cases preserve Thing/attachment meaning across unloaded source/runtime artifacts without requiring a surviving process object.
+- **H-011 strengthened substantially at model level.** The town fixture unloads a containment region while a resident inventory keeps a stable reference, then reloads only the referenced sword plus its hard artifact closure. Logical streaming is therefore object/subgraph-centric while physical byte batching remains non-semantic. Production performance remains unproven.
+- **H-018 strengthened further.** Exact immutable source artifacts plus explicit bounded state/interface/pending-work migration support hot replacement without engine-object deserialization or silent state reinterpretation.
+
+No other hypothesis receives a status change from SMX-008.

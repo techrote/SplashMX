@@ -1,0 +1,90 @@
+{
+  "schema": "splashmx-smx008-streaming-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "issue": "SMX-008",
+  "established": "2026-09-19",
+  "streaming_invariants": [
+    "STR-001","STR-002","STR-003","STR-004","STR-005",
+    "STR-006","STR-007","STR-008","STR-009","STR-010",
+    "STR-011","STR-012","STR-013","STR-014","STR-015",
+    "STR-016","STR-017","STR-018","STR-019","STR-020"
+  ],
+  "direct_case_coverage": [
+    "C-006","C-011","C-012","C-015","C-024","C-025","C-026","C-027"
+  ],
+  "direct_adversarial_coverage": ["A-006","A-012","A-015"],
+  "fixtures": [
+    {
+      "id": "SG-001",
+      "name": "Town unload preserves inventory reference",
+      "cases": ["C-006","C-012"],
+      "expected": ["STR-001","STR-004","STR-019"]
+    },
+    {
+      "id": "SG-002",
+      "name": "On-demand component definition acquisition and instantiate",
+      "cases": ["C-011","C-026"],
+      "expected": ["STR-003","STR-006","STR-007","STR-008"]
+    },
+    {
+      "id": "SG-003",
+      "name": "Required dependency failure is typed and atomic",
+      "cases": ["C-026","A-012","A-015"],
+      "expected": ["STR-007","STR-008","STR-016"]
+    },
+    {
+      "id": "SG-004",
+      "name": "Optional dependency fallback",
+      "cases": ["C-026"],
+      "expected": ["STR-005","STR-016"]
+    },
+    {
+      "id": "SG-005",
+      "name": "Behaviour implementation pin eviction and reacquire",
+      "cases": ["C-025"],
+      "expected": ["STR-010","STR-011","STR-012","STR-018"]
+    },
+    {
+      "id": "SG-006",
+      "name": "Transactional behaviour hot replacement",
+      "cases": ["C-025","A-006"],
+      "expected": ["STR-013","STR-014","STR-015"]
+    },
+    {
+      "id": "SG-007",
+      "name": "Failed replacement rolls back old version",
+      "cases": ["C-025","A-006"],
+      "expected": ["STR-013","STR-014","STR-015","STR-016"]
+    },
+    {
+      "id": "SG-008",
+      "name": "Cancelled acquisition leaves live world untouched and retry reuses cache",
+      "cases": ["A-012"],
+      "expected": ["STR-009","STR-010","STR-016"]
+    },
+    {
+      "id": "SG-009",
+      "name": "Resolved declarative dependency cycle stages atomically",
+      "cases": ["C-026"],
+      "expected": ["STR-007","STR-017"]
+    },
+    {
+      "id": "SG-010",
+      "name": "Nested exposed interface survives unload reload and rechunk",
+      "cases": ["C-011","C-027"],
+      "expected": ["STR-001","STR-002","STR-004","STR-019"]
+    },
+    {
+      "id": "SG-011",
+      "name": "Semantic detach retains or discards state explicitly",
+      "cases": ["C-025"],
+      "expected": ["STR-010","STR-011","STR-012"]
+    },
+    {
+      "id": "SG-012",
+      "name": "Portable migration capsule restores on fresh host",
+      "cases": ["C-015","C-024"],
+      "expected": ["STR-006","STR-007","STR-008","STR-020"]
+    }
+  ]
+}

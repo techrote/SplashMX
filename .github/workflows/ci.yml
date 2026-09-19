@@ -38,3 +38,7 @@ jobs:
         run: python tools/validate_smx007.py
       - name: Run SMX-007 lifecycle restore falsification tests
         run: python -m unittest discover -s experiments/smx-007-lifecycle-model -p 'test_*.py'
+      - name: Validate SMX-008 research fixtures
+        run: python tools/validate_smx008.py
+      - name: Run SMX-008 streaming migration falsification tests
+        run: python -m unittest discover -s experiments/smx-008-streaming-model -p 'test_*.py'
