@@ -12,7 +12,7 @@ For **all** production implementation, architecture maintenance, compatibility, 
 1. `AGENTS.md` — autonomous workflow, evidence discipline, security and compatibility rules.
 2. `docs/00-PROJECT-CONSTITUTION.md` — product invariants and non-goals.
 3. `docs/architecture/ARCHITECTURE-V1.md` — frozen durable semantic architecture.
-4. `docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md` — freeze decision, precedence, supersession and change rule.
+4. `docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md` — freeze decision, precedence/supersession and change rules.
 5. `docs/architecture/ARCHITECTURE-V1-AUDIT.json` — machine-readable H-001–H-018 closure, contradiction audit, corrective findings, protected-media fields, and residual-risk classes.
 6. `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md` — dependency-ordered production plan and conformance gates.
 7. `docs/04-ISSUE-EXECUTION-PROTOCOL.md` — branch/PR/CI/merge/closure workflow.
@@ -81,6 +81,26 @@ The post-freeze architecture incorporates and production tests should retain:
 - R-016-01 through R-016-04 — host-independent path normalization, serialized authority rejection, delegation ancestry bounds, final host-boundary authorization recheck;
 - R-018-01 through R-018-04 — DefinitionId-scoped conflicts, delete/new-Connection remove-wins, full semantic validation before commit, incident-Connection tombstoning;
 - R-019-01 — semantic `ConnectionId` is distinct from transient transport connection identity.
+
+## Historical late-campaign retrieval anchors
+
+The following compact anchors intentionally preserve phrases used by already-merged validators. Full pre-freeze retrieval prose is in `docs/03-RAG-INDEX.pre-v1.md`; these anchors do not create new competing contracts.
+
+## SMX-015 Object Fabric destructive-harness retrieval rules
+
+Retrieve `docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md`, `docs/research/SMX-015-OBJECT-FABRIC-FIXTURES.json`, and `docs/research/SMX-015-DECISION-EVIDENCE.md`. Preserve OF-001 through OF-030, OH-001 through OH-020, and the protected source/audio/provenance boundary.
+
+## SMX-016 adversarial-security retrieval rules
+
+Retrieve `docs/research/SMX-016-SECURITY-HARNESS.md`, its fixtures, `SMX-016-DECISION-EVIDENCE.md`, and the SMX-006 capability contract. Preserve ADV-001 through ADV-028, AT-001 through AT-028, R-016-01 through R-016-04, and protected source/audio/provenance semantics.
+
+## SMX-018 collaboration-harness retrieval rules
+
+Retrieve `docs/research/SMX-018-COLLABORATION-HARNESS.md`, `docs/research/SMX-018-COLLABORATION-HARNESS-FIXTURES.json`, `docs/research/SMX-018-DECISION-EVIDENCE.md`, and the SMX-011 collaboration contract. Preserve CH-001 through CH-028, CR-001 through CR-028, R-018-01 through R-018-04, and source/audio/provenance atomicity.
+
+## SMX-019 browser vertical-slice retrieval rules
+
+Retrieve `docs/research/SMX-019-BROWSER-VERTICAL-SLICE.md`, its fixture/evidence files, SMX-012/014 authoring/publishing contracts, and SMX-017/018 when topology/collaboration behavior is in scope. The research slice retained exactly **34 adversarial/boundary tests** and R-019-01. Treat its JavaScript/browser implementation as non-production reference evidence.
 
 ## Research-history retrieval
 
