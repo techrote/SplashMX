@@ -2,7 +2,7 @@
   "schema": "smx-research-fixtures/1",
   "issue": "SMX-017",
   "evidence_date": "2026-09-19",
-  "status": "candidate_until_real_topology_ci_passes",
+  "status": "executed_real_topology_evidence",
   "canonical_creation": {
     "revision_id": "smx017-topology-equivalence-v1",
     "sha256": "dd5e7bb8b33ab447b4234fb8036453b248c5721e22b9f0e1c19cc57438e71580",
