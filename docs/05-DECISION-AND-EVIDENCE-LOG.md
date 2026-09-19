@@ -564,6 +564,38 @@ Offline replicas may author changes without cloud document authority and later e
 
 **Source:** SMX-011 COL-022; CF-016/CF-017 and incomplete-bundle boundary test.
 
+### D-072 — Progressive disclosure reveals views over one semantic fabric, not easy and advanced project modes
+
+**Status:** DECISION at candidate authoring-contract level; production usability remains SMX-019.
+
+Things, Behaviours and Connections remain the durable core concepts. Stage, Timeline, Rules, Components, Together, People, Publish and Inspect project selected parts of the same canonical identities, relations and execution/network/collaboration semantics. Changing disclosure level cannot mutate or convert the creation.
+
+**Source:** SMX-012 AUTH-001/AUTH-002/AUTH-027/AUTH-028; UX-001–UX-028 and progressive-disclosure tests.
+
+### D-073 — Timeline and Rules are optional projections; ordinary composition is the path into reuse
+
+**Status:** DECISION at candidate authoring-contract level.
+
+Timeline owns authored values/cues over time rather than general program ownership. Beginner Rules lower to the same accepted Behaviour/Connection execution semantics used by advanced authoring. “Make reusable” promotes an ordinary group into a local definition while preserving the first concrete instance identities, rather than generating a separate prefab/class object model.
+
+**Source:** SMX-012 AUTH-004/AUTH-008–AUTH-011; UX-002/UX-003/UX-005/UX-008/UX-011/UX-025; carries D-015–D-018/D-019 forward.
+
+### D-074 — Simple multiplayer authoring is a projection of real network relationship axes and collaboration remains a separate People surface
+
+**Status:** DECISION at candidate authoring-contract level; real topology/collaboration UX remains SMX-017/018/019.
+
+Local-only, one-per-player, shared and authority-controlled presets populate the same authored network declaration whose control, authority, replication and relevance axes Advanced view can expose. Peer/session/transport/RPC details remain context/adapter state. Collaborative presence/history/conflicts live under separate authoring semantics and do not become runtime replication controls.
+
+**Source:** SMX-012 AUTH-014–AUTH-019; UX-013/UX-014/UX-016–UX-021; carries D-061–D-070 forward.
+
+### D-075 — Authoring operations and diagnostics preserve capability and protected media boundaries
+
+**Status:** DECISION, explicit authoring-layer carry-forward of D-031/D-033–D-040/D-058/D-067/D-071.
+
+Ordinary diagnostics use stable SplashMX author concepts rather than requiring engine/toolchain/transport knowledge. Capability denial remains fail-closed. Asset import/replacement retains stable `AssetId` and treats immutable digest, source/audio identity, provenance/licensing and derivation metadata as one atomic revision bundle; authoring UI may not synthesize mixed provenance through partial replacement.
+
+**Source:** SMX-012 AUTH-020–AUTH-024; UX-004/UX-008/UX-022/UX-026 and protected-asset boundary tests.
+
 ## Primary-source and comparative evidence
 
 ### E-001 through E-014 — Godot/web/runtime baseline
@@ -938,6 +970,38 @@ Source: https://www.inkandswitch.com/essay/convergence-is-not-enough/
 
 This is deliberately **not** a production CRDT/OT implementation, persistent database, cloud relay, browser storage proof or multi-process destructive harness. Those remain SMX-018/019 obligations.
 
+### E-056 — Animate provides Stage/Timeline and reusable symbol-instance authoring precedents
+
+**Status:** FACT / interaction comparison input; checked 2026-09-19.
+
+Adobe Animate documents Timeline layers/frames/playhead over Stage content, and reusable symbols with instances; movie clips may have independent nested timelines. SplashMX uses this as evidence for direct-manipulation/time/reuse vocabulary, not as a reason to copy fixed symbol categories or runtime coupling.
+
+Sources: https://helpx.adobe.com/animate/desktop/using/time.html and https://helpx.adobe.com/animate/desktop/multimedia-and-video/symbols.html
+
+### E-057 — Construct demonstrates readable event authoring and reusable behavior/family projections
+
+**Status:** FACT / interaction comparison input; checked 2026-09-19.
+
+Construct's event sheets use conditions/actions for sophisticated logic and its Families can share variables/behaviors. This supports approachable rule projection, while also motivating SplashMX's constraint that a global event surface must not become the canonical hidden owner of Thing intent.
+
+Sources: https://www.construct.net/en/make-games/manuals/construct-3/project-primitives/events/how-events-work and https://www.construct.net/en/make-games/manuals/construct-3/project-primitives/objects/families
+
+### E-058 — GameMaker demonstrates object-local event readability without proving its runtime taxonomy should be public architecture
+
+**Status:** FACT / interaction comparison input; checked 2026-09-19.
+
+GameMaker documents event-driven object behavior, including per-object event responses. SplashMX treats “this Thing responds when…” as a useful authoring lesson while keeping fixed engine event lists/room/object runtime identity below its compatibility boundary.
+
+Source: https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Reference/Asset_Management/Objects/Object_Events/Generating_Object_Events.htm
+
+### E-059 — SMX-012 model projects all representative corpus cases through one progressively disclosed authoring fabric
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`docs/research/SMX-012-AUTHORING-FIXTURES.json` maps `UX-001`–`UX-028` across every `C-001`–`C-028` case and selected adversarial cases. `experiments/smx-012-authoring-model/` supplies 27 boundary tests covering disclosure monotonicity, engine/build-term leakage, grouping/reparent safety, group→definition identity preservation, common Rule/Behaviour IR targeting, stable Connection ports, Timeline optionality, simple/advanced multiplayer equivalence, transient Play/presence/history, collaboration/runtime separation, author-language diagnostics, generic-player publication, duplicate identity, invalid endpoints and atomic digest/source/audio/provenance replacement.
+
+This is deliberately **not** user-study, accessibility, real browser-editor, interaction-latency or discoverability evidence. Those are explicit SMX-019 gates.
+
 ## Hypothesis review snapshots
 
 ### SMX-001
@@ -1014,6 +1078,11 @@ Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion f
 - H-017: **strengthened at model level, real persistence/synchronization pending** — offline replicas exchange causal work and converge for the deterministic corpus without cloud document authority or silent loss of valid independent edits.
 - H-018: **strengthened narrowly and constrained at collaboration-history level** — old-schema operations must migrate deterministically or quarantine before reconciliation; synchronization convergence cannot bypass canonical compatibility rules.
 - Existing source/audio/provenance, security, lifecycle, streaming and runtime-network decisions remain unchanged.
+
+### SMX-012
+
+- H-016: **strengthened at authoring-projection/model level, real browser usability pending** — all representative cases project through one Things/Behaviours/Connections semantic fabric; Stage/Timeline/Rules/Components/Together/People/Publish/Inspect are progressively disclosed views; simple and advanced logic/networking remain the same underlying semantics; collaboration is visibly distinct from runtime multiplayer; protected source/audio/provenance survives authoring operations. SMX-019 must still prove discoverability, interaction friction, browser constraints and end-to-end workflow.
+- Existing source/audio/provenance, security, lifecycle, streaming, runtime-network and collaboration decisions remain unchanged.
 
 ## Open architectural questions
 
@@ -1162,6 +1231,14 @@ Owner: SMX-015/019, with publishing implications for SMX-014/020.
 SMX-011 defines what must survive semantically but deliberately does not choose a production CRDT/OT/log/database, relay topology, checkpoint cadence, tombstone/conflict retention interval, causal index encoding, garbage-collection proof, or browser/native persistence scheme. Compaction must not permit resurrection, erase unresolved alternatives, break selective undo guarantees that are still promised, mix protected asset provenance, or strand older-schema offline edits without a typed outcome.
 
 Owner: SMX-018 for destructive substrate/compaction evidence; SMX-019/020 for production persistence/performance/final architecture.
+
+### O-022 — Real authoring usability, terminology, accessibility, and interaction cost
+
+**Status:** OPEN after SMX-012.
+
+SMX-012 demonstrates semantic projectability, not human usability. Final novice terminology, view discoverability, large-rule readability, nested Timeline locality, component-update conflict presentation, capability prompt cadence, accessibility/localization, touch/keyboard behavior, large-project navigation, error recovery, and create→play→save/reload→publish/load interaction/latency costs require a working browser slice. Friendly labels do not excuse a workflow that still requires engine/schema/transport/build concepts.
+
+Owner: SMX-019, with component/publishing inputs from SMX-013/014 and real multiplayer/collaboration inputs from SMX-017/018.
 
 ## Maintenance rule
 
