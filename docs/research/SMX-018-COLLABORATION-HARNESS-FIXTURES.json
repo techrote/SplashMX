@@ -58,7 +58,7 @@
     {"id":"CR-023","purpose":"schema mismatch is quarantined","expected":["CH-023"]},
     {"id":"CR-024","purpose":"known-unloaded pends while tombstone rejects late edit","expected":["CH-024","CH-005"]},
     {"id":"CR-025","purpose":"explicit resolution transaction resolves proposals without history rewrite","expected":["CH-025"]},
-    {"id":"CR-026","purpose":"runtime multiplayer/capability fields are rejected recursively","expected":["CH-026"]},
+    {"id":"CR-026","purpose":"runtime multiplayer/capability fields are rejected recursively","expected":["CH-001","CH-026"]},
     {"id":"CR-027","purpose":"protected media replacements remain complete alternatives","expected":["CH-027"]},
     {"id":"CR-028","purpose":"multi-operation invalidity rolls back the whole transaction and final documents validate","expected":["CH-028","CH-002"]}
   ],
