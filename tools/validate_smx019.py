@@ -100,7 +100,7 @@ if "## SMX-019 browser vertical-slice retrieval rules" not in rag:
 if "34 adversarial/boundary tests" not in rag:
     raise SystemExit("SMX-019 RAG must record the 34-test evidence boundary")
 
-for marker in ["playwright@1.55.0", "ws@8.18.3", "browser_harness.mjs", "test_model.mjs", "upload-artifact@v4"]:
+for marker in ["playwright@1.55.0", "ws@8.18.3", "browser_harness.mjs", "test_model.mjs", "upload-artifact@v7"]:
     if marker not in workflow:
         raise SystemExit(f"SMX-019 CI workflow missing reproducibility pin/step: {marker}")
 
