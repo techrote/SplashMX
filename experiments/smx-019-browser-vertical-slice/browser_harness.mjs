@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, stat, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { publish as publishModel } from './model.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const port = Number(process.env.SMX019_PORT ?? 8891);
@@ -142,8 +143,22 @@ try {
   if (offlineRevision !== publication.creation_revision_id) throw new Error('Offline cache substituted a different published revision');
   await context.setOffline(false);
 
+  // Probe required-capability denial with a separate immutable revision. The
+  // core Lamp/Button creation does not fabricate a camera requirement merely
+  // to make the negative path testable.
+  const capabilityProbe = publishModel(authored, {
+    creationId:'creation-browser-slice-capability-probe',
+    requiredCapabilities:['camera']
+  });
+  const probeResponse = await fetch(`${origin}/api/publish`, {
+    method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(capabilityProbe)
+  });
+  if (!probeResponse.ok) throw new Error('Capability probe revision could not be published');
+  const storedProbe = await probeResponse.json();
+  if (storedProbe.creation_revision_id !== capabilityProbe.creation_revision_id) throw new Error('Capability probe revision changed unexpectedly');
+
   const deniedPage = await context.newPage();
-  await deniedPage.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&deny=camera`, { waitUntil:'networkidle' });
+  await deniedPage.goto(`${origin}/player.html?rev=${encodeURIComponent(capabilityProbe.creation_revision_id)}&deny=camera`, { waitUntil:'networkidle' });
   await deniedPage.waitForFunction(() => Boolean(window.__SMX019_PLAYER_ERROR__));
   const deniedCode = await deniedPage.evaluate(() => window.__SMX019_PLAYER_ERROR__.code);
   if (deniedCode !== 'required_capability_denied') throw new Error(`Required capability denial surfaced as ${deniedCode}`);
@@ -198,6 +213,7 @@ try {
     author_vocabulary:['Thing','Behaviour','Connection','Stage','Timeline','Rules','Components','Together','People','Publish','Inspect'],
     storage:{editable:'localStorage disposable harness adapter', publication:'CacheStorage/service worker exact-revision cache', denied_status:storageStatus},
     protected_asset:{asset_id:publication.assets[0].asset_id, digest:publication.assets[0].digest},
+    capability_probe_revision_id:capabilityProbe.creation_revision_id,
     file_bytes:file_sizes,
     semantic:{creation_revision_id:publication.creation_revision_id, thing_count:publication.things.length, definition_count:publication.definitions.length, connection_count:publication.connections.length, timeline_count:publication.timeline.length},
     final_editable_thing_count:finalProject.things.length,
