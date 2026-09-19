@@ -1,0 +1,91 @@
+name: SMX-017 real topology harness
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: 4.7.2
+  PROJECT_PATH: experiments/smx-017-network-harness/godot
+
+jobs:
+  build-godot:
+    name: Godot 4.7.2 web + Linux exports
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install exact export templates from image
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.local/share/godot/export_templates/
+          if [ -d "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ]; then
+            mv "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ~/.local/share/godot/export_templates/
+          fi
+          godot --version
+      - name: Import and export one harness project
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/build/web" "$GITHUB_WORKSPACE/build/linux"
+          godot --version > "$GITHUB_WORKSPACE/build/godot-version.txt"
+          cd "$GITHUB_WORKSPACE/$PROJECT_PATH"
+          godot --headless --editor --quit-after 2
+          godot --headless --verbose --export-release "Web" "$GITHUB_WORKSPACE/build/web/index.html"
+          godot --headless --verbose --export-release "Linux" "$GITHUB_WORKSPACE/build/linux/smx017.x86_64"
+          test -s "$GITHUB_WORKSPACE/build/web/index.html"
+          test -s "$GITHUB_WORKSPACE/build/linux/smx017.x86_64"
+      - name: Upload runtime exports
+        uses: actions/upload-artifact@v4
+        with:
+          name: smx017-runtime-exports
+          path: build
+          if-no-files-found: error
+          retention-days: 7
+
+  real-topology-equivalence:
+    name: Offline + peer browser + dedicated authority
+    needs: build-godot
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download runtime exports
+        uses: actions/download-artifact@v4
+        with:
+          name: smx017-runtime-exports
+          path: build
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned browser harness dependencies
+        run: |
+          npm install --no-save --no-package-lock ws@8.18.3 playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Run deterministic semantic oracle
+        run: python -m unittest discover -s experiments/smx-017-network-harness -p 'test_model.py' -v
+      - name: Run real Godot/browser/server topology campaign
+        run: node experiments/smx-017-network-harness/browser_harness.mjs "$GITHUB_WORKSPACE"
+      - name: Print measured topology evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx017-integration-results.json ]; then
+            cat artifacts/smx017-integration-results.json
+          fi
+      - name: Upload measured topology evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smx017-topology-evidence
+          path: artifacts
+          if-no-files-found: warn
+          retention-days: 30

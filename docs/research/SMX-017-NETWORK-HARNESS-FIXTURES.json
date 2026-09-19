@@ -1,0 +1,92 @@
+{
+  "schema": "smx-research-fixtures/1",
+  "issue": "SMX-017",
+  "evidence_date": "2026-09-19",
+  "status": "executed_real_topology_evidence",
+  "canonical_creation": {
+    "revision_id": "smx017-topology-equivalence-v1",
+    "sha256": "dd5e7bb8b33ab447b4234fb8036453b248c5721e22b9f0e1c19cc57438e71580",
+    "paths": [
+      "experiments/smx-017-network-harness/creation.json",
+      "experiments/smx-017-network-harness/godot/creation.json"
+    ]
+  },
+  "topology_invariants": [
+    {"id":"TOP-001","statement":"Offline, peer-hosted browser and dedicated-authoritative modes consume byte-identical canonical creation content."},
+    {"id":"TOP-002","statement":"ThingId, DefinitionId, AttachmentId and PortId remain topology-independent."},
+    {"id":"TOP-003","statement":"Topology is runtime policy/context and does not create network-only Thing subclasses or authored rewrites."},
+    {"id":"TOP-004","statement":"Containment, controller binding, simulation authority and replication/relevance remain distinct relationships."},
+    {"id":"TOP-005","statement":"Client input is declared intent; a non-authority cannot assert authoritative replicated state."},
+    {"id":"TOP-006","statement":"Accepted equivalent input sequences reach the same authoritative semantic outcome across topologies."},
+    {"id":"TOP-007","statement":"State sequencing prevents stale delivery from rolling back current authoritative values."},
+    {"id":"TOP-008","statement":"Reliable logical events carry deduplication identity above transport delivery."},
+    {"id":"TOP-009","statement":"Relevance leave does not imply unload, destruction, containment change or authority transfer."},
+    {"id":"TOP-010","statement":"Known-unloaded Things retain bounded coalesced state and reliable event obligations until restore."},
+    {"id":"TOP-011","statement":"Reconnect preserves durable principal/Thing semantics while changing transient transport identity."},
+    {"id":"TOP-012","statement":"Peer authority migration requires a confirmed checkpoint and increments authority epoch."},
+    {"id":"TOP-013","statement":"Old-epoch messages are rejected after authority migration."},
+    {"id":"TOP-014","statement":"Peer host loss without confirmed checkpoint fails explicitly rather than electing from unconfirmed state."},
+    {"id":"TOP-015","statement":"Dedicated authority loss fails closed and does not promote an ordinary browser client."},
+    {"id":"TOP-016","statement":"Ingress recursively rejects serialized capability grants, host handles and engine identity."},
+    {"id":"TOP-017","statement":"Ingress enforces bounded message size and declared input/state/event loci independently."},
+    {"id":"TOP-018","statement":"Browser lifecycle behavior is measured in a real exported Chromium runtime and reported independently from reconnect fault injection; whether lifecycle naturally drops the transport and the actual reconnect trigger are recorded explicitly."},
+    {"id":"TOP-019","statement":"Peer-hosted and dedicated modes may differ in fairness/trust policy without changing canonical object semantics."},
+    {"id":"TOP-020","statement":"Topology projection, replication, reconnect and migration preserve the complete protected AssetId digest/source/audio/provenance/licence/derivation revision bundle."}
+  ],
+  "boundary_tests": [
+    {"id":"TN-001","test":"test_TN001_same_semantic_input_offline_peer_dedicated","covers":["TOP-003","TOP-006"]},
+    {"id":"TN-002","test":"test_TN002_control_is_not_containment_or_authority","covers":["TOP-004"]},
+    {"id":"TN-003","test":"test_TN003_transport_identity_rebind_does_not_change_principal","covers":["TOP-011"]},
+    {"id":"TN-004","test":"test_TN004_reconnect_requires_new_transient_peer","covers":["TOP-011"]},
+    {"id":"TN-005","test":"test_TN005_non_controller_input_rejected","covers":["TOP-004","TOP-005"]},
+    {"id":"TN-006","test":"test_TN006_duplicate_input_rejected_without_mutation","covers":["TOP-006","TOP-017"]},
+    {"id":"TN-007","test":"test_TN007_reordered_input_rejected","covers":["TOP-006","TOP-017"]},
+    {"id":"TN-008","test":"test_TN008_stale_authority_epoch_rejected","covers":["TOP-013"]},
+    {"id":"TN-009","test":"test_TN009_unconfirmed_host_loss_cannot_migrate_authority","covers":["TOP-014"]},
+    {"id":"TN-010","test":"test_TN010_confirmed_host_migration_bumps_epoch_preserves_thing_state","covers":["TOP-012"]},
+    {"id":"TN-011","test":"test_TN011_forged_remote_state_not_accepted_as_input","covers":["TOP-005"]},
+    {"id":"TN-012","test":"test_TN012_undeclared_input_rejected","covers":["TOP-017"]},
+    {"id":"TN-013","test":"test_TN013_out_of_range_input_rejected","covers":["TOP-017"]},
+    {"id":"TN-014","test":"test_TN014_capability_injection_rejected_recursively","covers":["TOP-016"]},
+    {"id":"TN-015","test":"test_TN015_host_handle_injection_rejected","covers":["TOP-016"]},
+    {"id":"TN-016","test":"test_TN016_oversized_message_rejected","covers":["TOP-017"]},
+    {"id":"TN-017","test":"test_TN017_known_unloaded_state_is_coalesced","covers":["TOP-010"]},
+    {"id":"TN-018","test":"test_TN018_reliable_event_survives_unload_then_deduplicates","covers":["TOP-008","TOP-010"]},
+    {"id":"TN-019","test":"test_TN019_relevance_leave_is_not_destroy_or_unload","covers":["TOP-009"]},
+    {"id":"TN-020","test":"test_TN020_tombstone_drops_pending_and_rejects_event","covers":["TOP-010","TOP-017"]},
+    {"id":"TN-021","test":"test_TN021_stale_state_cannot_roll_back","covers":["TOP-007"]},
+    {"id":"TN-022","test":"test_TN022_non_authority_state_rejected","covers":["TOP-005"]},
+    {"id":"TN-023","test":"test_TN023_undeclared_state_locus_rejected","covers":["TOP-017"]},
+    {"id":"TN-024","test":"test_TN024_protected_source_audio_provenance_bundle_is_atomic","covers":["TOP-020"]},
+    {"id":"TN-025","test":"test_TN025_topology_policy_does_not_mutate_protected_bundle","covers":["TOP-020"]},
+    {"id":"TN-026","test":"test_TN026_creation_contains_no_transport_or_godot_identity","covers":["TOP-001","TOP-003"]},
+    {"id":"TN-027","test":"test_TN027_same_thing_definition_attachment_port_ids_all_topologies","covers":["TOP-002"]},
+    {"id":"TN-028","test":"test_TN028_snapshot_excludes_transport_peer","covers":["TOP-002","TOP-011"]}
+  ],
+  "real_runtime_assertions": [
+    "exported Linux offline run reaches avatar_x=4 and door_open=true",
+    "exported browser peer authority and browser participant reach equivalent authoritative semantics",
+    "exported Linux dedicated authority plus browser client reaches equivalent authoritative semantics",
+    "real runtime rejects duplicate/reordered/undeclared/oversized/forged-authority traffic",
+    "unloaded event/state and relevance coalescing are observed in exported browser runtime",
+    "real browser lifecycle behavior is measured without assuming it drops the transport, then reconnect semantics are observed after the recorded natural or explicitly injected transport-loss trigger with changed transient connection identity",
+    "confirmed peer migration increments authority epoch and rejects injected prior-epoch input",
+    "unconfirmed peer host loss reports checkpoint_unconfirmed",
+    "dedicated server loss reports fail-closed and leaves no promoted browser authority",
+    "complete protected media bundle and canonical digest compare equal across normalized snapshots"
+  ],
+  "allowed_runtime_divergences": [
+    "transport_connection_ids",
+    "packet_timing_and_adapter_details",
+    "current_runtime_authority_host",
+    "authority_epoch_after_migration_or_failure",
+    "connect_disconnect_reconnect_mechanics",
+    "prediction_interpolation_caches",
+    "headless_presentation_omission",
+    "deployment_relay_signalling_scaling_policy"
+  ],
+  "corpus_pressure": [
+    "C-007","C-012","C-013","C-014","C-020","C-021","C-022","C-023",
+    "A-002","A-003","A-004","A-009","A-011","A-016"
+  ]
+}

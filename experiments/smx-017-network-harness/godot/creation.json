@@ -1,0 +1,92 @@
+{
+  "schema": "smx.creation/1",
+  "creation_revision_id": "smx017-topology-equivalence-v1",
+  "things": [
+    {
+      "thing_id": "world",
+      "kind": "group",
+      "parent": null,
+      "network": {
+        "replication": "shared",
+        "authority": "topology-policy"
+      }
+    },
+    {
+      "thing_id": "avatar:alice",
+      "kind": "sprite",
+      "parent": "world",
+      "controller_principal": "alice",
+      "network": {
+        "replicated_state": [
+          "position_x"
+        ],
+        "inputs": [
+          "move",
+          "open_door"
+        ],
+        "state_delivery": "latest",
+        "input_delivery": "reliable_ordered",
+        "relevance": "room"
+      }
+    },
+    {
+      "thing_id": "door",
+      "kind": "interactive",
+      "parent": "world",
+      "network": {
+        "replicated_state": [
+          "open"
+        ],
+        "events": [
+          "door_opened"
+        ],
+        "state_delivery": "latest",
+        "event_delivery": "reliable_ordered",
+        "relevance": "room"
+      }
+    }
+  ],
+  "definitions": [
+    {
+      "definition_id": "def:avatar",
+      "ports": [
+        "input:move",
+        "input:open_door",
+        "state:position_x"
+      ]
+    }
+  ],
+  "attachments": [
+    {
+      "attachment_id": "beh:avatar-motion",
+      "thing_id": "avatar:alice",
+      "behaviour_revision": "motion-v1"
+    }
+  ],
+  "ports": [
+    "port:avatar:move",
+    "port:door:opened"
+  ],
+  "protected_assets": [
+    {
+      "asset_id": "asset:click",
+      "digest": "sha256:9d4a2b9e0d7e15c4715ea1e34f0fb8b93e19a920a6b26c2b211e1c93e1431248",
+      "source_identity": "source:smx017-click-master",
+      "source_metadata": {
+        "format": "wav",
+        "channels": 1,
+        "sample_rate_hz": 48000
+      },
+      "audio_media_semantics": {
+        "role": "door-confirmation",
+        "loop": false
+      },
+      "provenance": {
+        "origin": "SMX-017 synthetic fixture",
+        "author": "SplashMX research harness"
+      },
+      "licence": "CC0-1.0",
+      "derivation": []
+    }
+  ]
+}
