@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://splashmx.dev/schema/production/failure-envelope-1.json",
+  "title": "SplashMX typed failure envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "code",
+    "category",
+    "author_message_key",
+    "severity",
+    "retryable",
+    "public_details"
+  ],
+  "properties": {
+    "contract": {
+      "const": "splashmx.failure/1"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9_]+)+$",
+      "minLength": 3
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "validation",
+        "compatibility",
+        "capability",
+        "resource",
+        "storage",
+        "dependency",
+        "network",
+        "collaboration",
+        "publication",
+        "platform",
+        "internal"
+      ]
+    },
+    "author_message_key": {
+      "type": "string",
+      "pattern": "^error\\.[a-z0-9_.]+$"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "error",
+        "fatal"
+      ]
+    },
+    "retryable": {
+      "type": "boolean"
+    },
+    "public_details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "diagnostic_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    }
+  }
+}
