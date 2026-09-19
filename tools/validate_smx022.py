@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json, re
 from pathlib import Path
+from production_contracts import validate
 ROOT=Path(__file__).resolve().parents[1]
 DOC=ROOT/'docs/research'
 EXP=ROOT/'experiments/smx-022-storage-spike'
@@ -30,6 +31,7 @@ for module in ('canonical.core','canonical.serialization','storage.local'):
 required_bench={'contract','evidence_id','captured_at_utc','target_profile','runtime','environment','workload','sample_count','metrics'}
 if evidence.get('schema')!='splashmx-smx022-native-evidence-v1' or not evidence.get('benchmark_evidence'): raise SystemExit('native evidence wrapper missing')
 for row in evidence['benchmark_evidence']:
+    validate(row, bench_schema)
     if set(row)!=required_bench: raise SystemExit(f'benchmark evidence fields mismatch: {row.get("evidence_id")}')
     if row['contract']!='splashmx.benchmark-evidence/1' or row['target_profile']!='native': raise SystemExit('benchmark contract/profile mismatch')
     if not re.fullmatch(r'[A-Za-z0-9._:-]+',row['evidence_id']): raise SystemExit('bad evidence id')
