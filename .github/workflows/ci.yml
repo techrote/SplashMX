@@ -66,3 +66,7 @@ jobs:
         run: python tools/validate_smx014.py
       - name: Run SMX-014 publishing/runtime falsification tests
         run: python -m unittest discover -s experiments/smx-014-publishing-model -p 'test_*.py'
+      - name: Validate SMX-015 research fixtures
+        run: python tools/validate_smx015.py
+      - name: Run SMX-015 Object Fabric falsification tests
+        run: python -m unittest discover -s experiments/smx-015-object-fabric-harness -p 'test_*.py'
