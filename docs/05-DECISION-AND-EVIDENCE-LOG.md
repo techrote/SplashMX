@@ -252,8 +252,6 @@ SMX-005 does not choose JSON, deterministic CBOR, Protocol Buffers, SQLite, or a
 
 **Source:** SMX-005 representation-family comparison and DOC-009/DOC-010.
 
-
-
 ### D-033 — Ordinary content has no ambient host authority
 
 **Status:** DECISION at security-boundary semantic level; subject to SMX-016 hostile proof.
@@ -318,8 +316,6 @@ Canonical authored documents, save-state records, package signatures, and ordina
 
 **Source:** SMX-006 SEC-003/SEC-012/SEC-017; ST-009/ST-010.
 
-
-
 ### D-041 — Lifecycle uses orthogonal existence, residency, and activity axes
 
 **Status:** DECISION at lifecycle semantic level; subject to SMX-015 integrated falsification.
@@ -375,8 +371,6 @@ A destroyed Thing becomes explicitly tombstoned for reference resolution. Ordina
 Given the same compatible authored basis and snapshot, restore must reconstruct the same declared simulation state, durable scheduler state, logical clocks and PRNG positions before new external inputs are admitted. Future execution can diverge when user/network/service/wall-clock/sensor/entropy inputs differ; a save file is not automatically a replay log.
 
 **Source:** SMX-007 LIF-015; LT-012.
-
-
 
 ### D-048 — Logical streaming identity is independent of physical acquisition units
 
@@ -449,6 +443,38 @@ Missing, offline/unreachable, denied, incompatible, invalid/malicious, resource-
 A candidate migration capsule contains selected stable Thing/subgraph IDs, quiescent runtime snapshot, durable pending work, authored/definition/behaviour provenance, exact resolved artifact descriptors, and external reference IDs. It excludes peer/session IDs, authority tokens, live capability grants, sockets, and Godot/native/browser handles.
 
 **Source:** SMX-008 STR-020; SG-012.
+
+### D-057 — Godot bindings are private, replaceable projections rather than Thing identity
+
+**Status:** DECISION at substrate-boundary level; subject to real-Godot integration/performance falsification in SMX-015/019.
+
+A SplashMX Thing is not a Godot Node. One Thing may have zero, one, or multiple private runtime bindings for rendering/audio/physics/input, and those bindings may be recreated on restore, stream-in, target migration, or engine/device reconfiguration without changing `ThingId` or semantic state. Node instance IDs, NodePaths, RIDs, ResourceUIDs, scene/resource paths, peer IDs, and host handles remain transient adapter context.
+
+**Source:** `docs/research/SMX-009-GODOT-BOUNDARY.md` GOD-001–GOD-003/GOD-008/GOD-016; GB-001/GB-005/GB-009/GB-012.
+
+### D-058 — Target projection must preserve canonical source, audio, asset, and provenance meaning
+
+**Status:** DECISION at substrate/package boundary.
+
+Web/native/headless targets consume the same canonical revision. Godot-imported resources, decoded audio/textures, transcoded target assets, GPU/audio objects, and dedicated-server placeholders are target-private derived artefacts or caches. They do not replace `AssetId`, immutable source digest, logical source record, provenance/licensing metadata, or derivation lineage. Unsupported optional presentation may be omitted by a target; unsupported required semantics fail explicitly before activation.
+
+**Source:** SMX-009 GOD-005/GOD-006/GOD-012–GOD-015; GB-002–GB-004/GB-007/GB-008.
+
+### D-059 — Godot/platform services sit below SplashMX execution, security, persistence, and networking contracts
+
+**Status:** DECISION at substrate-boundary level.
+
+SplashMX owns behaviour ordering/IR, canonical project/save meaning, capability grants, streaming/dependency semantics, and authority/replication declarations. Godot may supply frame hooks, rendering/audio/input/physics, resource decoding/import caches, filesystem/storage adapters, headless process support, and concrete network transports. Host availability never grants ordinary content authority, and choosing WebRTC/WebSocket/ENet/UDP cannot rewrite canonical network meaning.
+
+**Source:** SMX-009 GOD-007/GOD-009–GOD-011/GOD-017/GOD-018; GB-006/GB-010/GB-011.
+
+### D-060 — Generic target profiles negotiate required/optional features before publication
+
+**Status:** PROVISIONAL DIRECTION strengthened by SMX-009; publishing/package details remain SMX-014/019.
+
+A versioned generic SplashMX runtime may load one canonical creation revision on web/native/headless targets, reject missing required target features before activation, and record omitted optional capabilities without mutating the creation. Ordinary publishing therefore need not be defined as a per-creation Godot build. This is model/platform evidence, not yet a production startup-size/latency/performance proof.
+
+**Source:** SMX-009 GOD-004–GOD-007/GOD-015/GOD-018; GB-002–GB-004/GB-011.
 
 ## Primary-source and comparative evidence
 
@@ -574,8 +600,6 @@ Source: https://www.rfc-editor.org/rfc/rfc8949.html
 
 **Implication:** a constrained deterministic CBOR profile is a credible future chunk/package encoding candidate without being selected by SMX-005.
 
-
-
 ### E-031 — Godot web builds can omit JavaScriptBridge/eval support
 
 **Status:** FACT, time-sensitive; checked 2026-09-17.
@@ -630,8 +654,6 @@ Sources:
 
 **Implication:** SplashMX should expose stable semantic capabilities while adapters handle browser-specific permission/gesture/lifetime rules.
 
-
-
 ### E-036 — Godot 4.7 exposes threaded resource loading, dependency inspection, and cache modes
 
 **Status:** FACT, time-sensitive; checked 2026-09-19.
@@ -672,6 +694,90 @@ Source: https://semver.org/
 
 **Implication:** useful component compatibility vocabulary, but exact constraint syntax/solver behavior remains SMX-013.
 
+### E-040 — Godot 4.7.2 is the current stable baseline; 4.8-dev6 is a development snapshot
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot's official release archive lists 4.7.2 stable dated 2026-08-18 and 4.8-dev6 dated 2026-09-15. SMX-009 therefore uses the 4.7 documentation branch for stable-runtime claims and labels `stable`/development material when used.
+
+Source: https://godotengine.org/download/archive/
+
+### E-041 — Godot 4.7 web targets WebAssembly/WebGL 2 Compatibility and prefers single-threaded export
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot 4.7 web export requires WebAssembly and WebGL 2.0 and supports the Compatibility renderer, not Forward+/Mobile. Single-threaded export is the preferred/default route; threaded builds require SharedArrayBuffer and cross-origin isolation. C# Godot 4 projects cannot export to web.
+
+Source: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html
+
+**Implication:** renderer/thread/isolation support is target capability/policy, not a canonical Thing type or identity.
+
+### E-042 — Godot web audio has target-specific feature/latency trade-offs
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot 4.7 documents Web Audio sample playback as the default web path with low-latency advantages and missing engine features such as AudioEffects/reverb/doppler/procedural support; stream playback restores more engine-side features with higher latency, especially without threads.
+
+Source: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#audio-playback
+
+**Implication:** audio source identity, provenance, author intent, and required/optional semantics must remain above the target playback backend.
+
+### E-043 — Browser persistence and background lifecycle differ materially from native
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot 4.7 web export backs `user://` with IndexedDB when available; private/incognito policy can prevent persistence. The web editor also stores project files in IndexedDB and cannot perform normal project export. Inactive browser tabs can suspend processing and thereby break long-lived network sessions.
+
+Sources:
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#using-cookies-for-data-persistence
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#background-processing
+- https://docs.godotengine.org/en/4.7/tutorials/editor/using_the_web_editor.html
+
+**Implication:** durability and lifecycle outcomes must be reported through SplashMX semantics; a successful low-level file call or hidden tab cannot silently redefine save/time/network meaning.
+
+### E-044 — Browser networking is a constrained transport subset
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot 4.7 web export supports HTTP, WebSocket client, and WebRTC while low-level networking is unavailable. WebRTC requires signalling/ICE/SDP coordination.
+
+Sources:
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html#networking
+- https://docs.godotengine.org/en/4.7/tutorials/networking/websocket.html
+- https://docs.godotengine.org/en/4.7/tutorials/networking/webrtc.html
+
+**Implication:** transport selection is below SMX-010 authority/replication/reconnect semantics and browser suspension is a mandatory network-harness case.
+
+### E-045 — Godot headless/dedicated-server execution can strip presentation resources
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot 4.7 supports headless operation and dedicated-server export; dedicated-server packaging can strip visual resources or replace them with placeholders while retaining references required by the Godot project.
+
+Sources:
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_dedicated_servers.html
+- https://docs.godotengine.org/en/4.7/tutorials/export/exporting_projects.html
+
+**Implication:** headless is a credible target projection, but canonical package/source/provenance semantics decide what may be omitted; Godot stripping is an implementation optimization rather than a second creation model.
+
+### E-046 — Hardened Godot web builds can remove JavaScriptBridge/eval independently of SplashMX capability policy
+
+**Status:** FACT, time-sensitive; refreshed 2026-09-19.
+
+Current Godot web compilation documentation states official/default templates include JavaScriptBridge and custom templates can be compiled with `javascript_eval=no`; threading can independently be disabled with `threads=no`.
+
+Source: https://docs.godotengine.org/en/stable/engine_details/development/compiling/compiling_for_web.html
+
+**Implication:** removing unnecessary host bridges is useful defence in depth, but ordinary user IR remains unable to address them even in a host build where they exist.
+
+### E-047 — SMX-009 model preserves semantic identity across target-private binding replacement and target projection
+
+**Status:** REPRODUCIBLE RESEARCH EVIDENCE, non-production; 2026-09-19.
+
+`experiments/smx-009-godot-boundary-model/` exercises `GB-001`–`GB-012`: web/native/headless projection of one canonical revision, zero/one/multiple ephemeral bindings per Thing, binding replacement, required-feature failure, forbidden host-feature denial, digest-before-publication, audio/source/provenance preservation, snapshot handle exclusion, and transport-policy independence.
+
+The accompanying Python mapping microbenchmark records CPython 3.13.5/Linux 6.18.44 x86_64 and 7-round 1k/10k/100k bookkeeping workloads. It is explicitly **not** Godot Node/render/physics/frame-time evidence; real Godot measurements remain SMX-015/019.
+
 ## Hypothesis review snapshots
 
 ### SMX-001
@@ -705,13 +811,14 @@ H-001–H-018: **unresolved**; baseline added corpus/scorecard only.
 - H-018: **strengthened at schema/document layer, unresolved end-to-end** — staged deterministic migration is executable; future engine-semantic migrations remain untested.
 - Others: no status change.
 
-Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion fixture/harness artifacts.\n\n### SMX-006
+Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion fixture/harness artifacts.
+
+### SMX-006
 
 - H-006: **strengthened indirectly** — one constrained IR can share one capability/service enforcement boundary.
 - H-009: **strengthened substantially at model level, unresolved end-to-end** — principal grants, narrowed delegation, revocation, nested isolation, parser/service/network limits, and signature-without-privilege are exercised; real host escape remains SMX-016.
 - H-014: **strengthened narrowly** — current Godot host powers can remain behind adapters; JavaScriptBridge can be omitted and PCK/GDExtension paths excluded from ordinary content.
 - H-015: **strengthened narrowly from security architecture** — generic players centralize validation/capability mediation/hardening; performance/publishing proof remains later work.
-
 
 ### SMX-007
 
@@ -719,13 +826,20 @@ Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion f
 - H-010: **strengthened substantially at model level** — unloaded Things retain meaningful IDs/references/pending state and can be reconstructed without surviving process objects; full streaming remains SMX-008/015.
 - H-018: **strengthened further at runtime-snapshot layer, unresolved end-to-end** — authored/behaviour/private-state compatibility is migration/rejection-driven rather than engine-object deserialization.
 
-
 ### SMX-008
 
 - H-005: **strengthened further** — acquisition, quiescent migration, continuation mapping and rollback compose with behaviour hot replacement.
 - H-010: **strengthened further** — instances/attachments retain meaning while source/runtime artifacts cross residency boundaries.
 - H-011: **strengthened substantially at model level** — the town/inventory fixture reloads one referenced Thing plus hard dependency closure rather than the containment region; physical batching remains non-semantic.
 - H-018: **strengthened further** — replacement is exact-artifact + explicit migration driven rather than engine-object/version implicit.
+
+### SMX-009
+
+- H-007: **strengthened further** — current Godot facilities fit below the engine-independent canonical record/identity boundary; fixture cases reject NodePath/RID/ResourceUID leakage.
+- H-009: **strengthened further at mapping layer, still unresolved end-to-end** — ordinary content cannot request ambient GDScript/C#/GDExtension/JavaScriptBridge/eval/raw-host authority; hardened builds can additionally remove JavaScriptBridge/eval. Real escape testing remains SMX-016.
+- H-014: **strengthened substantially at model/platform-boundary level** — target-private bindings/services can supply rendering/audio/input/physics/resource/storage/network facilities without becoming public identities or protocols. Real Godot object/frame cost remains unmeasured.
+- H-015: **strengthened at model/package-loading level** — one canonical revision projects to web/native/headless target profiles with explicit required/optional feature outcomes; production startup/distribution/UX remains SMX-014/019.
+- H-018: **strengthened further** — snapshots/target projection exclude engine handles and preserve canonical source/audio/provenance meaning; actual future cross-Godot-version migration remains for SMX-015/020.
 
 ## Open architectural questions
 
@@ -811,8 +925,6 @@ Runtime acquisition now requires an exact immutable resolved descriptor with log
 
 Owner: SMX-013/014/016.
 
-
-
 ### O-014 — Capability grant persistence and permission UX
 
 **Status:** NARROWED by SMX-007.
@@ -823,11 +935,11 @@ Owner: SMX-012/014/016.
 
 ### O-015 — Hardened custom Godot runtime requirement
 
-SMX-006 identifies concrete value in a custom web template with `javascript_eval=no`, but does not decide whether custom builds are mandatory for all targets or how their maintenance/performance cost compares with stock templates plus mediation.
+**Status:** NARROWED FURTHER by SMX-009.
 
-Owner: SMX-009/016/019.
+The architectural security requirement is that ordinary content cannot address JavaScriptBridge/eval/native/PCK host-code paths. A custom web template with `javascript_eval=no` is a preferred defence-in-depth profile when the trusted host shell does not need that bridge, but SMX-009 does not make a permanent custom-engine fork mandatory for every target. SMX-016 must attack actual built templates and SMX-019 must measure deployment/maintenance impact.
 
-
+Owner: SMX-016/019.
 
 ### O-016 — Production snapshot/store crash-consistency and performance
 
@@ -835,15 +947,13 @@ Owner: SMX-009/016/019.
 
 Streaming now requires atomic live publication and permits verified immutable cache progress to survive cancelled loads, but does not choose the final on-disk journal/transaction implementation, incremental snapshot algorithm, compression, cache index, crash recovery, compaction, or performance envelope.
 
-Owner: SMX-009/014/019/020.
-
-
+Owner: SMX-014/019/020.
 
 ### O-017 — Physical stream batching, cache policy, and performance
 
 SMX-008 deliberately keeps physical acquisition units non-semantic. Production must choose chunk/bundle sizing, compression, cache index, prefetch/eviction heuristics, memory budgets, browser/native storage behavior, and latency/throughput trade-offs without changing stable logical identities.
 
-Owner: SMX-009/014/019/020.
+Owner: SMX-014/019/020.
 
 ### O-018 — Distribution trust, repository selection, and version resolution
 
@@ -856,6 +966,14 @@ Owner: SMX-013/014/016.
 SMX-008 demonstrates a portable semantic migration capsule but does not define source/destination authority transfer, in-flight network cut, duplicate-authority prevention, replication pause/resume, crash recovery, or consensus between server regions.
 
 Owner: SMX-010/017.
+
+### O-020 — Real Godot object-fabric and browser player performance
+
+**Status:** OPEN after SMX-009.
+
+SMX-009 establishes the semantic boundary and a reproducible non-Godot indirection microbenchmark, but deliberately does not claim measured Godot Node/RID/resource creation cost, renderer/physics/audio overhead, WebAssembly startup/heap cost, or browser frame-time scalability. The next real integration/destructive work must measure named Godot builds, browsers, hardware, object counts, workload, startup/memory/frame metrics, and binding lifecycle costs.
+
+Owner: SMX-015/019, with publishing implications for SMX-014/020.
 
 ## Maintenance rule
 

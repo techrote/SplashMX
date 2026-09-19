@@ -1,0 +1,90 @@
+{
+  "schema": "splashmx-smx009-godot-boundary-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "checked_date": "2026-09-19",
+  "godot_baseline": "4.7.2-stable / 4.7 documentation branch",
+  "boundary_invariants": [
+    "GOD-001", "GOD-002", "GOD-003", "GOD-004", "GOD-005", "GOD-006",
+    "GOD-007", "GOD-008", "GOD-009", "GOD-010", "GOD-011", "GOD-012",
+    "GOD-013", "GOD-014", "GOD-015", "GOD-016", "GOD-017", "GOD-018"
+  ],
+  "fixtures": [
+    {
+      "id": "GB-001",
+      "name": "Ephemeral binding replacement preserves Thing identity",
+      "cases": ["C-006", "C-025", "A-001"],
+      "expected": ["GOD-001", "GOD-002", "GOD-003"]
+    },
+    {
+      "id": "GB-002",
+      "name": "One canonical package loads through web, native, and headless profiles",
+      "cases": ["C-015", "C-023", "C-025"],
+      "expected": ["GOD-004", "GOD-005", "GOD-006"]
+    },
+    {
+      "id": "GB-003",
+      "name": "Headless projection omits optional presentation without semantic rewrite",
+      "cases": ["C-015", "C-023"],
+      "expected": ["GOD-005", "GOD-006", "GOD-015"]
+    },
+    {
+      "id": "GB-004",
+      "name": "Required unsupported target feature fails before activation",
+      "cases": ["C-015", "A-010"],
+      "expected": ["GOD-006", "GOD-007"]
+    },
+    {
+      "id": "GB-005",
+      "name": "Godot Node path, RID, resource UID, peer ID, and host handles are rejected from canonical data",
+      "cases": ["C-006", "C-014", "C-025", "A-001"],
+      "expected": ["GOD-001", "GOD-008", "GOD-009"]
+    },
+    {
+      "id": "GB-006",
+      "name": "Forbidden host features remain denied even when the substrate could provide them",
+      "cases": ["C-022", "A-003", "A-012"],
+      "expected": ["GOD-007", "GOD-010", "GOD-011"]
+    },
+    {
+      "id": "GB-007",
+      "name": "Exact asset digest validation precedes runtime publication",
+      "cases": ["C-011", "C-026", "A-012"],
+      "expected": ["GOD-007", "GOD-012"]
+    },
+    {
+      "id": "GB-008",
+      "name": "Audio/source/provenance semantics survive target projection",
+      "cases": ["C-009", "C-011", "C-023"],
+      "expected": ["GOD-005", "GOD-013", "GOD-014"]
+    },
+    {
+      "id": "GB-009",
+      "name": "Semantic snapshot excludes all substrate bindings and current host context",
+      "cases": ["C-012", "C-025", "A-002"],
+      "expected": ["GOD-003", "GOD-008", "GOD-016"]
+    },
+    {
+      "id": "GB-010",
+      "name": "Transport selection changes adapter policy, not canonical network semantics",
+      "cases": ["C-013", "C-014", "C-020", "C-021", "A-009"],
+      "expected": ["GOD-009", "GOD-017"]
+    },
+    {
+      "id": "GB-011",
+      "name": "Browser low-level networking requirement fails explicitly",
+      "cases": ["C-014", "A-010"],
+      "expected": ["GOD-006", "GOD-017", "GOD-018"]
+    },
+    {
+      "id": "GB-012",
+      "name": "One Thing can have zero, one, or multiple private substrate bindings",
+      "cases": ["C-002", "C-009", "C-015"],
+      "expected": ["GOD-001", "GOD-002", "GOD-015"]
+    }
+  ],
+  "direct_case_coverage": [
+    "C-002", "C-006", "C-009", "C-011", "C-012", "C-013", "C-014", "C-015",
+    "C-020", "C-021", "C-022", "C-023", "C-025", "C-026"
+  ],
+  "direct_adversarial_coverage": ["A-001", "A-002", "A-003", "A-009", "A-010", "A-012"]
+}

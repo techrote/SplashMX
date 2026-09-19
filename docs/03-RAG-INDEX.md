@@ -287,3 +287,30 @@ When adding research material:
 ## Expected future retrieval artefacts
 
 Research issues may add topic-specific documents under `docs/research/`, ADRs under `docs/adr/`, schemas under `spec/`, and disposable experiments under `experiments/`. When they do, update this index so later agents can retrieve the minimum complete authoritative set without reconstructing context from commit history.
+
+## SMX-009 Godot-boundary retrieval rules
+
+SMX-009 adds the platform-boundary material that downstream network, publishing, sandbox, and browser work must retrieve before treating Godot APIs as architecture:
+
+- `docs/research/SMX-009-GODOT-BOUNDARY.md` — the `SplashMX owns` versus `Godot supplies` map, 2026-09-19 Godot 4.7.2/web/headless facts, security mapping, generic-player result, source/audio/provenance preservation, rejected mappings, and downstream handoffs.
+- `docs/research/SMX-009-GODOT-BOUNDARY-FIXTURES.json` — `GOD-001` through `GOD-018` and `GB-001` through `GB-012` machine-addressable candidate invariants/fixtures.
+- `experiments/smx-009-godot-boundary-model/` — non-normative generic-player/target-profile model, hostile boundary tests, and identity-to-binding microbenchmark.
+- Durable candidate: a SplashMX Thing is not a Godot Node; one Thing may have zero/one/many private substrate bindings, and bindings can be recreated without changing durable identity/state.
+- Nodes, NodePaths, RIDs, ResourceUIDs, peer IDs, browser/OS handles, sockets, and JavaScript objects are transient adapter context and must not enter canonical documents, snapshots, or migration capsules.
+- Ordinary content cannot request arbitrary GDScript/C#/GDExtension/JavaScriptBridge/eval/PCK/filesystem/raw-socket authority merely because a target build exposes those host facilities.
+- Exact source assets, audio identity, provenance/licensing, and derivation records remain SplashMX-owned; Godot imported/decoded/transcoded resources and server placeholders are target-private derivatives/caches.
+- Generic web/native/headless projection is supported at model level with explicit required/optional feature negotiation; real Godot frame/startup cost remains an SMX-015/019 measurement gate.
+- Network transport selection (WebRTC/WebSocket/ENet/UDP) remains below SMX-010 authority/replication semantics. Browser background suspension and absence of low-level networking are mandatory downstream cases.
+
+### SMX-009 primary-source anchors — refreshed 2026-09-19
+
+- Godot release archive / 4.7.2 stable and 4.8-dev6 context: https://godotengine.org/download/archive/
+- Godot 4.7 web export, renderer/thread/audio/storage/background/network limitations: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html
+- Godot 4.7 web editor limitations/IndexedDB: https://docs.godotengine.org/en/4.7/tutorials/editor/using_the_web_editor.html
+- Godot 4.7 ResourceLoader: https://docs.godotengine.org/en/4.7/classes/class_resourceloader.html
+- Godot 4.7 WebSocket: https://docs.godotengine.org/en/4.7/tutorials/networking/websocket.html
+- Godot 4.7 WebRTC: https://docs.godotengine.org/en/4.7/tutorials/networking/webrtc.html
+- Godot 4.7 dedicated-server export: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_dedicated_servers.html
+- Current web-template compilation / `javascript_eval=no`: https://docs.godotengine.org/en/stable/engine_details/development/compiling/compiling_for_web.html
+
+`GOD-###` and `GB-###` now join the stable RAG identifier families for substrate-boundary research.

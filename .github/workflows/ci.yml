@@ -42,3 +42,7 @@ jobs:
         run: python tools/validate_smx008.py
       - name: Run SMX-008 streaming migration falsification tests
         run: python -m unittest discover -s experiments/smx-008-streaming-model -p 'test_*.py'
+      - name: Validate SMX-009 research fixtures
+        run: python tools/validate_smx009.py
+      - name: Run SMX-009 Godot boundary falsification tests
+        run: python -m unittest discover -s experiments/smx-009-godot-boundary-model -p 'test_*.py'
