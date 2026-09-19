@@ -6,8 +6,11 @@ import json, pathlib, re, sys
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DOC=ROOT/"docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md"
 FIXTURES=ROOT/"docs/research/SMX-015-OBJECT-FABRIC-FIXTURES.json"
+DECISION=ROOT/"docs/research/SMX-015-DECISION-EVIDENCE.md"
+RAG=ROOT/"docs/03-RAG-INDEX.md"
+LOG=ROOT/"docs/05-DECISION-AND-EVIDENCE-LOG.md"
 REQUIRED=[
-    DOC,FIXTURES,
+    DOC,FIXTURES,DECISION,RAG,LOG,
     ROOT/"experiments/smx-015-object-fabric-harness/README.md",
     ROOT/"experiments/smx-015-object-fabric-harness/model.py",
     ROOT/"experiments/smx-015-object-fabric-harness/fixtures.py",
@@ -55,6 +58,23 @@ if DOC.is_file():
     required_phrases=("`Thing` semantic type","P0 universal kernel","P1 hot behaviour replacement","P2 nested composition","P3 exact serialize/restore","P4 stream arbitrary subgraphs","37 deterministic","fresh `FabricWorld`","known_unloaded","tombstoned","source/audio/provenance","AssetId","NodePath","O-020 remains **OPEN**","No upstream authoritative contract required semantic amendment","SMX-016","SMX-017","SMX-018","SMX-019","SMX-020")
     for phrase in required_phrases:
         if phrase.lower() not in lower: errors.append(f"SMX-015 synthesis document is missing required phrase: {phrase!r}")
+
+if DECISION.is_file():
+    text=DECISION.read_text(encoding="utf-8")
+    for identifier in ("D-087","D-088","D-089","D-090","E-069","O-020"):
+        if identifier not in text: errors.append(f"SMX-015 decision/evidence handoff is missing {identifier}")
+
+if RAG.is_file():
+    text=RAG.read_text(encoding="utf-8")
+    for phrase in ("SMX-015 Object Fabric destructive-harness retrieval rules","OF-001","OF-030","OH-001","OH-020","SMX-015-DECISION-EVIDENCE.md","source/audio/provenance"):
+        if phrase not in text: errors.append(f"RAG index is missing SMX-015 retrieval marker: {phrase!r}")
+
+if LOG.is_file():
+    text=LOG.read_text(encoding="utf-8")
+    for identifier in ("## SMX-015 decision/evidence register","D-087","D-088","D-089","D-090","E-069","O-020 update"):
+        if identifier not in text: errors.append(f"project decision/evidence register is missing SMX-015 marker: {identifier!r}")
+    if "protected source/audio/provenance" not in text:
+        errors.append("project decision/evidence register lost the SMX-015 protected-media boundary")
 
 if errors:
     print("SMX-015 validation failed:")
