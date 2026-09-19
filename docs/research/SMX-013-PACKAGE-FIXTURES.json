@@ -1,0 +1,45 @@
+{
+  "schema": "splashmx-smx013-package-fixtures-v1",
+  "status": "non-normative-research-fixtures",
+  "issue": "SMX-013",
+  "boundary_invariants": [
+    "PKG-001", "PKG-002", "PKG-003", "PKG-004", "PKG-005", "PKG-006", "PKG-007", "PKG-008",
+    "PKG-009", "PKG-010", "PKG-011", "PKG-012", "PKG-013", "PKG-014", "PKG-015", "PKG-016",
+    "PKG-017", "PKG-018", "PKG-019", "PKG-020", "PKG-021", "PKG-022", "PKG-023", "PKG-024",
+    "PKG-025", "PKG-026", "PKG-027", "PKG-028"
+  ],
+  "fixtures": [
+    {"id":"PK-001","cases":["C-011","C-027"],"expected":["PKG-001","PKG-002","PKG-003"],"scenario":"promote ordinary local reusable definition into portable package without replacing definition/element/port/first-instance Thing identities"},
+    {"id":"PK-002","cases":["C-011"],"expected":["PKG-004","PKG-005"],"scenario":"clean install resolves a human compatibility requirement into one exact immutable package revision and lock descriptor"},
+    {"id":"PK-003","cases":["C-026"],"expected":["PKG-006","PKG-007"],"scenario":"required dependency resolves recursively and publishes only after a complete exact closure exists"},
+    {"id":"PK-004","cases":["C-026"],"expected":["PKG-007"],"scenario":"missing required dependency fails with no partial install"},
+    {"id":"PK-005","cases":["C-026"],"expected":["PKG-008"],"scenario":"missing optional dependency uses only an explicitly declared fallback"},
+    {"id":"PK-006","cases":["C-026"],"expected":["PKG-009"],"scenario":"lazy dependency remains a declared exactable requirement without eager acquisition"},
+    {"id":"PK-007","cases":["A-012","A-015"],"expected":["PKG-010","PKG-011"],"scenario":"dependency cycles and depth/count/byte amplification are bounded before publication"},
+    {"id":"PK-008","cases":["A-015"],"expected":["PKG-012","PKG-013"],"scenario":"digest mismatch, revision collision, or revoked exact artifact cannot become live"},
+    {"id":"PK-009","cases":["C-026"],"expected":["PKG-014"],"scenario":"offline playback/install from an existing lock requires the exact cached closure and never silently substitutes another compatible version"},
+    {"id":"PK-010","cases":["C-027"],"expected":["PKG-015","PKG-016"],"scenario":"transitive capability request is attributed to its dependency principal and does not inherit the parent grant"},
+    {"id":"PK-011","cases":["C-027"],"expected":["PKG-016"],"scenario":"explicit capability delegation may only narrow an existing delegable live grant"},
+    {"id":"PK-012","cases":["A-015"],"expected":["PKG-017"],"scenario":"publisher signature/provenance/source visibility/remix policy do not grant runtime host authority"},
+    {"id":"PK-013","cases":["C-025","A-006"],"expected":["PKG-018","PKG-019","PKG-020"],"scenario":"compatible package update preserves concrete Thing identity, overlays, public interfaces, and persistent state while moving the base definition revision"},
+    {"id":"PK-014","cases":["C-025","A-006"],"expected":["PKG-019","PKG-020"],"scenario":"state-schema update requires an explicit bounded migration and commits only after every affected instance validates"},
+    {"id":"PK-015","cases":["C-025","A-006"],"expected":["PKG-020","PKG-021"],"scenario":"missing/failing migration rolls back package lock, instances, overlays, state, and old active revision"},
+    {"id":"PK-016","cases":["C-025"],"expected":["PKG-022"],"scenario":"public-port or overlay-locus incompatibility is an explicit update conflict rather than silent repair by path/name"},
+    {"id":"PK-017","cases":["C-011","C-026"],"expected":["PKG-023","PKG-024"],"scenario":"package removal is blocked while authored instances or required dependency edges remain; cache eviction is non-semantic"},
+    {"id":"PK-018","cases":["C-011"],"expected":["PKG-025","PKG-026"],"scenario":"package source/remix/licensing and derivation provenance remain explicit metadata independent of execution trust"},
+    {"id":"PK-019","cases":["C-011","A-015"],"expected":["PKG-027"],"scenario":"protected AssetId revision replacement is atomic across digest/source/audio/provenance/licence/derivation and partial bundles are rejected"},
+    {"id":"PK-020","cases":["C-011"],"expected":["PKG-027","PKG-028"],"scenario":"concurrent/different protected asset revisions remain complete alternatives; package publication/publishing handoff carries exact protected revisions without field synthesis"}
+  ],
+  "required_acceptance_cases": ["clean-install","dependency-update","locally-overridden-instance-after-update","denied-capability","missing-dependency","incompatible-migration"],
+  "downstream_handoffs": {
+    "SMX-014": ["exact lock/package revision consumed by publish","generic player validates required features/capabilities/protected assets"],
+    "SMX-016": ["malformed archive/parser campaign","signature/trust-root attacks","dependency confusion/revocation/freeze/rollback","real capability laundering"],
+    "SMX-019": ["group-to-component-to-portable-package UX","dependency/capability diagnostics","offline/cache/update/remix workflow"]
+  },
+  "model_claims": {
+    "version_language": "research-only exact or caret forms; production constraint syntax remains open",
+    "resolution": "one exact revision per PackageId per creation lock in this candidate; incompatible transitive ranges conflict explicitly",
+    "signatures": "integrity/publisher/update-lineage evidence only; never host capability",
+    "source_audio_provenance": "stable AssetId with indivisible immutable digest/source/audio/provenance/licence/derivation revision bundle"
+  }
+}

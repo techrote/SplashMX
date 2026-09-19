@@ -30,7 +30,8 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 24. `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md` and companion fixtures — runtime authority/replication/relevance/topology semantics and the concrete SMX-017 equivalence handoff.
 25. `docs/research/SMX-011-COLLABORATION-SEMANTICS.md` and companion fixtures — human-visible conflict semantics, causal semantic transactions, local-first reconciliation, undo/history, transient presence separation, and the concrete SMX-018 handoff.
 26. `docs/research/SMX-012-AUTHORING-MODEL.md` and companion fixtures — progressive-disclosure author vocabulary, Stage/Timeline/Rules/Components responsibilities, simple/advanced multiplayer projection, People/collaboration separation, protected media authoring, and concrete SMX-019 gates.
-27. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+27. `docs/research/SMX-013-COMPONENT-PACKAGES.md` and companion fixtures — portable component/package identity, exact dependency locks, update/migration rollback, transitive capability attribution, offline/cache, remix/licensing/provenance, and SMX-014/016/019 handoffs.
+28. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -49,8 +50,8 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-012 authoring projection; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
 | Collaborative editing | SMX-011 collaboration semantics, Constitution P8, H-013/H-017/H-018, SMX-005 semantic transactions, SMX-003 definition/instance reconciliation, SMX-010 NET-019 separation | SMX-011 fixtures/experiment; SMX-012 People/conflict projection; SMX-018 destructive harness; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
 | Editor UX/progressive disclosure | SMX-012 authoring model, AUTH-001–AUTH-028, UX-001–UX-028, P1–P3, H-016, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010/011 network+collaboration semantics | SMX-012 experiment/fixtures; UXG-001–UXG-012; SMX-019 browser vertical slice |
-| Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-012 ordinary-group promotion, SMX-004 capability/service/budget hooks, SMX-005 cross-document qualification/assets | SMX-013/016 outputs; C-011/C-022/C-026 |
-| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations, SMX-012 Publish contract | SMX-014/017/019 outputs; C-015/C-023 |
+| Component ecosystem | SMX-013 component/package research, PKG-001–PKG-028, P9/P13, H-004/H-009/H-011/H-018, SMX-003 local-definition/public-interface model, SMX-006 capability boundary, SMX-008 exact acquisition, SMX-012 group→reusable projection | SMX-013 fixtures/experiment; SMX-014 publishing; SMX-016 hostile package campaign; SMX-019 browser UX; C-011/C-022/C-026 |
+| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations, SMX-012 Publish contract | SMX-013 exact package locks; SMX-014/017/019 outputs; C-015/C-023 |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
 ## SMX-001 baseline retrieval rules
@@ -288,7 +289,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`, `AUTH-###`, `UX-###`, `UXG-###`, `PKG-###`, `PK-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
@@ -408,3 +409,32 @@ SMX-012 adds the author-facing projection that component, publishing, multiplaye
 - GameMaker object events: https://manual.gamemaker.io/lts/en/GameMaker_Language/GML_Reference/Asset_Management/Objects/Object_Events/Generating_Object_Events.htm
 
 These are interaction precedents, not selected runtime/public-model dependencies. `AUTH-###`, `UX-###`, and `UXG-###` are stable RAG identifier families for authoring projection and vertical-slice acceptance.
+
+## SMX-013 component/package retrieval rules
+
+SMX-013 adds the portable-component/distribution contract that publishing, sandbox, browser-player, update, remix and final-architecture work must retrieve before selecting package bytes, a registry, or a dependency manager:
+
+- `docs/research/SMX-013-COMPONENT-PACKAGES.md` — `PKG-001` through `PKG-028`, the local-definition→portable-package path, identity split, dependency/lock/offline rules, capability attribution, update/migration rollback, uninstall/cache semantics, source/remix/licensing/provenance policy, protected media contract, rejected alternatives, and downstream handoffs.
+- `docs/research/SMX-013-PACKAGE-FIXTURES.json` — `PK-001` through `PK-020` machine-addressable package/component fixtures covering clean install, dependency update, local overrides, denied capability, missing dependency, incompatible migration and protected media boundaries.
+- `experiments/smx-013-package-model/` — non-normative resolver/install/update/capability/provenance model plus adversarial tests; it is not a production registry, archive format, trust implementation or package manager.
+- Durable candidate: an ordinary local reusable `DefinitionId` lineage becomes portable by adding a `PackageId` distribution namespace and immutable package revision; packaging does not create a second prefab/class/runtime object taxonomy and does not replace existing first-instance `ThingId` values.
+- Human compatibility requirements are resolved intentionally into an **exact resolution lock** before runtime/streaming/publishing. Runtime and offline reacquisition consume the exact lock rather than floating ranges or “some cached compatible version”.
+- Required, optional and lazy dependencies remain distinct; optional fallback is explicit. The current conservative candidate resolves one exact revision per `PackageId` per creation and reports incompatible transitive constraints rather than silently introducing ambiguous multi-version identities. Dependency cycles are rejected in this candidate and all resolution/acquisition work remains bounded.
+- Capability requests remain declarations attributed to the requesting package/component principal. Parent package grants are not inherited, explicit live delegation may only narrow authority, and signatures/publisher identity/source availability/remix rights/provenance never grant host capability.
+- Component/package update is acquire/verify/authorize/reconcile/migrate-before-commit. Concrete `ThingId`, valid sparse overlays, public interface identity and persistent state survive compatible updates; failed interface/overlay/migration/capability checks roll back to the old exact coherent lock/state.
+- Uninstall is reference-aware while cache eviction is non-semantic. Offline operation requires the exact verified locked closure; residual persistent state is not silently erased by removing reconstructible package bytes.
+- Source availability, remix permission, licence/attribution and derivation provenance are explicit distribution metadata. Sealed source is not DRM/trust; included source is not authority.
+- Stable `AssetId` plus immutable digest/source/audio/media/provenance/licence/derivation metadata is an indivisible protected revision bundle. Package resolution, update, collaboration and publishing may not synthesize fields from different revisions.
+- SMX-014 must package/deliver exact locks through generic players; SMX-016 must attack real archive/trust/dependency/capability boundaries; SMX-019 must prove group→reusable→portable→update/offline/publish usability without exposing package-manager complexity to ordinary authors.
+
+### SMX-013 package-ecosystem primary/comparative anchors — checked 2026-09-19
+
+- Cargo dependency requirements: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html
+- Cargo manifest versus exact lockfile: https://doc.rust-lang.org/cargo/guide/cargo-toml-vs-cargo-lock.html
+- npm 11 package-lock exact dependency tree/integrity precedent: https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/
+- npm 11 package manifest precedent: https://docs.npmjs.com/cli/v11/configuring-npm/package-json/
+- The Update Framework current specification: https://theupdateframework.io/specification/latest/
+- SLSA 1.2 provenance: https://slsa.dev/spec/v1.2/provenance
+- SPDX 3.0.1 licence expressions: https://spdx.github.io/spdx-spec/v3.0.1/annexes/spdx-license-expressions/
+
+These are implementation/security/provenance comparison inputs, not selected SplashMX dependencies or beginner product metaphors. `PKG-###` and `PK-###` are stable RAG identifier families for component/package semantics and fixtures.
