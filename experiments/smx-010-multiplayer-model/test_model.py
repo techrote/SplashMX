@@ -131,12 +131,20 @@ class MultiplayerSemanticTests(unittest.TestCase):
     def test_nt007_authority_transfer_epoch_rejects_stale_packets(self):
         session = RuntimeSession(creation(), TopologyPolicy.peer_hosted())
         session.things["thing-player"].authority_principal = "host:A"
+        session.unload("thing-player")
         stale = StateUpdate("thing-player", "x", 3, "host:A", 1, 1)
+        session.receive_state(stale)
+        self.assertEqual(len(session.pending_for_unloaded["thing-player"]), 1)
+
         new_epoch = session.transfer_authority("thing-player", "host:B")
         self.assertEqual(new_epoch, 2)
+        self.assertNotIn("thing-player", session.pending_for_unloaded)
+        session.restore("thing-player")
+        self.assertEqual(session.things["thing-player"].state["x"], 0)
+
         with self.assertRaises(ReplayRejected):
             session.receive_state(stale)
-        session.receive_state(StateUpdate("thing-player", "x", 4, "host:B", 2, 1))
+        session.receive_state(StateUpdate("thing-player", "x", 4, "host:B", 2, 2))
         self.assertEqual(session.things["thing-player"].state["x"], 4)
 
     def test_nt008_relevance_is_peer_context_not_containment_or_existence(self):
@@ -158,12 +166,14 @@ class MultiplayerSemanticTests(unittest.TestCase):
         self.assertEqual(session.things["thing-player"].controller_principal, "user:A")
 
     def test_nt010_known_unloaded_state_gets_latest_bounded_delivery(self):
-        session = RuntimeSession(creation(), TopologyPolicy.authoritative(), max_pending_per_thing=3)
+        session = RuntimeSession(creation(), TopologyPolicy.authoritative(), max_pending_per_thing=1)
         session.things["thing-player"].authority_principal = "server"
         session.unload("thing-player")
         session.receive_state(StateUpdate("thing-player", "x", 3, "server", 1, 1))
         session.receive_state(StateUpdate("thing-player", "x", 8, "server", 1, 2))
         self.assertEqual(len(session.pending_for_unloaded["thing-player"]), 1)
+        with self.assertRaises(ReplayRejected):
+            session.receive_state(StateUpdate("thing-player", "x", 99, "server", 1, 2))
         session.restore("thing-player")
         self.assertEqual(session.things["thing-player"].state["x"], 8)
 
@@ -195,11 +205,14 @@ class MultiplayerSemanticTests(unittest.TestCase):
     def test_nt014_peer_host_migration_preserves_thing_identity_and_bumps_epoch(self):
         session = RuntimeSession(creation(), TopologyPolicy.peer_hosted())
         session.things["thing-player"].authority_principal = "host:A"
+        session.unload("thing-player")
+        session.receive_event(EventMessage("thing-player", "hit", {}, "evt:old", "host:A", 1))
         before_ids = set(session.things)
         session.migrate_peer_host("host:A", "host:B")
         self.assertEqual(set(session.things), before_ids)
         self.assertEqual(session.things["thing-player"].authority_principal, "host:B")
         self.assertEqual(session.things["thing-player"].authority_epoch, 2)
+        self.assertNotIn("thing-player", session.pending_for_unloaded)
 
     def test_nt015_transport_identifiers_cannot_enter_canonical_network_data(self):
         item = creation()
