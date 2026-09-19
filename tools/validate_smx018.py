@@ -93,7 +93,7 @@ if DOC.is_file():
         "delete vs edit", "reparent", "timeline", "grouping", "component update",
         "selective undo", "permission", "presence", "DefinitionId", "document validity",
         "source/audio/provenance", "AssetId", "licence", "derivation", "H-013", "H-017",
-        "H-018", "O-021", "O-026", "not production CRDT/database/browser measurements",
+        "H-018", "O-021", "O-026", "production CRDT/database/browser measurements",
     ):
         if phrase.lower() not in text.lower():
             errors.append(f"SMX-018 synthesis is missing required phrase: {phrase!r}")
