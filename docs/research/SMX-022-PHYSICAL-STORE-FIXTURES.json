@@ -1,0 +1,63 @@
+{
+  "schema": "splashmx-smx022-physical-store-fixtures-v1",
+  "status": "non-production-mechanism-selection-evidence",
+  "authority": "docs/architecture/ARCHITECTURE-V1.md",
+  "requirements": [
+    "path_independent_semantic_identity",
+    "whole_result_validation_before_publication",
+    "atomic_revision_publication_and_rollback",
+    "state_plane_separation",
+    "deterministic_logical_equality",
+    "explicit_canonical_byte_profile",
+    "bounded_version_migration",
+    "known_unloaded_partial_access",
+    "exact_dependency_references",
+    "future_collaboration_diff_history_pressure",
+    "cache_eviction_non_semantic",
+    "browser_denial_quota_eviction_typed_failure",
+    "protected_media_complete_revision_atomicity"
+  ],
+  "workloads": [
+    {"id":"PX-001","name":"tiny authored project","shape":"12 Things, 8 Connections, 1 protected Asset"},
+    {"id":"PX-002","name":"nested definition/instance pressure","shape":"96 Things, 120 Connections, 4 protected Assets"},
+    {"id":"PX-003","name":"many records and connections","shape":"1500 Things, 3000 Connections, 32 protected Assets"},
+    {"id":"PX-004","name":"known-unloaded reference","shape":"catalogued semantic ID without resident target"},
+    {"id":"PX-005","name":"small edit in larger project","shape":"one Thing record edit with unchanged semantic identity"},
+    {"id":"PX-006","name":"protected media replacement","shape":"all protected fields advance as one complete Asset revision"},
+    {"id":"PX-007","name":"interrupted native commit","shape":"process exits before commit/head publication"},
+    {"id":"PX-008","name":"browser interruption","shape":"IndexedDB transaction or OPFS writer interrupted before publication"},
+    {"id":"PX-009","name":"corrupt deterministic record","shape":"truncated/duplicate-key/non-finite input must reject"}
+  ],
+  "encoding_candidates": [
+    "deterministic_cbor_profile",
+    "canonical_json_projection",
+    "schema_binary_protobuf_family"
+  ],
+  "index_candidates": [
+    "monolithic_document",
+    "flat_global_record_manifest",
+    "stable_id_hash_sharded_chunks"
+  ],
+  "browser_store_candidates": [
+    "indexeddb_transactional_records",
+    "opfs_revision_files",
+    "sqlite_wasm_over_opfs"
+  ],
+  "native_store_candidates": [
+    "sqlite_wal_full",
+    "sqlite_rollback_full",
+    "fsync_atomic_revision_files"
+  ],
+  "protected_media_fields": [
+    "digest",
+    "source_identity",
+    "source_metadata",
+    "audio_or_media_semantics",
+    "provenance",
+    "licence_attribution",
+    "derivation_lineage"
+  ],
+  "forbidden_canonical_identity_classes": [
+    "NodePath","RID","ResourceUID","resource_path","DOM_node_identity","database_row_id","cache_key","url","transport_peer_id","connection_handle","socket_id","session_id","process_handle"
+  ]
+}
