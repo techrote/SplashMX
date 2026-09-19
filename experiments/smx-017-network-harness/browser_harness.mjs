@@ -179,7 +179,7 @@ async function main() {
     const dummy = await clientCtx.newPage();
     await dummy.goto('about:blank'); await dummy.bringToFront();
     await sleep(150);
-    let visibility = await client.evaluate(() => document.visibilityState);
+    const visibility = await client.evaluate(() => document.visibilityState);
     if (visibility !== 'hidden') {
       lifecycleMechanism = 'cdp-frozen-fallback';
       const cdp = await clientCtx.newCDPSession(client);
@@ -190,7 +190,15 @@ async function main() {
       await sleep(2200);
     }
     await dummy.close(); await client.bringToFront();
-    const reconnected = await waitFor(clientRecords.slice(beforeLifecycleCount), (r) => r.event === 'reconnected', 'browser reconnect after suspension', 10000);
+    // Observe the live record array after the suspension boundary. Passing a
+    // precomputed slice here freezes the search corpus and can never observe a
+    // reconnect appended asynchronously after waitFor starts.
+    const reconnected = await waitFor(
+      clientRecords,
+      (r, index) => index >= beforeLifecycleCount && r.event === 'reconnected',
+      'browser reconnect after suspension',
+      10000,
+    );
     assert(reconnected.principal === 'alice', 'reconnect changed durable principal');
     assert(reconnected.transport_peer_id !== firstWelcome.transport_peer_id, 'reconnect reused transient peer id');
     result.observations.browser_lifecycle = {
