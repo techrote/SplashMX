@@ -48,6 +48,28 @@ Destructive campaigns found boundary defects that are now part of the frozen con
 - **R-018-04** — tombstoning a Thing atomically tombstones incident live Connections;
 - **R-019-01** — canonical `ConnectionId` is distinct from transient transport connection identity.
 
+## Historical late-campaign regression anchors
+
+These headings and IDs are retained so the already-merged SMX-016/018/019 validators can continue proving that their research-era review records were not lost during the freeze. The detailed text remains in `docs/02-ARCHITECTURE-HYPOTHESES.pre-v1.md`; these anchors do not supersede the final table above.
+
+### SMX-016
+
+## SMX-016 review
+
+H-006 · H-009 · H-011 · H-014 · H-015 · O-025.
+
+### SMX-018
+
+## SMX-018 review record
+
+H-013 · H-017 · H-018 · O-026 · R-018-01 · R-018-04.
+
+### SMX-019
+
+## SMX-019 review record
+
+The browser vertical slice supplied the final pre-freeze H-014/H-015/H-016 projectability evidence while preserving H-013/H-017 separation and R-019-01.
+
 ## Evidence retrieval
 
 Use `docs/architecture/ARCHITECTURE-V1-AUDIT.json` for the final machine-addressable evidence mapping and contradiction seams. Use the historical pre-v1 register for the chronological status evolution, then retrieve the named SMX research documents/fixtures for substantive evidence.
