@@ -264,3 +264,23 @@ Evidence: `docs/research/SMX-014-PUBLISHING-RUNTIME.md`, `docs/research/SMX-014-
 - **H-018 strengthened further at publication/runtime-negotiation level.** Compatibility is expressed through SplashMX schema/IR/required-feature negotiation plus explicit bounded migrations and typed unsupported-future outcomes. Persistent worlds carry an explicit creation basis and separate migration contract; compatibility does not reduce to matching a Godot version.
 
 No other hypothesis receives a status change from SMX-014. Existing source/audio/provenance, package/capability, lifecycle, multiplayer, collaboration and progressive-authoring protections remain unchanged.
+
+## SMX-015 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md`, `docs/research/SMX-015-OBJECT-FABRIC-FIXTURES.json`, and `experiments/smx-015-object-fabric-harness/`.
+
+- **H-001 strengthened further at integrated model level.** P0 exercises one Thing kernel across materially different visual, UI, audio, gameplay/physics, procedural and persistent cases without category-specific ownership managers.
+- **H-002 strengthened further.** P0/P2/P4 keep containment structural while control, authority, persistence, replication, observation and durable references remain independent through reparenting, definition promotion and selective residency.
+- **H-003 strengthened further.** Groups, leaves and instantiated reusable content remain the same Thing semantic type in nested composition.
+- **H-004 strengthened further at local-definition integration level.** Ordinary groups promote without replacing first-instance Thing identities; collision and reconciliation failures are preflighted/atomic. Portable distribution remains covered by SMX-013 rather than redefined here.
+- **H-005 strengthened substantially at integrated lifecycle/streaming level.** Exact artifact acquisition, attachment-private-state migration, pending-work remapping, rollback, unload and later rehydrate compose without replacing the Thing or attachment identity.
+- **H-006 unchanged.** SMX-015 consumes the accepted behaviour contract but adds no new compiler/IR breadth evidence.
+- **H-007 strengthened further.** P3 reconstructs the tested semantic world into a fresh runtime from an engine-independent projection plus declared behaviour/artifact catalogs.
+- **H-008 strengthened further.** Stable identities survive promotion, nested instantiation, internal restructure, hot replacement, JSON snapshot/restore and unload/reload.
+- **H-009 unchanged; hostile proof remains SMX-016.** The harness preserves the no-ambient-authority boundary and excludes capability/engine/session handles from persistence, but intentionally does not claim sandbox escape resistance.
+- **H-010 strengthened substantially at integrated model level.** Meaningful Thing, reference, behaviour-private, pending-work and protected-media state survives both fresh restore and known-unloaded residency.
+- **H-011 strengthened substantially at integrated model level.** The inventory/door/town pressure proves the tested door can load independently of its containment region while exact dependencies validate atomically.
+- **H-014 strengthened further at integrated semantic boundary, not performance level.** No tested semantic path requires a public Godot identity or surviving engine object. Real Godot/browser binding and frame cost remains O-020/SMX-019 work.
+- **H-018 strengthened substantially at integrated model level.** Behaviour, definition, restore and dependency changes are explicit-version/migration/validation driven and rollback-safe rather than implicitly engine-version driven.
+
+H-012/H-013/H-015/H-016/H-017 receive no direct status change from SMX-015. Existing source/audio/provenance, capability, multiplayer, collaboration, publishing and authoring protections remain unchanged.
