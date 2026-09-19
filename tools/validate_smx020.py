@@ -128,7 +128,8 @@ def validate_repository() -> tuple[int, int]:
         "## 10. Protected media/provenance invariant",
         "## 11. Hypothesis closure",
         "## 13. Production conformance gates",
-        "Thing / Behaviour / Connection", "R-016-01", "R-018-01", "R-019-01",
+        "**Thing**", "**Behaviour**", "**Connection**",
+        "R-016-01", "R-018-01", "R-019-01",
         "CreationRevisionId", "WorldSave", "Godot 4.7.2",
     ]:
         require(needle in arch, f"Architecture v1 missing required concept/section: {needle}")
