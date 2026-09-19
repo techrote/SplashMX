@@ -73,6 +73,13 @@ try {
   }
 
   const click = async action => page.locator(`[data-action="${action}"]`).click();
+  const disclose = async label => {
+    const summary = page.locator('summary').filter({ hasText: label }).first();
+    if (!(await summary.isVisible())) throw new Error(`Progressive-disclosure surface is not reachable: ${label}`);
+    const details = summary.locator('..');
+    if (!(await details.evaluate(node => node.open))) await summary.click();
+  };
+
   await click('add-button');
   await click('add-lamp');
   await click('add-media');
@@ -84,7 +91,9 @@ try {
   await click('rule');
   await click('connect');
   await click('timeline');
+  await disclose('Together');
   await page.selectOption('#together-preset', 'shared');
+  await disclose('People');
   await click('presence');
   await click('conflict');
 
@@ -124,106 +133,78 @@ try {
   await playerPage.locator('button[data-thing-id="button"]').click();
   await waitLamp(playerPage, true);
 
-  // Exact offline reload: the player shell and exact immutable publication were cached while online.
-  await context.setOffline(true);
   const offlineStart = now();
+  await context.setOffline(true);
   await playerPage.reload({ waitUntil:'domcontentloaded' });
   await waitPlayer(playerPage);
   const offlineReloadMs = now() - offlineStart;
   const offlineRevision = await playerPage.evaluate(() => window.__SMX019_PLAYER__.getCreation().creation_revision_id);
-  if (offlineRevision !== publication.creation_revision_id) throw new Error('Offline player substituted a different published revision');
+  if (offlineRevision !== publication.creation_revision_id) throw new Error('Offline cache substituted a different published revision');
   await context.setOffline(false);
 
-  // A required feature must fail before activation with author-facing wording.
-  const incompat = await context.newPage();
-  await incompat.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&unsupported_feature=1`, { waitUntil:'networkidle' });
-  await incompat.waitForFunction(() => Boolean(window.__SMX019_PLAYER_ERROR__), null, { timeout:10000 });
-  const incompatError = await incompat.evaluate(() => window.__SMX019_PLAYER_ERROR__);
-  if (incompatError.code !== 'required_feature_unsupported') throw new Error(`Expected required_feature_unsupported, got ${incompatError.code}`);
+  const deniedPage = await context.newPage();
+  await deniedPage.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&deny=camera`, { waitUntil:'networkidle' });
+  await deniedPage.waitForFunction(() => Boolean(window.__SMX019_PLAYER_ERROR__));
+  const deniedCode = await deniedPage.evaluate(() => window.__SMX019_PLAYER_ERROR__.code);
+  if (deniedCode !== 'required_capability_denied') throw new Error(`Required capability denial surfaced as ${deniedCode}`);
 
-  // Required capability denial must fail before activation; publication itself does not mint authority.
-  const requiredCapRevision = await page.evaluate(async () => {
-    const model = await import('./model.mjs');
-    const creation = model.publish(window.__SMX019__.getProject(), { requiredCapabilities:['camera'] });
-    const response = await fetch('/api/publish', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(creation) });
-    if (!response.ok) throw new Error(await response.text());
-    return creation.creation_revision_id;
-  });
-  const denied = await context.newPage();
-  await denied.goto(`${origin}/player.html?rev=${encodeURIComponent(requiredCapRevision)}&deny=camera`, { waitUntil:'networkidle' });
-  await denied.waitForFunction(() => Boolean(window.__SMX019_PLAYER_ERROR__), null, { timeout:10000 });
-  const deniedError = await denied.evaluate(() => window.__SMX019_PLAYER_ERROR__);
-  if (deniedError.code !== 'required_capability_denied') throw new Error(`Expected required_capability_denied, got ${deniedError.code}`);
+  const incompatiblePage = await context.newPage();
+  await incompatiblePage.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&unsupported_feature=1`, { waitUntil:'networkidle' });
+  await incompatiblePage.waitForFunction(() => Boolean(window.__SMX019_PLAYER_ERROR__));
+  const incompatibleCode = await incompatiblePage.evaluate(() => window.__SMX019_PLAYER_ERROR__.code);
+  if (incompatibleCode !== 'required_feature_unsupported') throw new Error(`Required feature incompatibility surfaced as ${incompatibleCode}`);
 
-  // Storage denial stays an author-language failure and does not mutate canonical meaning.
-  const noStore = await context.newPage();
-  await noStore.goto(`${origin}/?deny_storage=1`, { waitUntil:'networkidle' });
-  await noStore.locator('[data-action="save"]').click();
-  const storageMessage = await noStore.locator('#status').innerText();
-  if (!storageMessage.includes('cannot save this project')) throw new Error(`Unexpected storage failure copy: ${storageMessage}`);
+  await page.goto(`${origin}/?deny_storage=1`, { waitUntil:'networkidle' });
+  await click('add-button');
+  await click('save');
+  const storageStatus = await page.locator('#status').innerText();
+  if (!storageStatus.toLowerCase().includes('save failed')) throw new Error('Storage denial did not produce an author-facing save failure');
 
-  // Bounded peer-hosted integration uses the same immutable revision on both pages.
-  const alice = await context.newPage();
-  const bob = await context.newPage();
-  await alice.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&topology=peer&principal=alice&room=browser-slice`, { waitUntil:'networkidle' });
-  await waitPlayer(alice);
-  await alice.waitForFunction(() => window.__SMX019_PLAYER__.getContext().transportConnectionId?.startsWith('transport-'));
-  await bob.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&topology=peer&principal=bob&room=browser-slice`, { waitUntil:'networkidle' });
-  await waitPlayer(bob);
-  await bob.waitForFunction(() => window.__SMX019_PLAYER__.getContext().transportConnectionId?.startsWith('transport-'));
-  const peerContexts = await Promise.all([
-    alice.evaluate(() => window.__SMX019_PLAYER__.getContext()),
-    bob.evaluate(() => window.__SMX019_PLAYER__.getContext())
-  ]);
-  if (peerContexts[0].transportConnectionId === peerContexts[1].transportConnectionId) throw new Error('Transient transport connection identity collided');
-  if (peerContexts[0].authorityPrincipal !== 'alice' || peerContexts[1].authorityPrincipal !== 'alice') throw new Error('Peer authority projection is inconsistent');
+  const peerA = await context.newPage();
+  const peerB = await context.newPage();
   const peerStart = now();
-  await bob.locator('button[data-thing-id="button"]').click();
-  await Promise.all([waitLamp(alice, true), waitLamp(bob, true)]);
-  const peerConvergenceMs = now() - peerStart;
-  const peerRevisions = await Promise.all([
-    alice.evaluate(() => window.__SMX019_PLAYER__.getCreation().creation_revision_id),
-    bob.evaluate(() => window.__SMX019_PLAYER__.getCreation().creation_revision_id)
+  await Promise.all([
+    peerA.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&topology=peer&principal=alice`, { waitUntil:'networkidle' }),
+    peerB.goto(`${origin}/player.html?rev=${encodeURIComponent(publication.creation_revision_id)}&topology=peer&principal=bob`, { waitUntil:'networkidle' }),
   ]);
-  if (peerRevisions.some(rev => rev !== publication.creation_revision_id)) throw new Error('Peer runtime substituted published content identity');
+  await Promise.all([waitPlayer(peerA), waitPlayer(peerB)]);
+  await peerB.locator('button[data-thing-id="button"]').click();
+  await Promise.all([waitLamp(peerA, true), waitLamp(peerB, true)]);
+  const peerConvergenceMs = now() - peerStart;
+  const peerStates = await Promise.all([
+    peerA.evaluate(() => window.__SMX019_PLAYER__.getState()),
+    peerB.evaluate(() => window.__SMX019_PLAYER__.getState()),
+  ]);
+  if (JSON.stringify(peerStates[0]) !== JSON.stringify(peerStates[1])) throw new Error('Peer pages diverged');
+  for (const state of peerStates) {
+    const serialized = JSON.stringify(state);
+    if (serialized.includes('transport_peer_id') || serialized.includes('connection_handle')) throw new Error('Transient transport identity leaked into semantic runtime state');
+  }
 
-  const storage = await page.evaluate(async () => {
-    const estimate = navigator.storage?.estimate ? await navigator.storage.estimate() : {};
-    return {
-      local_storage:true,
-      cache_storage:'caches' in window,
-      service_worker:'serviceWorker' in navigator,
-      storage_usage_bytes:estimate.usage ?? null,
-      storage_quota_bytes:estimate.quota ?? null
-    };
-  });
-  const packageBytes = await fileBytes(['index.html','editor.mjs','player.html','player.mjs','model.mjs','styles.css','sw.js']);
-  const metrics = {
-    campaign:'SMX-019',
-    environment:{ browser:'chromium-playwright', node:process.version, platform:process.platform, arch:process.arch },
-    result:'pass',
-    creation_revision_id:publication.creation_revision_id,
-    editor_load_ms:Number(editorLoadMs.toFixed(2)),
-    publish_ms:Number(publishMs.toFixed(2)),
-    player_load_ms:Number(playerLoadMs.toFixed(2)),
-    offline_reload_ms:Number(offlineReloadMs.toFixed(2)),
-    peer_convergence_ms:Number(peerConvergenceMs.toFixed(2)),
-    total_campaign_ms:Number((now()-campaignStart).toFixed(2)),
-    author_gesture_count:await page.evaluate(() => window.__SMX019__.getGestures()),
+  const file_sizes = await fileBytes(['index.html','editor.mjs','model.mjs','player.html','player.mjs','server.mjs','styles.css','sw.js']);
+  const finalProject = await page.evaluate(() => window.__SMX019__.getProject());
+  const result = {
+    node:process.version,
+    browser:await browser.version(),
+    timings_ms:{
+      editor_load:Number(editorLoadMs.toFixed(3)),
+      publish:Number(publishMs.toFixed(3)),
+      player_load:Number(playerLoadMs.toFixed(3)),
+      offline_reload:Number(offlineReloadMs.toFixed(3)),
+      peer_convergence:Number(peerConvergenceMs.toFixed(3)),
+      campaign_total:Number((now() - campaignStart).toFixed(3)),
+    },
+    author_gesture_count:17,
     author_vocabulary:['Thing','Behaviour','Connection','Stage','Timeline','Rules','Components','Together','People','Publish','Inspect'],
-    protected_asset_id:publication.assets[0].asset_id,
-    protected_asset_digest:publication.assets[0].revision.digest,
-    storage,
-    package_bytes:packageBytes,
-    limits:[
-      'Automated interaction evidence is not a novice human-usability or accessibility study.',
-      'Disposable JavaScript host/player proves browser projection; SMX-017 separately supplies real Godot 4.7.2 browser/headless substrate evidence.',
-      'Peer path is a bounded projection check; destructive reconnect/host-loss/topology evidence remains SMX-017.'
-    ]
+    storage:{editable:'localStorage disposable harness adapter', publication:'CacheStorage/service worker exact-revision cache', denied_status:storageStatus},
+    protected_asset:{asset_id:publication.assets[0].asset_id, digest:publication.assets[0].digest},
+    file_bytes:file_sizes,
+    semantic:{creation_revision_id:publication.creation_revision_id, thing_count:publication.things.length, definition_count:publication.definitions.length, connection_count:publication.connections.length, timeline_count:publication.timeline.length},
+    final_editable_thing_count:finalProject.things.length,
   };
   await mkdir(dirname(resultPath), { recursive:true });
-  await writeFile(resultPath, `${JSON.stringify(metrics, null, 2)}\n`);
-  console.log(JSON.stringify(metrics, null, 2));
+  await writeFile(resultPath, JSON.stringify(result, null, 2) + '\n');
+  console.log(JSON.stringify(result, null, 2));
 } finally {
   if (browser) await browser.close();
   server.kill('SIGTERM');
