@@ -4,7 +4,9 @@
 **Architecture authority:** `docs/architecture/ARCHITECTURE-V1.md`  
 **Date:** 2026-09-19
 
-This roadmap orders production work from the smallest coherent local/offline editor-player substrate outward. It deliberately does not create production issues or imply that every research harness should graduate into production code.
+This roadmap orders production work from the smallest coherent local/offline editor-player substrate outward. It deliberately does not imply that every research harness should graduate into production code.
+
+**Active issue decomposition:** `docs/implementation/PRODUCTION-PROGRAMME-V1.md` maps this roadmap to SMX-021–052 / issues #46–77, hard dependency edges, concurrency windows and execution gates. The programme document is an execution map and does not override this roadmap or Architecture v1.
 
 ## Contents
 

@@ -14,6 +14,7 @@ For production implementation or architecture maintenance, use this authority ch
 - [`docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md`](docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md) — freeze, precedence, supersession, and amendment rules.
 - [`docs/architecture/ARCHITECTURE-V1-AUDIT.json`](docs/architecture/ARCHITECTURE-V1-AUDIT.json) — machine-readable hypothesis closure, contradiction audit, retained corrections, and residual-risk classes.
 - [`docs/architecture/IMPLEMENTATION-ROADMAP-V1.md`](docs/architecture/IMPLEMENTATION-ROADMAP-V1.md) — dependency-ordered production roadmap and conformance gates.
+- [`docs/implementation/PRODUCTION-PROGRAMME-V1.md`](docs/implementation/PRODUCTION-PROGRAMME-V1.md) — active SMX-021–052 issue graph, concurrency windows, gates, and execution order.
 - [`docs/03-RAG-INDEX.md`](docs/03-RAG-INDEX.md) — retrieval map for the minimum current authority chain plus relevant research evidence.
 - [`docs/04-ISSUE-EXECUTION-PROTOCOL.md`](docs/04-ISSUE-EXECUTION-PROTOCOL.md) — required issue/PR/CI/merge workflow.
 - [`docs/05-DECISION-AND-EVIDENCE-LOG.md`](docs/05-DECISION-AND-EVIDENCE-LOG.md) — current decision/evidence register and historical pointers.
