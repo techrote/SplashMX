@@ -2,7 +2,7 @@
 
 Evidence date: **2026-09-19**  
 Issue: **#17**  
-Status: **candidate until final real-topology CI passes**
+Status: **executed real-topology evidence; final PR-head and post-merge CI remain release gates**
 
 This file is the compact retrieval record for the SMX-017 destructive topology campaign. Detailed contracts and limits are in `SMX-017-NETWORK-HARNESS.md`; machine-readable invariants are in the companion fixture JSON.
 
@@ -46,6 +46,8 @@ The canonical fixture SHA-256 is `dd5e7bb8b33ab447b4234fb8036453b248c5721e22b9f0
 
 `.github/workflows/smx017-real-topologies.yml` exports one Godot 4.7.2 project to Web and Linux, runs the Linux export offline, runs exported Web instances as a peer-hosted browser room, runs the Linux export as dedicated authority with an exported Web client, destructively interrupts browser/server/peer lifecycle, and compares normalized semantic snapshots. The generated evidence JSON records exact runtime versions, the lifecycle mechanism and whether it naturally dropped the transport, the reconnect trigger actually used, and measured observations. The workflow must fail rather than converting a lifecycle non-disconnect into fabricated browser-failure evidence.
 
+The first repaired passing real-topology run was workflow `35440902457` on commit `736f71a57cd95c76d00ac887b0c10ec2ec575c3e`: Godot `4.7.2.stable.official.ed1daf0bf`, Chromium `140.0.7339.16`, Node `v22.19.0`, normalized offline/peer/dedicated snapshots equivalent, peer authority epoch `1 → 2` after confirmed migration, stale prior-epoch input rejected, checkpoint-free host loss explicit, dedicated server loss fail-closed, and complete protected media bundle unchanged.
+
 ### E-080 — Network inconvenience is injected below semantics
 
 The trusted relay deterministically reorders selected state samples, duplicates a reliable application event, changes transient connection identity on reconnect, and injects host-loss boundaries. The runtime—not the relay—must reject stale/invalid traffic, deduplicate events, coalesce state and preserve authority epochs.
@@ -53,6 +55,12 @@ The trusted relay deterministically reorders selected state samples, duplicates 
 ### E-081 — Real-runtime evidence is deliberately bounded
 
 Even a green campaign establishes one Godot 4.7.2 + Playwright Chromium + local relay integration slice. It does not certify WebRTC/NAT/TLS/WAN behavior, Firefox/Safari/mobile lifecycle, large-room scaling, production authentication, congestion/MTU policy or broad runtime performance.
+
+### E-082 — CI repair exposed two harness-mapping defects and one evidence-reporting defect
+
+The campaign itself found and repaired three defects rather than normalizing them away: reconnect waiting initially searched a frozen record-array slice; the `no_checkpoint` host-loss fixture still answered relay `baseline_request` messages and therefore accidentally became checkpoint-confirmed; and latency diagnostics initially associated a later rejected duplicate prediction with the earlier accepted sequence, yielding impossible negative samples. The final harness observes the live record stream, suppresses all checkpoint paths for the unconfirmed-loss fixture, and reports timing only for accepted inputs with a causal prediction timestamp no later than authority acceptance.
+
+The browser lifecycle observation is also explicit: headless Chromium reported `visible`, the 2200 ms CDP freeze did not trip the 1400 ms application transport watchdog, and reconnect semantics were therefore exercised by a separately labelled deterministic relay disconnect (`conn-2 → conn-3`) rather than being misreported as a browser-caused timeout.
 
 ## Open question
 
