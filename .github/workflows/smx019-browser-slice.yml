@@ -13,11 +13,11 @@ jobs:
     name: SMX-019 semantic and boundary contract
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.x'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22.19.0'
       - name: Validate SMX-019 fixtures, contracts, RAG, and workflow
@@ -30,8 +30,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22.19.0'
       - name: Install pinned browser harness dependencies
@@ -50,7 +50,7 @@ jobs:
           fi
       - name: Upload measured browser evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smx019-browser-evidence
           path: artifacts/smx019-browser-results.json
