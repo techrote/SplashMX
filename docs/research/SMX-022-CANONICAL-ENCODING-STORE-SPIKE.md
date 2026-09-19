@@ -1,6 +1,6 @@
 # SMX-022 — Canonical physical encoding and crash-consistent local store spike
 
-**Status:** mechanism selected; real-browser evidence remains a merge gate  
+**Status:** mechanism selected; comparative native and real-Chromium evidence captured  
 **Issue:** #47 / SMX-022  
 **Architecture authority:** `docs/architecture/ARCHITECTURE-V1.md`  
 **Base:** `aa532c4cf19772dc352deca4426d7f6554f8ffdf` (SMX-021)
@@ -172,7 +172,7 @@ SMX-025 must:
 - provide explicit export/backup because browser site-data deletion cannot be claimed impossible;
 - validate the stored revision before activation after reopen and report corruption/unavailability explicitly.
 
-The dedicated real-Chromium workflow is a merge gate for this spike. It tests IndexedDB abort/page interruption and OPFS unclosed-writer behavior; one Chromium run is not represented as universal browser disk/power-loss certification.
+The dedicated real-Chromium workflow tests IndexedDB abort/page interruption and OPFS unclosed-writer behavior. The captured run passed on Chromium 140.0.7339.16: abort and page interruption both reopened the old coherent IndexedDB head, an unclosed OPFS replacement left the old file visible, and completed publication/close exposed the new revision. This is real browser persistence evidence, not universal browser disk/power-loss certification.
 
 ## 7. Native persistence model handed to SMX-025
 
@@ -231,7 +231,23 @@ Container latency values are retained for reproducibility only; recovery behavio
 
 ### Browser evidence
 
-`.github/workflows/smx022-physical-store.yml` runs pinned Playwright/Chromium and emits `artifacts/smx022-browser-results.json` including runtime/browser/OS/hardware, IndexedDB strict-transaction observations, OPFS write-close/read observations, storage persistence/estimate state, and interruption outcomes. The decision must not merge until this campaign passes and the result is reviewed.
+`docs/research/SMX-022-BROWSER-EVIDENCE.json` retains the exact successful real-Chromium campaign from workflow run `35470286634` / source head `596e48cf43aa267b5a2781ac6e80b0acff228784`, artifact `10592053378`, SHA-256 `33b472b3f769376c68e3a7af05edc9c758832d8363a34319556826721c070d5d`.
+
+Captured environment: Node.js v22.19.0, Chromium 140.0.7339.16, Linux 6.17.0-1022-azure x64, AMD EPYC 9V74, 16,766,414,848 bytes reported memory.
+
+Observed behavior:
+
+- Chromium reported the requested IndexedDB transaction durability as `strict`;
+- explicit IndexedDB abort reopened `r0` with complete `assetrev:000001:0`;
+- closing the page during an outstanding large IndexedDB transaction reopened the same coherent `r0`, with no field-mixed protected Asset;
+- a completed strict IndexedDB transaction reopened `r1` with complete `assetrev:000001:1`;
+- interrupting an OPFS `createWritable()` replacement before close left the coherent `r0` file visible;
+- closing the OPFS writer exposed coherent `r1`;
+- `navigator.storage.persisted()` was false and `persist()` returned false in the CI origin, while `estimate()` reported 905,300,443 B quota / 4,289,386 B usage. This directly supports treating persistence/quota as fallible platform state.
+
+Measured medians over 15 samples were 0.2 ms for one IndexedDB keyed get, 38.5 ms for a 4,000-record `getAll()`, 0.3 ms for the small strict IndexedDB commit, 1.0 ms for OPFS 64 KiB write+close, and 0.6 ms for the corresponding read. They are retained as environment-specific observations, not thresholds.
+
+The workflow continues to rerun the real browser campaign on PR heads; post-merge it must also pass against the exact merged `main` SHA.
 
 ## 9. Failure, security and migration implications
 
