@@ -88,3 +88,7 @@ jobs:
         run: python tools/validate_smx020.py
       - name: Run SMX-020 architecture boundary/adversarial tests
         run: python -m unittest discover -s experiments/smx-020-architecture-freeze -p 'test_*.py' -v
+      - name: Validate SMX-021 production conformance guardrails
+        run: python tools/validate_smx021.py
+      - name: Run SMX-021 production guardrail tests
+        run: python -m unittest discover -s tests/production -p 'test_smx021.py' -v
