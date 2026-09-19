@@ -294,7 +294,7 @@ func _handle_payload(payload: Dictionary, sender_principal: String, sender_conn_
 		_emit("checkpoint_applied", {"state_seq": state_seq, "authority_epoch": authority_epoch})
 		return
 	if kind == "baseline_request":
-		if is_authority and sender_role == "relay":
+		if is_authority and sender_role == "relay" and cfg.no_checkpoint != "1":
 			_send_checkpoint()
 		return
 	_emit("reject", {"reason": "undeclared_payload_type", "type": kind})
