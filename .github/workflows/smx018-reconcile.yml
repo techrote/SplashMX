@@ -1,0 +1,31 @@
+name: SMX018 one-shot register reconciliation
+
+on:
+  push:
+    branches: [smx-018-collaboration-harness]
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: smx-018-collaboration-harness
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Apply canonical register reconciliation
+        run: python tools/apply_smx018_registers.py
+      - name: Commit reconciliation and remove one-shot helpers
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/02-ARCHITECTURE-HYPOTHESES.md docs/03-RAG-INDEX.md docs/05-DECISION-AND-EVIDENCE-LOG.md docs/research/SMX-011-COLLABORATION-SEMANTICS.md
+          git rm .github/workflows/smx018-reconcile.yml tools/apply_smx018_registers.py
+          git commit -m 'SMX-018: reconcile canonical registers'
+          git push origin HEAD:smx-018-collaboration-harness
