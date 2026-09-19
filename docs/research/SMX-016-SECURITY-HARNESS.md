@@ -217,7 +217,7 @@ AT-026 attempts an incomplete replacement and verifies the old revision remains 
 
 ## 8. Counterevidence and residual risk
 
-Passing this harness is evidence for the **semantic boundary**, not proof of production sandbox resistance. The remaining real-runtime and decoder assurance gap is tracked as **O-021**.
+Passing this harness is evidence for the **semantic boundary**, not proof of production sandbox resistance. The remaining real-runtime and decoder assurance gap is tracked as **O-025**.
 
 Unresolved risks intentionally remain:
 
