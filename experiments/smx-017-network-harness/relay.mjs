@@ -198,6 +198,12 @@ export function startRelay(port = 8877) {
         role: sender.role ?? 'client',
       }, target, payload);
     },
+    disconnectConnection(roomName, connId, code = 4002, reason = 'deterministic transport fault') {
+      const room = rooms.get(roomName);
+      const member = room?.members.get(connId);
+      if (!member) throw new Error(`unknown connection ${connId} in room ${roomName}`);
+      member.ws.close(code, reason);
+    },
     roomSnapshot(roomName) {
       const room = rooms.get(roomName);
       if (!room) return null;
