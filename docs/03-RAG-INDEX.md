@@ -20,7 +20,15 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 14. `docs/research/SMX-004-BEHAVIOUR-FIXTURES.json` — machine-addressable EXE-/ET-IDs and direct experimental coverage for SMX-004.
 15. `docs/research/SMX-005-CANONICAL-DOCUMENT.md` — canonical logical-record/identity/reference/chunk/transaction/migration semantics and encoding-family comparison.
 16. `docs/research/SMX-005-DOCUMENT-FIXTURES.json` — machine-addressable DOC-/DT-IDs and direct experimental coverage for SMX-005.
-17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.\n18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.\n19. `docs/research/SMX-007-LIFECYCLE-RESTORE.md` — lifecycle axes, quiescent snapshot semantics, pending-work/timer classifications, staged restore, tombstones, and determinism/replay boundaries.\n20. `docs/research/SMX-007-LIFECYCLE-FIXTURES.json` — machine-addressable LIF-/LT-IDs and direct experimental coverage for SMX-007.\n21. `docs/research/SMX-008-STREAMING-MIGRATION.md` — logical/physical stream-unit separation, exact dependency descriptors, staged acquisition, cache/eviction, hot replacement, typed failures, and migration-capsule semantics.\n22. `docs/research/SMX-008-STREAMING-FIXTURES.json` — machine-addressable STR-/SG-IDs and direct experimental coverage for SMX-008.\n23. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+17. `docs/research/SMX-006-CAPABILITY-SANDBOX.md` — threat model, capability/principal/delegation/revocation semantics, parser/runtime/network boundaries, Godot/browser hardening evidence, and SMX-016 attack plan.
+18. `docs/research/SMX-006-SECURITY-FIXTURES.json` — machine-addressable SEC-/ST-IDs and direct experimental coverage for SMX-006.
+19. `docs/research/SMX-007-LIFECYCLE-RESTORE.md` — lifecycle axes, quiescent snapshot semantics, pending-work/timer classifications, staged restore, tombstones, and determinism/replay boundaries.
+20. `docs/research/SMX-007-LIFECYCLE-FIXTURES.json` — machine-addressable LIF-/LT-IDs and direct experimental coverage for SMX-007.
+21. `docs/research/SMX-008-STREAMING-MIGRATION.md` — logical/physical stream-unit separation, exact dependency descriptors, staged acquisition, cache/eviction, hot replacement, typed failures, and migration-capsule semantics.
+22. `docs/research/SMX-008-STREAMING-FIXTURES.json` — machine-addressable STR-/SG-IDs and direct experimental coverage for SMX-008.
+23. `docs/research/SMX-009-GODOT-BOUNDARY.md` and companion fixtures — current Godot/web/headless substrate boundary, target-private binding rules, and source/audio/provenance preservation.
+24. `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md` and companion fixtures — runtime authority/replication/relevance/topology semantics and the concrete SMX-017 equivalence handoff.
+25. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -35,12 +43,12 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Security/sandbox/capabilities | SMX-006 capability sandbox, H-006/H-009/H-014/H-015, SEC-001–SEC-018, plus SMX-004 service/budget and SMX-005 parser/migration boundaries | SMX-006 fixtures/experiment; SMX-016 attack campaign; C-011/C-022/C-026; A-003/A-004/A-012/A-015; current platform primary docs |
 | Lifecycle/serialization/determinism | SMX-007 lifecycle/restore, H-008/H-010/H-018, LIF-001–LIF-018, plus SMX-004 scheduler state and SMX-005 authored/runtime/save/context planes | SMX-007 fixtures/experiment; SMX-015 destructive integration; C-002/C-006/C-012/C-024/C-025/A-002 |
 | Streaming/hot swap | SMX-008 streaming/migration, H-005/H-010/H-011/H-018, STR-001–STR-020, plus SMX-007 lifecycle and SMX-005 catalog/reference semantics | SMX-008 fixtures/experiment; SMX-015 destructive integration; C-006/C-011/C-012/C-015/C-024/C-025/C-026/C-027; A-006/A-012/A-015 |
-| Godot mapping/browser limits | H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract, SMX-001 E-006–E-014 | SMX-009 outputs; current Godot primary docs/source |
-| Multiplayer | Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-003 CMP-012, SMX-004 ordered external-input/service boundary, SMX-005 runtime/document separation | SMX-010/017 outputs; C-013/C-014/C-020/C-021/A-009/A-011; current browser/Godot transport docs |
-| Collaborative editing | Constitution P8, H-013/H-017, SMX-005 semantic transaction/base-revision model, SMX-003 base-revision/overlay/reconcile model | SMX-011/018 outputs; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
-| Editor UX/progressive disclosure | P1–P3, H-016, scorecard S-01/S-16, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR | SMX-012/019 outputs |
+| Godot mapping/browser limits | SMX-009 Godot boundary, H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract | SMX-009 fixtures/experiment; current Godot 4.7 primary docs/source |
+| Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
+| Collaborative editing | Constitution P8, H-013/H-017, SMX-005 semantic transaction/base-revision model, SMX-003 base-revision/overlay/reconcile model, SMX-010 NET-019 separation | SMX-011/018 outputs; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
+| Editor UX/progressive disclosure | P1–P3, H-016, scorecard S-01/S-16, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010 beginner multiplayer projection | SMX-012/019 outputs |
 | Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-004 capability/service/budget hooks, SMX-005 cross-document qualification/assets | SMX-013/016 outputs; C-011/C-022/C-026 |
-| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model | SMX-014/017/019 outputs; C-015/C-023 |
+| Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations | SMX-014/017/019 outputs; C-015/C-023 |
 | Architecture freeze | Everything above | All merged research PRs and open blockers |
 
 ## SMX-001 baseline retrieval rules
@@ -275,7 +283,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
@@ -314,3 +322,30 @@ SMX-009 adds the platform-boundary material that downstream network, publishing,
 - Current web-template compilation / `javascript_eval=no`: https://docs.godotengine.org/en/stable/engine_details/development/compiling/compiling_for_web.html
 
 `GOD-###` and `GB-###` now join the stable RAG identifier families for substrate-boundary research.
+
+## SMX-010 runtime-multiplayer retrieval rules
+
+SMX-010 adds the runtime network semantics that later collaboration, publishing, topology-harness, sandbox, and editor work must retrieve before treating a transport or Godot multiplayer API as the network model:
+
+- `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md` — `NET-001` through `NET-020`, authority/control/relevance/identity separation, message-class semantics, reconnect/host migration rules, security boundary, beginner projection, and the concrete SMX-017 topology-equivalence specification.
+- `docs/research/SMX-010-RUNTIME-MULTIPLAYER-FIXTURES.json` — `NT-001` through `NT-020`, with explicit representative/adversarial corpus coverage.
+- `experiments/smx-010-multiplayer-model/` — non-normative semantic model and hostile/boundary tests; it is not a wire protocol or production networking stack.
+- Durable candidate: the same canonical Thing/network declaration is used for offline, peer-hosted, and dedicated-authoritative modes; topology changes runtime policy/context rather than object taxonomy.
+- `ThingId`, authenticated principal/player, runtime session, transient peer/connection ID, controller binding, simulation authority, relevance, and persistence remain distinct semantic roles.
+- State, discrete events, input/commands, baseline/snapshot, and derived prediction/interpolation are different message classes with different replay/supersession behavior.
+- Authority transfer and peer-host migration are epoch-scoped; old-epoch queued/delayed traffic must not become authoritative after transfer.
+- Relevance and `known_unloaded` state do not imply destruction. Coalescible state and reliable event obligations must remain bounded and lifecycle-aware.
+- Reconnect rebinds transient peer identity rather than replacing the principal/Thing. Browser background suspension is therefore a required SMX-017 case.
+- Transport names, peer IDs, sockets, Godot RPC annotations/NodePaths, and live capability grants remain outside canonical network data.
+- Runtime multiplayer replication is not the collaboration edit protocol; retrieve SMX-011/018 for persistent concurrent edits.
+- Network/topology work must preserve exact source/audio/provenance, immutable asset digest, licensing, and derivation semantics established by SMX-005/009.
+
+### SMX-010 primary-source anchors — refreshed 2026-09-19
+
+- Godot 4.7 high-level multiplayer / peers, RPC authority, transfer modes: https://docs.godotengine.org/en/4.7/tutorials/networking/high_level_multiplayer.html
+- Godot 4.7 web networking/background lifecycle: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_web.html
+- Godot 4.7 WebSocket: https://docs.godotengine.org/en/4.7/tutorials/networking/websocket.html
+- Godot 4.7 WebRTC: https://docs.godotengine.org/en/4.7/tutorials/networking/webrtc.html
+- Godot 4.7 dedicated-server export: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_dedicated_servers.html
+
+`NET-###` and `NT-###` now join the stable RAG identifier families for runtime-multiplayer research.
