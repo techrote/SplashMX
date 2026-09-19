@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SplashMX Browser Slice</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header>
+    <h1>SplashMX</h1>
+    <span id="status" role="status">Blank canvas</span>
+  </header>
+  <main>
+    <section class="toolbar" aria-label="Create and edit">
+      <button data-action="add-button">Add Button Thing</button>
+      <button data-action="add-lamp">Add Lamp Thing</button>
+      <button data-action="add-media">Add Sound</button>
+      <button data-action="group">Group</button>
+      <button data-action="reuse">Make reusable</button>
+      <button data-action="rule">Add Rule</button>
+      <button data-action="connect">Connect</button>
+      <button data-action="timeline">Add Timeline motion</button>
+      <button data-action="play">Play</button>
+      <button data-action="stop">Stop</button>
+      <button data-action="save">Save</button>
+      <button data-action="publish">Publish</button>
+    </section>
+
+    <section class="workspace">
+      <aside>
+        <h2>Things</h2>
+        <ol id="thing-list"></ol>
+        <details>
+          <summary>Components</summary>
+          <div id="components">No reusable parts yet.</div>
+        </details>
+        <details>
+          <summary>Together</summary>
+          <label>Play style
+            <select id="together-preset">
+              <option value="local">Local only</option>
+              <option value="per_player">One per player</option>
+              <option value="shared">Shared</option>
+              <option value="authority_controlled">Authority controlled</option>
+            </select>
+          </label>
+          <details>
+            <summary>Advanced</summary>
+            <label>Control <input id="network-control" readonly></label>
+            <label>Authority <input id="network-authority" readonly></label>
+            <label>Sharing <input id="network-replication" readonly></label>
+            <label>Relevance <input id="network-relevance" readonly></label>
+          </details>
+        </details>
+        <details>
+          <summary>People</summary>
+          <button data-action="presence">Show collaborator</button>
+          <button data-action="conflict">Add competing edit</button>
+          <div id="people"></div>
+        </details>
+        <details>
+          <summary>Inspect</summary>
+          <pre id="inspect"></pre>
+        </details>
+      </aside>
+      <section>
+        <h2>Stage</h2>
+        <div id="stage" aria-label="Stage"></div>
+        <h2>Preview</h2>
+        <div id="preview" aria-label="Preview"><em>Press Play to interact.</em></div>
+        <h2>Published player</h2>
+        <iframe id="player-frame" title="Published creation player"></iframe>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="./editor.mjs"></script>
+</body>
+</html>
