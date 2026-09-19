@@ -254,3 +254,13 @@ Evidence: `docs/research/SMX-013-COMPONENT-PACKAGES.md`, `docs/research/SMX-013-
 - **H-018 strengthened further at the component-update layer.** Human version labels select candidate revisions, but actual compatibility is checked against stable public loci, required features/schema, local overlays and explicit state migrations. Failed or incompatible updates leave the previous exact lock, instances, state, interfaces and pending work coherent and active.
 
 No other hypothesis receives a status change from SMX-013. Existing source/audio/provenance, lifecycle, collaboration, multiplayer, Godot-boundary and progressive-authoring protections remain unchanged.
+
+## SMX-014 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-014-PUBLISHING-RUNTIME.md`, `docs/research/SMX-014-PUBLISHING-FIXTURES.json`, and `experiments/smx-014-publishing-model/`.
+
+- **H-014 strengthened further at the publishing/runtime boundary, still awaiting real integration/performance evidence.** Ordinary publication, compatibility/migration, hosted/offline distribution, world/save lineage, exact dependency locks and protected source/audio/provenance semantics remain SplashMX-owned. Godot export machinery produces trusted generic runtime builds rather than becoming a per-creation public contract. Runtime media loading and headless operation supply private implementation mechanisms; real startup/frame/storage costs remain SMX-015/019 work.
+- **H-015 strengthened substantially at semantic/proof-model level, not yet production-proven.** One immutable `CreationRevisionId` is consumed by precompiled web/native/headless runtime profiles; 39 deterministic tests exercise compatibility negotiation, exact dependencies/assets, migration, capability denial, target stripping, hosted aliases, offline closure, persistent-world separation and prepare-before-activate failure. No current ordinary requirement forces a per-creation build. SMX-017/019 must still test real browser/server runtime behavior, size/startup/performance and author experience.
+- **H-018 strengthened further at publication/runtime-negotiation level.** Compatibility is expressed through SplashMX schema/IR/required-feature negotiation plus explicit bounded migrations and typed unsupported-future outcomes. Persistent worlds carry an explicit creation basis and separate migration contract; compatibility does not reduce to matching a Godot version.
+
+No other hypothesis receives a status change from SMX-014. Existing source/audio/provenance, package/capability, lifecycle, multiplayer, collaboration and progressive-authoring protections remain unchanged.
