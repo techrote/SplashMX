@@ -18,6 +18,7 @@ REGISTRY = SPEC / "conformance-registry.json"
 MODULES = ROOT / "src" / "MODULES.json"
 AUDIT = ROOT / "docs" / "architecture" / "ARCHITECTURE-V1-AUDIT.json"
 CI = ROOT / ".github" / "workflows" / "ci.yml"
+RAG = ROOT / "docs" / "03-RAG-INDEX.md"
 
 SCHEMAS = {
     "failure": SPEC / "failure-envelope.schema.json",
@@ -32,6 +33,7 @@ REQUIRED_FILES = [
     ROOT / "src" / "README.md",
     ROOT / "tests" / "production" / "test_smx021.py",
     ROOT / "docs" / "implementation" / "PRODUCTION-CONFORMANCE-V1.md",
+    RAG,
     SPEC / "README.md",
     *SCHEMAS.values(),
 ]
@@ -274,6 +276,17 @@ def main() -> None:
         active == ["contracts.conformance"],
         f"Phase-0 must activate only contracts.conformance; got {active}",
     )
+
+    rag = RAG.read_text(encoding="utf-8")
+    for marker in (
+        "SMX-021 production-conformance retrieval rules",
+        "docs/implementation/PRODUCTION-CONFORMANCE-V1.md",
+        "spec/production/conformance-registry.json",
+        "src/MODULES.json",
+        "tools/validate_smx021.py",
+        "durable identity classes",
+    ):
+        require(marker in rag, f"RAG missing SMX-021 retrieval marker: {marker}")
 
     ci = CI.read_text(encoding="utf-8")
     for command in (
