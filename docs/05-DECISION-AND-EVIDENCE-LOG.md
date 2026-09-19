@@ -376,6 +376,80 @@ Given the same compatible authored basis and snapshot, restore must reconstruct 
 
 **Source:** SMX-007 LIF-015; LT-012.
 
+
+
+### D-048 — Logical streaming identity is independent of physical acquisition units
+
+**Status:** DECISION at streaming semantic level; subject to SMX-015 integrated falsification.
+
+Things, definitions, behaviours, assets, ports, and connections retain stable semantic identity regardless of which physical chunk/bundle/cache entry currently carries their bytes. A semantic stream target may be one Thing/subgraph/component while physical I/O batches many logical records.
+
+**Source:** `docs/research/SMX-008-STREAMING-MIGRATION.md` STR-001/STR-002/STR-019; SG-001/SG-010.
+
+### D-049 — Runtime acquisition consumes exact immutable resolved artifact descriptors
+
+**Status:** DECISION at streamer/package boundary; version solving remains SMX-013.
+
+Required/optional/lazy dependency declarations are explicit. Once resolution is complete, the streamer consumes exact immutable descriptors carrying logical dependency identity, revision/version lineage, content digest, byte size, required features, and trust/provenance metadata. Content digest does not replace mutable logical identity.
+
+**Source:** SMX-008 STR-003/STR-005/STR-006; SG-002/SG-004/SG-009.
+
+### D-050 — Dependency acquisition is bounded, staged, security-checked, and atomically published
+
+**Status:** DECISION.
+
+The full required acquisition closure is discovered within hard depth/count/byte limits, fetched/verified/parsed/validated/migrated in staging, and only then published to ordinary execution. Failure/cancellation leaves the existing live world unchanged; verified immutable cache bytes may remain inert.
+
+**Source:** SMX-008 STR-007–STR-009/STR-016/STR-017; SG-003/SG-008/SG-009; carries SMX-006 parser/security rules forward.
+
+### D-051 — Prefetch/cache/eviction are performance policy, not lifecycle meaning
+
+**Status:** DECISION.
+
+Prefetch does not create/restore/activate content. Cache eviction does not destroy logical objects or IDs. Artifacts whose absence would violate currently active semantics are pinned; dormant/unloaded/reconstructible artifacts may be evicted and reacquired.
+
+**Source:** SMX-008 STR-010/STR-011/STR-018; SG-005.
+
+### D-052 — Source/implementation artifact residency is independent from concrete instance state
+
+**Status:** DECISION.
+
+Definition/behaviour/component/asset source artifacts are immutable acquisition/cache objects; concrete Thing and attachment runtime state follows SMX-007 lifecycle persistence. An instance can retain provenance/private state while its source or dormant behaviour implementation bytes are absent from cache.
+
+**Source:** SMX-008 STR-012; SG-005; consistent with SMX-003/004/007.
+
+### D-053 — Live behaviour/component replacement acquires first, migrates at quiescence, and rolls back atomically
+
+**Status:** DECISION at streaming/hot-replacement semantic level.
+
+A replacement version is fully acquired/validated before touching the old live version. At a quiescent boundary, state migration is deterministic/bounded/side-effect-free, stable public interfaces and pending work are explicitly mapped/cancelled/rejected, and the swap commits atomically. Failure leaves old implementation/state/work/connections active.
+
+**Source:** SMX-008 STR-013–STR-015; SG-006/SG-007; extends SMX-004 D-022.
+
+### D-054 — Semantic behaviour detach and code eviction are distinct operations
+
+**Status:** DECISION.
+
+Evicting implementation bytes does not detach the behaviour or discard attachment state. Intentional detach explicitly chooses whether compatible state is discarded or retained as an inert typed detached-state capsule.
+
+**Source:** SMX-008 section 14; SG-011.
+
+### D-055 — Streaming failures remain typed and retry does not bypass current policy
+
+**Status:** DECISION.
+
+Missing, offline/unreachable, denied, incompatible, invalid/malicious, resource-exhausted, cancelled, and transient failure states remain distinct. Retry may reuse verified immutable cache bytes but re-evaluates current trust/feature/capability policy before publication.
+
+**Source:** SMX-008 STR-016; SG-003/SG-008.
+
+### D-056 — Portable execution-host migration uses semantic state + exact dependency requirements, not host handles
+
+**Status:** PROVISIONAL DIRECTION for SMX-010/017.
+
+A candidate migration capsule contains selected stable Thing/subgraph IDs, quiescent runtime snapshot, durable pending work, authored/definition/behaviour provenance, exact resolved artifact descriptors, and external reference IDs. It excludes peer/session IDs, authority tokens, live capability grants, sockets, and Godot/native/browser handles.
+
+**Source:** SMX-008 STR-020; SG-012.
+
 ## Primary-source and comparative evidence
 
 ### E-001 through E-014 — Godot/web/runtime baseline
@@ -556,6 +630,48 @@ Sources:
 
 **Implication:** SplashMX should expose stable semantic capabilities while adapters handle browser-specific permission/gesture/lifetime rules.
 
+
+
+### E-036 — Godot 4.7 exposes threaded resource loading, dependency inspection, and cache modes
+
+**Status:** FACT, time-sensitive; checked 2026-09-19.
+
+Godot 4.7 `ResourceLoader` exposes `get_dependencies`, cache modes, and `load_threaded_request/status/get`.
+
+Source: https://docs.godotengine.org/en/4.7/classes/class_resourceloader.html
+
+**Implication:** Godot provides useful internal loading/cache substrate, but its paths/cache entries need not define SplashMX semantic identity or dependency boundaries.
+
+### E-037 — OCI descriptors provide digest + size precedent for immutable referenced artifacts
+
+**Status:** FACT / representation comparison input; checked 2026-09-19.
+
+OCI image manifests use content descriptors containing at least media type, digest, and size for referenced immutable content.
+
+Source: https://specs.opencontainers.org/image-spec/manifest/
+
+**Implication:** exact digest/size descriptors are a credible acquisition primitive while logical mutable identities remain separate.
+
+### E-038 — TUF explicitly addresses bounded verified acquisition and repository mix-and-match/rollback classes
+
+**Status:** FACT / secure-distribution comparison input; checked 2026-09-19.
+
+The current TUF specification describes bounded downloads, hashes/sizes, delegation traversal limits, and protections against arbitrary software, extraneous dependency, rollback, freeze, and mix-and-match attacks.
+
+Source: https://github.com/theupdateframework/specification/blob/master/tuf-spec.md
+
+**Implication:** SplashMX dependency acquisition needs bounded coherent verification; SMX-008 does not adopt TUF's complete role/signature architecture.
+
+### E-039 — SemVer ties version meaning to a declared public API
+
+**Status:** FACT / compatibility comparison input; checked 2026-09-19.
+
+Semantic Versioning 2.0.0 distinguishes incompatible major changes from backward-compatible minor/patch changes relative to a declared public API.
+
+Source: https://semver.org/
+
+**Implication:** useful component compatibility vocabulary, but exact constraint syntax/solver behavior remains SMX-013.
+
 ## Hypothesis review snapshots
 
 ### SMX-001
@@ -602,6 +718,14 @@ Detailed evidence: `docs/research/SMX-005-CANONICAL-DOCUMENT.md` and companion f
 - H-008: **strengthened further** — identity survives dormancy, unload, fresh-runtime snapshot restore, and tombstone resolution without hierarchy/engine pointers.
 - H-010: **strengthened substantially at model level** — unloaded Things retain meaningful IDs/references/pending state and can be reconstructed without surviving process objects; full streaming remains SMX-008/015.
 - H-018: **strengthened further at runtime-snapshot layer, unresolved end-to-end** — authored/behaviour/private-state compatibility is migration/rejection-driven rather than engine-object deserialization.
+
+
+### SMX-008
+
+- H-005: **strengthened further** — acquisition, quiescent migration, continuation mapping and rollback compose with behaviour hot replacement.
+- H-010: **strengthened further** — instances/attachments retain meaning while source/runtime artifacts cross residency boundaries.
+- H-011: **strengthened substantially at model level** — the town/inventory fixture reloads one referenced Thing plus hard dependency closure rather than the containment region; physical batching remains non-semantic.
+- H-018: **strengthened further** — replacement is exact-artifact + explicit migration driven rather than engine-object/version implicit.
 
 ## Open architectural questions
 
@@ -679,9 +803,11 @@ JSON-shaped fixtures are research-only. Deterministic CBOR, protobuf-like record
 
 Owner: SMX-009/014/019/020.
 
-### O-013 — Cross-document/package dependency namespace
+### O-013 — Cross-document/package dependency namespace and resolver
 
-SMX-005 requires typed qualification for references outside the current document and distinguishes unavailable dependencies, but final package IDs, dependency resolution, version constraints, vendoring/remix rules, and signatures remain open.
+**Status:** NARROWED by SMX-008.
+
+Runtime acquisition now requires an exact immutable resolved descriptor with logical dependency ID, revision/version lineage, digest, size, features, and trust/provenance reference. Final package/component ID syntax, version constraints/solver, lock format, repository selection, vendoring/remix rules, trust roots/signatures, and package-cycle policy remain open.
 
 Owner: SMX-013/014/016.
 
@@ -705,9 +831,31 @@ Owner: SMX-009/016/019.
 
 ### O-016 — Production snapshot/store crash-consistency and performance
 
-SMX-007 defines semantic snapshot cuts and staged atomic restore but not the final on-disk journal/transaction implementation, incremental snapshot algorithm, compression, crash recovery, snapshot compaction, or performance envelope.
+**Status:** NARROWED by SMX-008.
 
-Owner: SMX-008/009/014/019/020.
+Streaming now requires atomic live publication and permits verified immutable cache progress to survive cancelled loads, but does not choose the final on-disk journal/transaction implementation, incremental snapshot algorithm, compression, cache index, crash recovery, compaction, or performance envelope.
+
+Owner: SMX-009/014/019/020.
+
+
+
+### O-017 — Physical stream batching, cache policy, and performance
+
+SMX-008 deliberately keeps physical acquisition units non-semantic. Production must choose chunk/bundle sizing, compression, cache index, prefetch/eviction heuristics, memory budgets, browser/native storage behavior, and latency/throughput trade-offs without changing stable logical identities.
+
+Owner: SMX-009/014/019/020.
+
+### O-018 — Distribution trust, repository selection, and version resolution
+
+SMX-008 assumes an exact resolved immutable descriptor and applies bounded security checks. It does not choose package repositories/CDNs, offline mirrors, trust-root/signature framework, rollback/freeze protection, version solver, lockfile, or publisher update policy.
+
+Owner: SMX-013/014/016.
+
+### O-019 — Execution-host/server migration handoff
+
+SMX-008 demonstrates a portable semantic migration capsule but does not define source/destination authority transfer, in-flight network cut, duplicate-authority prevention, replication pause/resume, crash recovery, or consensus between server regions.
+
+Owner: SMX-010/017.
 
 ## Maintenance rule
 
