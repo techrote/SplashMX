@@ -228,3 +228,13 @@ Evidence: `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md`, `docs/research/SMX-010
 - **H-014 strengthened further at the network boundary.** Godot peer IDs, SceneTree authority, RPC annotations, and transport transfer modes remain target-private adapter data. Current WebSocket/WebRTC/headless facilities can implement topology policy without entering durable Thing identity or canonical network meaning.
 
 No other hypothesis receives a status change from SMX-010. Existing source/audio/provenance, lifecycle, migration, security, and canonical-document protections remain unchanged.
+
+## SMX-011 review record — 2026-09-19
+
+Evidence: `docs/research/SMX-011-COLLABORATION-SEMANTICS.md`, `docs/research/SMX-011-COLLABORATION-FIXTURES.json`, and `experiments/smx-011-collaboration-model/`.
+
+- **H-013 strengthened substantially.** SMX-011 independently requires durable causal semantic edit transactions, preconditions, tombstones, retained alternatives, explicit conflicts/resolution, schema-aware history, permissions revalidation and selective collaborative undo. Those requirements are materially different from SMX-010 runtime state/event/input/authority/relevance replication. Shared authentication or transport remains possible, but the consistency protocols stay separate.
+- **H-017 strengthened at model level; real persistence/synchronization remains unproven.** Offline replicas author transactions without cloud document authority, exchange causal work later, and converge for the deterministic conflict corpus without silent loss of independent work. Browser/native persistence, compaction, relay outage behavior and production security/performance remain SMX-018/019 work.
+- **H-018 strengthened narrowly and constrained at collaboration-history level.** Historical edits are schema-aware and must deterministically migrate or quarantine before reconciliation; structural convergence in a CRDT/OT substrate cannot bypass SplashMX schema/feature compatibility. Multi-version history migration/compaction remains SMX-018/020.
+
+No other hypothesis receives a status change from SMX-011. Existing source/audio/provenance, lifecycle, migration, security, streaming and runtime-network protections remain unchanged.

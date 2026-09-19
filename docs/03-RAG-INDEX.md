@@ -28,7 +28,8 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 22. `docs/research/SMX-008-STREAMING-FIXTURES.json` — machine-addressable STR-/SG-IDs and direct experimental coverage for SMX-008.
 23. `docs/research/SMX-009-GODOT-BOUNDARY.md` and companion fixtures — current Godot/web/headless substrate boundary, target-private binding rules, and source/audio/provenance preservation.
 24. `docs/research/SMX-010-RUNTIME-MULTIPLAYER.md` and companion fixtures — runtime authority/replication/relevance/topology semantics and the concrete SMX-017 equivalence handoff.
-25. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
+25. `docs/research/SMX-011-COLLABORATION-SEMANTICS.md` and companion fixtures — human-visible conflict semantics, causal semantic transactions, local-first reconciliation, undo/history, transient presence separation, and the concrete SMX-018 handoff.
+26. The active GitHub issue, its dependency issues, and merged PRs for those dependencies.
 
 ## Retrieval map by topic
 
@@ -45,7 +46,7 @@ This file is a retrieval-oriented map for autonomous agents. It identifies which
 | Streaming/hot swap | SMX-008 streaming/migration, H-005/H-010/H-011/H-018, STR-001–STR-020, plus SMX-007 lifecycle and SMX-005 catalog/reference semantics | SMX-008 fixtures/experiment; SMX-015 destructive integration; C-006/C-011/C-012/C-015/C-024/C-025/C-026/C-027; A-006/A-012/A-015 |
 | Godot mapping/browser limits | SMX-009 Godot boundary, H-007/H-014/H-015, SMX-005 engine-independent canonical contract, SMX-004 no-Godot execution contract | SMX-009 fixtures/experiment; current Godot 4.7 primary docs/source |
 | Multiplayer | SMX-010 runtime multiplayer, Constitution P7, H-012/H-013, SMX-002 relationship/context split, SMX-006 network boundary, SMX-007/008 unload+migration, SMX-009 transport boundary | SMX-010 fixtures/experiment; SMX-017 topology-equivalence spec; C-007/C-012/C-013/C-014/C-020/C-021/C-022/C-023; A-002/A-003/A-004/A-009/A-011/A-016; current Godot/browser networking docs |
-| Collaborative editing | Constitution P8, H-013/H-017, SMX-005 semantic transaction/base-revision model, SMX-003 base-revision/overlay/reconcile model, SMX-010 NET-019 separation | SMX-011/018 outputs; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
+| Collaborative editing | SMX-011 collaboration semantics, Constitution P8, H-013/H-017/H-018, SMX-005 semantic transactions, SMX-003 definition/instance reconciliation, SMX-010 NET-019 separation | SMX-011 fixtures/experiment; SMX-018 destructive harness; C-016–C-019/A-007/A-008; CRDT/OT/local-first primary material |
 | Editor UX/progressive disclosure | P1–P3, H-016, scorecard S-01/S-16, ordinary-group→local-definition promotion, SMX-004 common beginner/advanced IR, SMX-010 beginner multiplayer projection | SMX-012/019 outputs |
 | Component ecosystem | P9/P13, H-004/H-009, SMX-003 local-definition/public-interface model, SMX-004 capability/service/budget hooks, SMX-005 cross-document qualification/assets | SMX-013/016 outputs; C-011/C-022/C-026 |
 | Publishing/player/server | P10–P12, H-014/H-015/H-018, SMX-005 feature/version/blob/chunk model, SMX-009 target profiles, SMX-010 topology-independent network declarations | SMX-014/017/019 outputs; C-015/C-023 |
@@ -264,11 +265,14 @@ Relevant issues should prefer current specifications or authoritative browser do
 
 ### Collaboration research
 
-Potential starting point, not a selected dependency:
+Current SMX-011 comparison anchors, not selected dependencies:
 
 - https://automerge.org/docs/
+- https://docs.yjs.dev/
+- https://share.github.io/sharedb/
+- https://www.inkandswitch.com/essay/convergence-is-not-enough/
 
-Relevant issues must compare desired SplashMX conflict semantics against multiple approaches rather than selecting a CRDT library first.
+Relevant issues must compare desired SplashMX conflict semantics against multiple approaches rather than selecting a CRDT/OT library first.
 
 ## Source freshness classes
 
@@ -283,7 +287,7 @@ The normative freshness rules are in `docs/research/SMX-001-RESEARCH-BASELINE.md
 
 When adding research material:
 
-- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`) so retrieval can target concepts precisely;
+- use stable headings and explicit IDs (`H-###`, `SMX-###`, `ADR-###`, `E-###`, `C-###`, `A-###`, `S-##`, `K-###`, `T-###`, `CMP-###`, `CT-###`, `EXE-###`, `ET-###`, `DOC-###`, `DT-###`, `SEC-###`, `ST-###`, `LIF-###`, `LT-###`, `STR-###`, `SG-###`, `GOD-###`, `GB-###`, `NET-###`, `NT-###`, `COL-###`, `CF-###`) so retrieval can target concepts precisely;
 - keep conclusions close to evidence links/fixtures;
 - record rejected alternatives and why, not only the chosen answer;
 - avoid giant chronological notebooks as the only source of truth;
@@ -349,3 +353,30 @@ SMX-010 adds the runtime network semantics that later collaboration, publishing,
 - Godot 4.7 dedicated-server export: https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_dedicated_servers.html
 
 `NET-###` and `NT-###` now join the stable RAG identifier families for runtime-multiplayer research.
+
+## SMX-011 collaboration retrieval rules
+
+SMX-011 adds the durable authoring-conflict semantics that editor, migration, package, security and destructive collaboration work must retrieve before choosing a CRDT/OT/database/sync library:
+
+- `docs/research/SMX-011-COLLABORATION-SEMANTICS.md` — `COL-001` through `COL-024`, the full human-visible conflict table, local-first reconnect, selective undo/history, partial loading, schema migration, protected source/audio/provenance handling, implementation-family comparison, and concrete SMX-018 destructive plan.
+- `docs/research/SMX-011-COLLABORATION-FIXTURES.json` — `CF-001` through `CF-028` with representative/adversarial corpus coverage.
+- `experiments/smx-011-collaboration-model/` — non-normative deterministic semantic model and adversarial/boundary tests; it is not a production CRDT, OT engine, sync protocol or database.
+- Durable candidate: **SplashMX semantic transaction/conflict layer above a replaceable causal synchronization/storage substrate**. Product conflict behavior is defined before implementation selection.
+- Independent semantic loci auto-merge; incompatible same-locus or invariant-sensitive structural edits remain explicit conflicts unless a narrow rule such as tombstone/remove-wins is intentionally defined.
+- Multi-object semantic transactions remain atomic. Convergence may never justify half-applied grouping/structure or illegal definition/interface state.
+- Offline replicas may author without cloud document authority; duplicate/order-independent reconciliation is required, with permissions and schema compatibility revalidated on reunion.
+- Collaborative undo is a new compensating semantic transaction with current preconditions, not a global history rewind.
+- Presence/cursor/selection/typing/viewport state is transient awareness, outside canonical authored state and durable edit history.
+- `known_unloaded`, tombstoned and unknown targets stay distinct during collaboration; unloaded work may remain pending rather than guessed.
+- Asset replacement treats immutable digest + source/audio identity + provenance/licensing + derivation as one protected revision bundle. Concurrent replacements cannot field-mix them.
+- Runtime multiplayer remains a separate consistency layer: SMX-010 peer/authority/replication/transport data is rejected from canonical collaboration transactions.
+- SMX-018 must prove semantic invariants as well as replica equality under reorder, duplicate, partition, reconnect, compaction, schema migration and stale-permission schedules.
+
+### SMX-011 primary/comparative anchors — refreshed 2026-09-19
+
+- Automerge conflicts/local-first docs: https://automerge.org/docs/reference/documents/conflicts/ and https://automerge.org/docs/hello/
+- Yjs document updates, Awareness and UndoManager: https://docs.yjs.dev/api/document-updates , https://docs.yjs.dev/api/about-awareness , https://docs.yjs.dev/api/undo-manager
+- ShareDB OT/history/offline/types: https://share.github.io/sharedb/ and https://share.github.io/sharedb/types/
+- Ink & Switch, *Convergence Is Not Enough* (2026): https://www.inkandswitch.com/essay/convergence-is-not-enough/
+
+These are comparison precedents, not selected dependencies. `COL-###` and `CF-###` are stable RAG identifier families for collaboration semantics and fixtures.
