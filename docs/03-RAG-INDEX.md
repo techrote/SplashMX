@@ -15,7 +15,7 @@ For **all** production implementation, architecture maintenance, compatibility, 
 4. `docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md` — freeze decision, precedence/supersession and change rules.
 5. `docs/architecture/ARCHITECTURE-V1-AUDIT.json` — machine-readable H-001–H-018 closure, contradiction audit, corrective findings, protected-media fields, and residual-risk classes.
 6. `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md` — dependency-ordered production plan and conformance gates.
-7. `docs/implementation/PRODUCTION-PROGRAMME-V1.md` — active SMX-021–052 issue/dependency/concurrency execution map for production work; it is subordinate to the roadmap and Architecture v1.
+7. `docs/implementation/PRODUCTION-PROGRAMME-V1.md` — SMX-021–052 dependency/concurrency execution map for production work; it is subordinate to the roadmap and Architecture v1 and is **not** a live completion ledger. Verify current issue/PR state in GitHub before deciding what is complete or runnable.
 8. `docs/implementation/PRODUCTION-CONFORMANCE-V1.md` — Phase-0 production gate/evidence ownership, typed failure/version/benchmark meta-contracts, and durable-identity guardrails.
 9. `docs/04-ISSUE-EXECUTION-PROTOCOL.md` — branch/PR/CI/merge/closure workflow.
 10. `docs/05-DECISION-AND-EVIDENCE-LOG.md` — compact post-freeze decision/evidence register and pointers to the full historical log.
@@ -39,6 +39,7 @@ Disposable experiment implementations are not production architecture by inertia
 | Composition / definitions / overrides | `SMX-003-COMPOSITION-DEFINITIONS.md`, SMX-015, SMX-018 | group-as-Thing, stable definition loci, overlays, R-018-01 |
 | Behaviour / IR / hot swap | `SMX-004-BEHAVIOUR-EXECUTION.md`, `SMX-008-STREAMING-MIGRATION.md`, SMX-015/016 | bounded turns, common IR, transactional replacement, hostile budgets |
 | Canonical document / identity / migration | `SMX-005-CANONICAL-DOCUMENT.md`, SMX-007/008/015 | path-independent IDs, typed record graph, full-result validation, migrations |
+| Production conformance / implementation guardrails | `docs/implementation/PRODUCTION-CONFORMANCE-V1.md`, `spec/production/conformance-registry.json`, `spec/production/*.schema.json`, `src/MODULES.json`, `tests/production/test_smx021.py` | SMX-021 gate/evidence ownership; typed failure/version/benchmark contracts; module ownership; forbidden durable identity classes |
 | Canonical physical encoding / local persistence | `SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`, `SMX-022-BROWSER-EVIDENCE.json` | deterministic CBOR profile; stable-ID hash shards; IndexedDB/OPFS browser split; SQLite WAL/FULL native recovery; SMX-024/025 handoff |
 | Security / capabilities | `SMX-006-CAPABILITY-SANDBOX.md`, `SMX-016-SECURITY-HARNESS.md` | ADV/AT fixtures, R-016-01..04, O-025 residual physical isolation |
 | Lifecycle / restore | `SMX-007-LIFECYCLE-RESTORE.md`, SMX-015 | authored/runtime/save/context split, pending work, fresh-runtime restore |
@@ -57,13 +58,13 @@ Paths in the table without a directory prefix refer to files under `docs/researc
 
 ### Protected source/audio/provenance
 
-Any work touching assets, media, import/decode/transcode, packages, collaboration, persistence, target projection, publishing, caches, networking, migration, or offline copies must retrieve the Architecture-v1 protected-media section and the relevant research fixture.
+Any work touching assets, media, import/decode/transcode, packages, collaboration, persistence, target projection, publishing, caches, networking, migration, or offline copies must retrieve the Architecture-v1 protected-media section and the relevant research fixture. Serialization or persistence work must additionally retrieve the SMX-022 decision/fixtures and retained native/browser evidence so physical publication cannot weaken the complete-revision rule.
 
-A stable `AssetId` selects one complete immutable revision containing **digest + source identity + source metadata + audio/media semantics + provenance + licence/attribution + derivation lineage**. Competing replacements remain complete alternatives. Target-private derivatives may not replace or field-mix canonical meaning.
+A stable `AssetId` selects one complete immutable revision containing **digest + source identity + source metadata + audio/media semantics + provenance + licence/attribution + derivation lineage**. Competing replacements remain complete alternatives. Target-private derivatives may not replace or field-mix canonical meaning. A database transaction, shard rewrite, OPFS write, cache fill, or migration may publish the whole coherent Asset revision or leave the prior coherent revision intact; it may not expose a field-mixed intermediate state.
 
 ### Identity
 
-Any proposed use of hierarchy paths, NodePath, RID, ResourceUID/resource paths, DOM keys, database row IDs, cache keys, URLs, peer/socket/session IDs, or process handles as durable semantic identity must be treated as a likely Architecture-v1 violation and checked against SMX-005/009/010/019 evidence.
+Any proposed use of hierarchy paths, NodePath, RID, ResourceUID/resource paths, DOM keys, database row IDs, cache keys, URLs, peer/socket/session IDs, or process handles as durable semantic identity must be treated as a likely Architecture-v1 violation and checked against SMX-005/009/010/019 evidence plus the SMX-021 production identity guardrails. Serialization/storage work must also retrieve SMX-022: shard prefixes, byte offsets, SQLite rows/pages, IndexedDB implementation keys, OPFS paths/file handles, store-internal locators and cache placement are physical mechanisms, not mutable SplashMX semantic identity.
 
 ### Runtime networking versus collaboration
 
@@ -77,6 +78,8 @@ Ordinary publishing is immutable SplashMX data loaded by a separately deployed g
 
 Offline playback/runtime uses an exact verified creation/dependency/runtime-compatible closure or reports typed unavailability/incompatibility. It does not silently float to a compatible substitute.
 
+For browser/native persistence, also retrieve SMX-022. Canonical project ownership must remain distinct from disposable cache; browser permission, persistence, quota and eviction are fallible platform conditions that must produce explicit non-destructive outcomes rather than silently changing project meaning.
+
 ## Corrective findings that must remain visible
 
 The post-freeze architecture incorporates and production tests should retain:
@@ -84,6 +87,16 @@ The post-freeze architecture incorporates and production tests should retain:
 - R-016-01 through R-016-04 — host-independent path normalization, serialized authority rejection, delegation ancestry bounds, final host-boundary authorization recheck;
 - R-018-01 through R-018-04 — DefinitionId-scoped conflicts, delete/new-Connection remove-wins, full semantic validation before commit, incident-Connection tombstoning;
 - R-019-01 — semantic `ConnectionId` is distinct from transient transport connection identity.
+
+## Post-freeze production retrieval anchors
+
+### SMX-021 production-conformance retrieval rules
+
+Retrieve `docs/implementation/PRODUCTION-CONFORMANCE-V1.md`, `spec/production/conformance-registry.json`, the production schemas under `spec/production/`, `src/MODULES.json`, and `tests/production/test_smx021.py` when work touches gate ownership, typed failures, version metadata, benchmark evidence, module ownership, or durable identity classes. Treat SMX-021 as guardrail infrastructure: it does not by itself activate later production modules or select their implementation mechanisms.
+
+### SMX-022 physical encoding/store retrieval rules
+
+Retrieve `docs/research/SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md`, `SMX-022-PHYSICAL-STORE-FIXTURES.json`, `SMX-022-NATIVE-EVIDENCE.json`, and `SMX-022-BROWSER-EVIDENCE.json` for canonical serialization, local persistence, partial access, migration-store interaction, browser storage, or crash-recovery work. The selected broad mechanism is deterministic CBOR records/revisions + bounded stable-ID hash shards, IndexedDB-owned browser revision/head publication with OPFS prepare-before-publish backing, and SQLite WAL/`synchronous=FULL` native revision/head publication. SMX-024/025 should implement and falsify within that selected boundary rather than silently re-run broad mechanism selection; contradictory evidence must be recorded explicitly.
 
 ## Historical late-campaign retrieval anchors
 
