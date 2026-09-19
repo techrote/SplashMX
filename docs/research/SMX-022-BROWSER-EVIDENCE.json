@@ -1,0 +1,246 @@
+{
+  "schema": "splashmx-smx022-browser-evidence-v1",
+  "captured_at_utc": "2026-09-19T21:24:44Z",
+  "source": {
+    "workflow_run_id": 35470286634,
+    "workflow_head_sha": "596e48cf43aa267b5a2781ac6e80b0acff228784",
+    "pull_request_merge_ref_sha": "c864d6a9da431cc56c5caf530d1768895ad05dee",
+    "artifact_id": 10592053378,
+    "artifact_name": "smx022-browser-evidence",
+    "artifact_sha256": "33b472b3f769376c68e3a7af05edc9c758832d8363a34319556826721c070d5d"
+  },
+  "runtime": {
+    "name": "Node.js",
+    "version": "v22.19.0",
+    "build_id": "c864d6a9da431cc56c5caf530d1768895ad05dee"
+  },
+  "browser": {
+    "name": "Chromium",
+    "version": "140.0.7339.16"
+  },
+  "environment": {
+    "os": "Linux 6.17.0-1022-azure",
+    "arch": "x64",
+    "hardware": {
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "gpu": "headless Chromium software/CI rendering",
+      "memory_bytes": 16766414848
+    }
+  },
+  "benchmark_evidence": [
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:browser:indexeddb",
+      "captured_at_utc": "2026-09-19T21:24:44Z",
+      "target_profile": "browser",
+      "runtime": {
+        "name": "Node.js",
+        "version": "v22.19.0",
+        "build_id": "c864d6a9da431cc56c5caf530d1768895ad05dee"
+      },
+      "browser": {
+        "name": "Chromium",
+        "version": "140.0.7339.16"
+      },
+      "environment": {
+        "os": "Linux 6.17.0-1022-azure",
+        "arch": "x64",
+        "hardware": {
+          "cpu": "AMD EPYC 9V74 80-Core Processor",
+          "gpu": "headless Chromium software/CI rendering",
+          "memory_bytes": 16766414848
+        }
+      },
+      "workload": {
+        "id": "smx022.browser.indexeddb",
+        "description": "IndexedDB 4,000-record fixture: direct read, full scan and strict-durability transaction commit"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "single_get_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.20000000001164153
+        },
+        {
+          "name": "get_all_4000_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 38.5
+        },
+        {
+          "name": "strict_commit_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.3000000000029104
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:browser:opfs",
+      "captured_at_utc": "2026-09-19T21:24:44Z",
+      "target_profile": "browser",
+      "runtime": {
+        "name": "Node.js",
+        "version": "v22.19.0",
+        "build_id": "c864d6a9da431cc56c5caf530d1768895ad05dee"
+      },
+      "browser": {
+        "name": "Chromium",
+        "version": "140.0.7339.16"
+      },
+      "environment": {
+        "os": "Linux 6.17.0-1022-azure",
+        "arch": "x64",
+        "hardware": {
+          "cpu": "AMD EPYC 9V74 80-Core Processor",
+          "gpu": "headless Chromium software/CI rendering",
+          "memory_bytes": 16766414848
+        }
+      },
+      "workload": {
+        "id": "smx022.browser.opfs",
+        "description": "OPFS 64 KiB replace-on-close write and subsequent read"
+      },
+      "sample_count": 15,
+      "metrics": [
+        {
+          "name": "write_close_64k_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 1
+        },
+        {
+          "name": "read_64k_ms",
+          "unit": "ms",
+          "statistic": "median",
+          "value": 0.6000000000058208
+        }
+      ]
+    },
+    {
+      "contract": "splashmx.benchmark-evidence/1",
+      "evidence_id": "smx022:browser:storage_estimate",
+      "captured_at_utc": "2026-09-19T21:24:44Z",
+      "target_profile": "browser",
+      "runtime": {
+        "name": "Node.js",
+        "version": "v22.19.0",
+        "build_id": "c864d6a9da431cc56c5caf530d1768895ad05dee"
+      },
+      "browser": {
+        "name": "Chromium",
+        "version": "140.0.7339.16"
+      },
+      "environment": {
+        "os": "Linux 6.17.0-1022-azure",
+        "arch": "x64",
+        "hardware": {
+          "cpu": "AMD EPYC 9V74 80-Core Processor",
+          "gpu": "headless Chromium software/CI rendering",
+          "memory_bytes": 16766414848
+        }
+      },
+      "workload": {
+        "id": "smx022.browser.storage_estimate",
+        "description": "StorageManager quota/usage observation for the real Chromium campaign origin"
+      },
+      "sample_count": 1,
+      "metrics": [
+        {
+          "name": "quota_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 905300443
+        },
+        {
+          "name": "usage_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 4289386
+        },
+        {
+          "name": "indexeddb_usage_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 4223003
+        },
+        {
+          "name": "filesystem_usage_bytes",
+          "unit": "bytes",
+          "statistic": "single",
+          "value": 66383
+        }
+      ]
+    }
+  ],
+  "platform_observations": {
+    "indexeddb_reported_durability": "strict",
+    "storage_persisted_before_request": false,
+    "storage_persist_request_result": false,
+    "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.16 Safari/537.36"
+  },
+  "interruption_assertions": {
+    "indexeddb_after_abort": {
+      "head": "r0",
+      "asset_revision": "assetrev:000001:0",
+      "protected_fields": [
+        "asset_id",
+        "audio_or_media_semantics",
+        "derivation_lineage",
+        "digest",
+        "licence_attribution",
+        "provenance",
+        "revision",
+        "source_identity",
+        "source_metadata"
+      ]
+    },
+    "indexeddb_after_page_interruption": {
+      "head": "r0",
+      "asset_revision": "assetrev:000001:0",
+      "protected_fields": [
+        "asset_id",
+        "audio_or_media_semantics",
+        "derivation_lineage",
+        "digest",
+        "licence_attribution",
+        "provenance",
+        "revision",
+        "source_identity",
+        "source_metadata"
+      ]
+    },
+    "indexeddb_after_completed_commit": {
+      "head": "r1",
+      "asset_revision": "assetrev:000001:1",
+      "protected_fields": [
+        "asset_id",
+        "audio_or_media_semantics",
+        "derivation_lineage",
+        "digest",
+        "licence_attribution",
+        "provenance",
+        "revision",
+        "source_identity",
+        "source_metadata"
+      ]
+    },
+    "opfs_after_page_interruption": {
+      "revision": "r0",
+      "asset_revision": "assetrev:000001:0"
+    },
+    "opfs_after_completed_close": {
+      "revision": "r1",
+      "asset_revision": "assetrev:000001:1"
+    }
+  },
+  "interpretation": [
+    "The real Chromium campaign observed all-or-nothing IndexedDB publication for explicit abort and page interruption.",
+    "An unclosed OPFS createWritable replacement did not replace the previously committed file; close made the new revision visible.",
+    "Persistent storage was not granted for this CI origin, demonstrating that persistence is an observable fallible platform condition rather than a semantic assumption.",
+    "Latency and quota values are environment-specific observations, not product thresholds or universal browser guarantees."
+  ]
+}
