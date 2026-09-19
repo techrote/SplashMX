@@ -94,7 +94,7 @@ if DOC.is_file():
         "38 deterministic", "not an end-to-end sandbox certification", "before extraction",
         "use-time", "host-call recorder", "decoder recorder", "source/audio/provenance",
         "AssetId", "web_hardened", "web_official", "native", "headless",
-        "H-006", "H-009", "H-011", "H-014", "H-015", "O-021",
+        "H-006", "H-009", "H-011", "H-014", "H-015", "O-025",
         "SMX-017", "SMX-018", "SMX-019", "SMX-020",
     ):
         if phrase.lower() not in text.lower():
@@ -102,7 +102,7 @@ if DOC.is_file():
 
 if DECISION.is_file():
     text = DECISION.read_text(encoding="utf-8")
-    for identifier in [*(f"D-{i:03d}" for i in range(91, 99)), *(f"E-{i:03d}" for i in range(70, 74)), "O-021"]:
+    for identifier in [*(f"D-{i:03d}" for i in range(91, 99)), *(f"E-{i:03d}" for i in range(70, 74)), "O-025"]:
         if identifier not in text:
             errors.append(f"SMX-016 decision/evidence handoff is missing {identifier}")
 
@@ -117,14 +117,14 @@ if RAG.is_file():
 
 if HYP.is_file():
     text = HYP.read_text(encoding="utf-8")
-    for phrase in ("## SMX-016 review", "H-006", "H-009", "H-011", "H-014", "H-015", "O-021"):
+    for phrase in ("## SMX-016 review", "H-006", "H-009", "H-011", "H-014", "H-015", "O-025"):
         if phrase not in text:
             errors.append(f"hypothesis register is missing SMX-016 marker: {phrase!r}")
 
 if LOG.is_file():
     text = LOG.read_text(encoding="utf-8")
     for phrase in (
-        "## SMX-016 decision/evidence register", "D-091", "D-098", "E-070", "E-073", "O-021"
+        "## SMX-016 decision/evidence register", "D-091", "D-098", "E-070", "E-073", "O-025"
     ):
         if phrase not in text:
             errors.append(f"project decision/evidence register is missing SMX-016 marker: {phrase!r}")
