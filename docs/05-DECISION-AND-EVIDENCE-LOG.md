@@ -120,6 +120,26 @@ Architecture v1 does not pretend that research prototypes are production impleme
 
 Owner/order: `docs/architecture/IMPLEMENTATION-ROADMAP-V1.md`. A later spike that discovers a semantic contradiction must amend Architecture v1 through an explicit ADR plus regression; selecting an implementation beneath the frozen boundary does not itself reopen the architecture.
 
+## Historical late-campaign regression anchors
+
+These compact anchors retain exact marker strings consumed by already-merged SMX-015/016/018/019 validators. They point to the byte-identical pre-v1 log for full text and do not re-open or duplicate the frozen decisions above.
+
+## SMX-015 decision/evidence register
+
+Historical entries: D-087 · D-088 · D-089 · D-090 · E-069 · O-020 update. The SMX-015 destructive Object Fabric result retained the **protected source/audio/provenance** boundary and handed real Godot/browser performance evidence forward rather than overclaiming it.
+
+## SMX-016 decision/evidence register
+
+Historical entries: D-091 through D-098 (including D-091 and D-098), E-070 through E-073 (including E-070 and E-073), O-025. The hostile harness retained the **protected source/audio/provenance** boundary and R-016-01 through R-016-04 while explicitly not claiming end-to-end physical sandbox certification.
+
+## SMX-018 decision/evidence register
+
+Historical entries: D-099 through D-104 (including D-099 and D-104), E-074 through E-076 (including E-074 and E-076), O-026, R-018-01 through R-018-04 (including R-018-01 and R-018-04). The collaboration harness retained complete **protected source/audio/provenance** alternatives rather than field-merging them.
+
+## SMX-019 decision/evidence register
+
+Historical entries: D-111 · D-112 · D-113 · D-114 · D-115 · D-116; E-083 · E-084 · E-085 · E-086 · E-087; O-028. SMX-019 supplied the real-Chromium author/player projection evidence and R-019-01 while preserving the complete protected Asset revision semantics.
+
 ## Historical decision/evidence retrieval
 
 Use `docs/05-DECISION-AND-EVIDENCE-LOG.pre-v1.md` for D-001 through D-116, E-001 through E-087, O-001 through O-028 and their exact dates/sources/wording. Those records are intentionally historical and must not be edited to make the final architecture appear predetermined.
