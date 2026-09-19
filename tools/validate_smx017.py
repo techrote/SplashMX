@@ -17,6 +17,7 @@ EXP = ROOT / "experiments" / "smx-017-network-harness"
 DOC = ROOT / "docs" / "research" / "SMX-017-NETWORK-HARNESS.md"
 FIX = ROOT / "docs" / "research" / "SMX-017-NETWORK-HARNESS-FIXTURES.json"
 DEC = ROOT / "docs" / "research" / "SMX-017-DECISION-EVIDENCE.md"
+RAG = ROOT / "docs" / "03-RAG-INDEX.md"
 WORKFLOW = ROOT / ".github" / "workflows" / "smx017-real-topologies.yml"
 TESTS = EXP / "test_model.py"
 MAIN = EXP / "godot" / "main.gd"
@@ -37,6 +38,7 @@ def require(path: pathlib.Path) -> str:
 def main() -> None:
     doc = require(DOC)
     decision = require(DEC)
+    rag = require(RAG)
     workflow = require(WORKFLOW)
     tests = require(TESTS)
     gd = require(MAIN)
@@ -117,6 +119,17 @@ def main() -> None:
     for concept in required_doc_concepts:
         if concept.lower() not in doc_lower:
             fail(f"research document missing scope/contract concept: {concept}")
+
+    for marker in (
+        "SMX-017 real-topology retrieval rules",
+        "SMX-017-NETWORK-HARNESS-FIXTURES.json",
+        "SMX-017-DECISION-EVIDENCE.md",
+        "did **not** naturally drop the transport",
+        "deterministic relay fault",
+        "ordinary browser background-tab disconnection",
+    ):
+        if marker not in rag:
+            fail(f"RAG missing SMX-017 retrieval marker: {marker}")
 
     for token in ("D-105", "D-110", "E-077", "E-081", "O-027"):
         if token not in decision:
