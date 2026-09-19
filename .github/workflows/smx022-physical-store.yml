@@ -2,6 +2,8 @@ name: SMX-022 physical encoding/store evidence
 
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
