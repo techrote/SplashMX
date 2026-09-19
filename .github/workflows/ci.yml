@@ -84,3 +84,7 @@ jobs:
         run: python -m unittest discover -s experiments/smx-018-collaboration-harness -p 'test_*.py'
       - name: Measure SMX-018 research-model footprint
         run: python experiments/smx-018-collaboration-harness/measure.py
+      - name: Validate SMX-020 Architecture v1 freeze
+        run: python tools/validate_smx020.py
+      - name: Run SMX-020 architecture boundary/adversarial tests
+        run: python -m unittest discover -s experiments/smx-020-architecture-freeze -p 'test_*.py' -v

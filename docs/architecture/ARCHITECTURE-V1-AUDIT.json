@@ -1,0 +1,310 @@
+{
+  "schema": "splashmx.architecture-v1-audit/1",
+  "architecture_version": "1.0",
+  "freeze_date": "2026-09-19",
+  "main_basis": "2c90105fc45804236e9396cb54131338fcda9672",
+  "prerequisite_range": "SMX-001..SMX-019",
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "status": "accepted_as_decision",
+      "decision": "One faceted Thing kernel is the canonical base semantic model for materially different authored/runtime Things.",
+      "evidence": ["SMX-002-THING-KERNEL.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-002",
+      "status": "accepted_as_decision",
+      "decision": "Hierarchy expresses structure/locality and does not implicitly own behaviour, control, authority, persistence or replication.",
+      "evidence": ["SMX-003-COMPOSITION-DEFINITIONS.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-003",
+      "status": "accepted_as_decision",
+      "decision": "Groups and leaves share the Thing semantic kernel; group coordination does not require a separate base-object category.",
+      "evidence": ["SMX-003-COMPOSITION-DEFINITIONS.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-004",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Ordinary authored structure can become a local reusable Definition and then a portable package without changing semantic lineage; physical package/discovery UX is not frozen.",
+      "evidence": ["SMX-003-COMPOSITION-DEFINITIONS.md", "SMX-013-COMPONENT-PACKAGES.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "H-005",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Compatible Behaviour replacement is transactional and preserves Thing/attachment identity with explicit state and pending-work migration; arbitrary compatibility is not promised.",
+      "evidence": ["SMX-004-BEHAVIOUR-EXECUTION.md", "SMX-008-STREAMING-MIGRATION.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-006",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Built-ins, beginner Rules and advanced authoring share one constrained semantic IR boundary; final textual syntax, compiler and VM encoding are implementation choices.",
+      "evidence": ["SMX-004-BEHAVIOUR-EXECUTION.md", "SMX-012-AUTHORING-MODEL.md", "SMX-016-SECURITY-HARNESS.md"]
+    },
+    {
+      "id": "H-007",
+      "status": "accepted_as_decision",
+      "decision": "SplashMX owns canonical durable creation semantics above Godot scene/resource serialization.",
+      "evidence": ["SMX-005-CANONICAL-DOCUMENT.md", "SMX-009-GODOT-BOUNDARY.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-008",
+      "status": "accepted_as_decision",
+      "decision": "Durable semantic identity and references are path-independent and survive rename, reparent, lifecycle and loading boundaries.",
+      "evidence": ["SMX-002-THING-KERNEL.md", "SMX-005-CANONICAL-DOCUMENT.md", "SMX-007-LIFECYCLE-RESTORE.md"]
+    },
+    {
+      "id": "H-009",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Principal-attributed explicit capabilities can bound ordinary user-content authority semantically; production process/origin/decoder/crypto isolation still requires physical implementation proof.",
+      "evidence": ["SMX-006-CAPABILITY-SANDBOX.md", "SMX-016-SECURITY-HARNESS.md"]
+    },
+    {
+      "id": "H-010",
+      "status": "accepted_as_decision",
+      "decision": "Thing meaning can survive dormant/unloaded/rehydrated state without an always-resident process or Godot object.",
+      "evidence": ["SMX-007-LIFECYCLE-RESTORE.md", "SMX-008-STREAMING-MIGRATION.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-011",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Logical streaming can be object/subgraph-centric while physical chunks, bundles, packages and cache batches remain implementation policy.",
+      "evidence": ["SMX-008-STREAMING-MIGRATION.md", "SMX-013-COMPONENT-PACKAGES.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "H-012",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Offline, peer-hosted and dedicated-authoritative execution share one canonical network model primarily through topology/policy changes; transports and deployment are private runtime concerns.",
+      "evidence": ["SMX-010-RUNTIME-MULTIPLAYER.md", "SMX-017-NETWORK-HARNESS.md"]
+    },
+    {
+      "id": "H-013",
+      "status": "accepted_as_decision",
+      "decision": "Runtime simulation networking and collaborative document editing are separate consistency systems even if infrastructure is shared.",
+      "evidence": ["SMX-010-RUNTIME-MULTIPLAYER.md", "SMX-011-COLLABORATION-SEMANTICS.md", "SMX-018-COLLABORATION-HARNESS.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "H-014",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Godot is replaceable-enough at the durable public semantic boundary, not cost-free to replace as the first rendering/audio/input/physics/runtime substrate.",
+      "evidence": ["SMX-009-GODOT-BOUNDARY.md", "SMX-014-PUBLISHING-RUNTIME.md", "SMX-017-NETWORK-HARNESS.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "H-015",
+      "status": "accepted_as_decision",
+      "decision": "Versioned generic runtimes loading immutable SplashMX creation data are the ordinary publication path; per-creation builds are exceptional trusted deployments.",
+      "evidence": ["SMX-014-PUBLISHING-RUNTIME.md", "SMX-016-SECURITY-HARNESS.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "H-016",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "The sophisticated semantic model projects into one simple browser create-play-save-publish workflow; novice comprehension, accessibility, localization and final terminology remain product evidence gates.",
+      "evidence": ["SMX-012-AUTHORING-MODEL.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "H-017",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Canonical authoring can remain locally useful/offline while optional synchronization reconciles later; production collaboration durability, compaction and relay design remain implementation work.",
+      "evidence": ["SMX-011-COLLABORATION-SEMANTICS.md", "SMX-018-COLLABORATION-HARNESS.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "H-018",
+      "status": "accepted_with_narrowed_refined_scope",
+      "decision": "Compatibility is driven by SplashMX schema, IR, required-feature/interface identities and explicit bounded migrations rather than implicit Godot-version equality; indefinite lossless migration of every future semantic change is not promised.",
+      "evidence": ["SMX-005-CANONICAL-DOCUMENT.md", "SMX-007-LIFECYCLE-RESTORE.md", "SMX-013-COMPONENT-PACKAGES.md", "SMX-014-PUBLISHING-RUNTIME.md", "SMX-018-COLLABORATION-HARNESS.md"]
+    }
+  ],
+  "contradiction_audit": [
+    {
+      "id": "CA-001",
+      "seam": "containment_vs_control_authority_persistence_replication",
+      "resolution_status": "resolved",
+      "resolution": "Containment/locality is structural; control, authority, persistence and replication are explicit independent relationships/context.",
+      "evidence": ["SMX-002-THING-KERNEL.md", "SMX-003-COMPOSITION-DEFINITIONS.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "CA-002",
+      "seam": "godot_identity_vs_canonical_identity",
+      "resolution_status": "resolved",
+      "resolution": "Node/NodePath/RID/ResourceUID/resource paths are target-private bindings; stable SplashMX IDs are canonical.",
+      "evidence": ["SMX-005-CANONICAL-DOCUMENT.md", "SMX-009-GODOT-BOUNDARY.md"]
+    },
+    {
+      "id": "CA-003",
+      "seam": "semantic_connection_id_vs_transport_connection_identity",
+      "resolution_status": "resolved",
+      "resolution": "Canonical ConnectionId is durable semantic identity; transient transport peer/connection/session handles are runtime context. R-019-01 is frozen.",
+      "evidence": ["SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-004",
+      "seam": "runtime_replication_vs_collaboration_consistency",
+      "resolution_status": "resolved",
+      "resolution": "Runtime state/input/authority/relevance replication and durable collaboration transactions/conflicts are separate consistency planes.",
+      "evidence": ["SMX-010-RUNTIME-MULTIPLAYER.md", "SMX-011-COLLABORATION-SEMANTICS.md", "SMX-018-COLLABORATION-HARNESS.md"]
+    },
+    {
+      "id": "CA-005",
+      "seam": "authored_runtime_persistent_transient_state",
+      "resolution_status": "resolved",
+      "resolution": "Editable authored, runtime materialization, selected persistent world, collaboration history and transient context are separate planes with explicit transfer rules.",
+      "evidence": ["SMX-005-CANONICAL-DOCUMENT.md", "SMX-007-LIFECYCLE-RESTORE.md", "SMX-014-PUBLISHING-RUNTIME.md"]
+    },
+    {
+      "id": "CA-006",
+      "seam": "local_definition_vs_portable_package",
+      "resolution_status": "resolved",
+      "resolution": "Packaging adds PackageId/revision distribution identity around the existing Definition lineage rather than creating a second object taxonomy.",
+      "evidence": ["SMX-003-COMPOSITION-DEFINITIONS.md", "SMX-013-COMPONENT-PACKAGES.md"]
+    },
+    {
+      "id": "CA-007",
+      "seam": "human_version_requirements_vs_runtime_reproducibility",
+      "resolution_status": "resolved",
+      "resolution": "Human requirements resolve intentionally to an exact immutable lock before runtime, streaming, publishing or offline playback.",
+      "evidence": ["SMX-013-COMPONENT-PACKAGES.md", "SMX-014-PUBLISHING-RUNTIME.md"]
+    },
+    {
+      "id": "CA-008",
+      "seam": "ordinary_publish_vs_per_creation_build",
+      "resolution_status": "resolved",
+      "resolution": "Ordinary publication is immutable SplashMX data for a separately built generic runtime; per-creation builds are an exceptional trusted deployment class.",
+      "evidence": ["SMX-014-PUBLISHING-RUNTIME.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-009",
+      "seam": "canonical_protected_media_vs_target_derivatives",
+      "resolution_status": "resolved",
+      "resolution": "Target decode/transcode/import/cache artifacts are derivatives and cannot replace or field-mix the complete canonical protected AssetId revision.",
+      "evidence": ["SMX-005-CANONICAL-DOCUMENT.md", "SMX-009-GODOT-BOUNDARY.md", "SMX-014-PUBLISHING-RUNTIME.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-010",
+      "seam": "object_centric_logical_streaming_vs_physical_chunks",
+      "resolution_status": "resolved",
+      "resolution": "Logical residency/reference semantics are object/subgraph-centric; physical byte chunks/packages/cache batches remain non-semantic optimization policy.",
+      "evidence": ["SMX-008-STREAMING-MIGRATION.md", "SMX-015-OBJECT-FABRIC-HARNESS.md"]
+    },
+    {
+      "id": "CA-011",
+      "seam": "signatures_provenance_source_remix_vs_runtime_capability",
+      "resolution_status": "resolved",
+      "resolution": "Integrity/trust/provenance/licensing/source/remix metadata never mints host authority; capabilities are explicit principal-attributed grants.",
+      "evidence": ["SMX-006-CAPABILITY-SANDBOX.md", "SMX-013-COMPONENT-PACKAGES.md", "SMX-016-SECURITY-HARNESS.md"]
+    },
+    {
+      "id": "CA-012",
+      "seam": "durable_data_vs_live_authority_engine_session_handles",
+      "resolution_status": "resolved",
+      "resolution": "Capability tokens, peer/session/socket IDs, Godot handles and equivalent live context are excluded from durable authored/save/collaboration records and rebound from current context.",
+      "evidence": ["SMX-006-CAPABILITY-SANDBOX.md", "SMX-007-LIFECYCLE-RESTORE.md", "SMX-010-RUNTIME-MULTIPLAYER.md", "SMX-018-COLLABORATION-HARNESS.md"]
+    },
+    {
+      "id": "CA-013",
+      "seam": "thing_delete_vs_concurrent_connection",
+      "resolution_status": "resolved",
+      "resolution": "Thing tombstones remove-win over concurrent new endpoints and atomically tombstone incident live connections. R-018-02/R-018-04 are frozen.",
+      "evidence": ["SMX-018-COLLABORATION-HARNESS.md"]
+    },
+    {
+      "id": "CA-014",
+      "seam": "convergent_patch_vs_semantically_valid_document",
+      "resolution_status": "resolved",
+      "resolution": "Every semantic transaction stages and validates the complete resulting document before publication; convergence alone is insufficient. R-018-03 is frozen.",
+      "evidence": ["SMX-011-COLLABORATION-SEMANTICS.md", "SMX-018-COLLABORATION-HARNESS.md"]
+    },
+    {
+      "id": "CA-015",
+      "seam": "definition_element_names_vs_definition_identity",
+      "resolution_status": "resolved",
+      "resolution": "Definition/instance conflict loci include actual DefinitionId, preventing false conflict across unrelated identically named elements. R-018-01 is frozen.",
+      "evidence": ["SMX-018-COLLABORATION-HARNESS.md"]
+    },
+    {
+      "id": "CA-016",
+      "seam": "migration_update_vs_live_activation",
+      "resolution_status": "resolved",
+      "resolution": "Acquisition, validation, compatibility, migration and capability checks complete in staging before atomic live publication; failure preserves the old coherent state.",
+      "evidence": ["SMX-008-STREAMING-MIGRATION.md", "SMX-013-COMPONENT-PACKAGES.md", "SMX-014-PUBLISHING-RUNTIME.md"]
+    },
+    {
+      "id": "CA-017",
+      "seam": "published_creation_vs_persistent_world",
+      "resolution_status": "resolved",
+      "resolution": "Published creation basis and persistent WorldSave are separate lineages; publishing a new creation revision never silently advances a world basis.",
+      "evidence": ["SMX-014-PUBLISHING-RUNTIME.md"]
+    },
+    {
+      "id": "CA-018",
+      "seam": "offline_cache_vs_compatible_re_resolution",
+      "resolution_status": "resolved",
+      "resolution": "Offline playback requires the exact verified creation/dependency/runtime-compatible closure or typed unavailability; it never silently substitutes a merely compatible revision.",
+      "evidence": ["SMX-013-COMPONENT-PACKAGES.md", "SMX-014-PUBLISHING-RUNTIME.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-019",
+      "seam": "together_runtime_controls_vs_people_collaboration",
+      "resolution_status": "resolved",
+      "resolution": "Together projects runtime spawn/control/authority/replication/relevance while People projects edit-plane presence/history/conflicts; neither is a shortcut implementation of the other.",
+      "evidence": ["SMX-012-AUTHORING-MODEL.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-020",
+      "seam": "stage_timeline_rules_components_views_vs_underlying_model",
+      "resolution_status": "resolved",
+      "resolution": "Stage, Timeline, Rules, Components, Together, People, Publish and Inspect are progressively disclosed views over the same Thing/Behaviour/Connection fabric, not alternate canonical models.",
+      "evidence": ["SMX-012-AUTHORING-MODEL.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-021",
+      "seam": "browser_storage_cache_keys_vs_semantic_identity",
+      "resolution_status": "resolved",
+      "resolution": "Browser local-store/CacheStorage/service-worker/URL keys are replaceable distribution/storage context and cannot substitute for project, creation, package or Asset semantic identity.",
+      "evidence": ["SMX-009-GODOT-BOUNDARY.md", "SMX-019-BROWSER-VERTICAL-SLICE.md"]
+    },
+    {
+      "id": "CA-022",
+      "seam": "godot_rpc_peer_ids_vs_network_semantics",
+      "resolution_status": "resolved",
+      "resolution": "Godot RPC/peer/transfer facilities are adapter mechanisms; durable Thing identity, authority epochs, control, replication and relevance are SplashMX-owned semantics.",
+      "evidence": ["SMX-009-GODOT-BOUNDARY.md", "SMX-010-RUNTIME-MULTIPLAYER.md", "SMX-017-NETWORK-HARNESS.md"]
+    }
+  ],
+  "protected_media_fields": [
+    "digest",
+    "source_identity",
+    "source_metadata",
+    "audio_or_media_semantics",
+    "provenance",
+    "licence_attribution",
+    "derivation_lineage"
+  ],
+  "incorporated_corrective_findings": [
+    "R-016-01",
+    "R-016-02",
+    "R-016-03",
+    "R-016-04",
+    "R-018-01",
+    "R-018-02",
+    "R-018-03",
+    "R-018-04",
+    "R-019-01"
+  ],
+  "post_freeze_residual_classes": [
+    "real_runtime_performance_and_budget_calibration",
+    "physical_sandbox_decoder_crypto_and_target_isolation",
+    "canonical_physical_encoding_and_crash_consistent_storage",
+    "package_solver_container_registry_distribution_and_trust",
+    "production_collaboration_substrate_compaction_relay_and_history_performance",
+    "production_network_auth_transport_signalling_nat_tls_scaling_and_failover",
+    "human_usability_accessibility_localization_and_final_terminology",
+    "distribution_hosting_historical_runtime_retention_and_native_packaging"
+  ],
+  "authority": {
+    "constitution": "docs/00-PROJECT-CONSTITUTION.md",
+    "architecture": "docs/architecture/ARCHITECTURE-V1.md",
+    "freeze_adr": "docs/architecture/ADR-0001-ARCHITECTURE-V1-FREEZE.md",
+    "implementation_roadmap": "docs/architecture/IMPLEMENTATION-ROADMAP-V1.md",
+    "research_index": "docs/03-RAG-INDEX.md"
+  }
+}
