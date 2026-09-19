@@ -29,7 +29,7 @@
     {"id":"TOP-015","statement":"Dedicated authority loss fails closed and does not promote an ordinary browser client."},
     {"id":"TOP-016","statement":"Ingress recursively rejects serialized capability grants, host handles and engine identity."},
     {"id":"TOP-017","statement":"Ingress enforces bounded message size and declared input/state/event loci independently."},
-    {"id":"TOP-018","statement":"Browser lifecycle interruption is exercised in a real exported Chromium runtime and reconnect is observed, with any CDP freeze fallback recorded explicitly."},
+    {"id":"TOP-018","statement":"Browser lifecycle behavior is measured in a real exported Chromium runtime and reported independently from reconnect fault injection; whether lifecycle naturally drops the transport and the actual reconnect trigger are recorded explicitly."},
     {"id":"TOP-019","statement":"Peer-hosted and dedicated modes may differ in fairness/trust policy without changing canonical object semantics."},
     {"id":"TOP-020","statement":"Topology projection, replication, reconnect and migration preserve the complete protected AssetId digest/source/audio/provenance/licence/derivation revision bundle."}
   ],
@@ -69,7 +69,7 @@
     "exported Linux dedicated authority plus browser client reaches equivalent authoritative semantics",
     "real runtime rejects duplicate/reordered/undeclared/oversized/forged-authority traffic",
     "unloaded event/state and relevance coalescing are observed in exported browser runtime",
-    "browser lifecycle suspension produces a reconnect with changed transient connection identity",
+    "real browser lifecycle behavior is measured without assuming it drops the transport, then reconnect semantics are observed after the recorded natural or explicitly injected transport-loss trigger with changed transient connection identity",
     "confirmed peer migration increments authority epoch and rejects injected prior-epoch input",
     "unconfirmed peer host loss reports checkpoint_unconfirmed",
     "dedicated server loss reports fail-closed and leaves no promoted browser authority",
