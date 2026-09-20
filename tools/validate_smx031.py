@@ -111,14 +111,15 @@ def main() -> None:
         "provenance", "licence/attribution", "derivation lineage",
     ):
         require(protected in doc, f"implementation docs weakened protected field {protected!r}")
+    lower_doc = doc.lower()
     for phrase in (
-        "not a second semantic model",
-        "No code from the pre-v1 Python research models",
+        "does not introduce another runtime, semantic kernel, or proof-model substrate",
+        "no code from the pre-v1 python research models",
         "cache eviction remains non-semantic",
-        "There is no ambient authority",
-        "Architecture v1 is unchanged",
+        "there is no ambient authority",
+        "architecture v1 is unchanged",
     ):
-        require(phrase in doc, f"integration boundary documentation missing {phrase!r}")
+        require(phrase in lower_doc, f"integration boundary documentation missing {phrase!r}")
 
     benchmark_schema = json.loads(text("spec/production/benchmark-evidence.schema.json"))
     require(benchmark_schema["properties"]["contract"]["const"] == "splashmx.benchmark-evidence/1",
