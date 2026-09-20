@@ -28,9 +28,23 @@ if fixtures.get('schema')!='splashmx-smx022-physical-store-fixtures-v1': raise S
 if [x['id'] for x in fixtures['workloads']] != [f'PX-{i:03d}' for i in range(1,10)]: raise SystemExit('SMX-022 workloads must be PX-001..PX-009')
 expected_protected=['digest','source_identity','source_metadata','audio_or_media_semantics','provenance','licence_attribution','derivation_lineage']
 if fixtures['protected_media_fields']!=expected_protected: raise SystemExit('protected-media fields changed')
-statuses={m['module_id']:m['status'] for m in modules['modules']}
-for module in ('canonical.core','canonical.serialization','storage.local'):
-    if statuses.get(module)!='planned': raise SystemExit(f'SMX-022 must leave {module} planned')
+# SMX-022 selected mechanisms below Architecture v1 but did not own or implement
+# the production modules. Validate that durable ownership boundary, not a stale
+# snapshot of later modules' current lifecycle status: downstream issues are
+# expected to advance these records from planned as they land.
+module_rows={m['module_id']:m for m in modules['modules']}
+expected_owners={
+    'canonical.core':'SMX-023',
+    'canonical.serialization':'SMX-024',
+    'storage.local':'SMX-025',
+}
+for module,owner in expected_owners.items():
+    row=module_rows.get(module)
+    if row is None: raise SystemExit(f'SMX-022 downstream module missing: {module}')
+    if row.get('owner_issue')!=owner:
+        raise SystemExit(f'SMX-022 downstream ownership changed: {module} must remain owned by {owner}')
+    if row.get('owner_issue')=='SMX-022':
+        raise SystemExit(f'SMX-022 must not own production module {module}')
 required_bench={'contract','evidence_id','captured_at_utc','target_profile','runtime','environment','workload','sample_count','metrics'}
 if evidence.get('schema')!='splashmx-smx022-native-evidence-v1' or not evidence.get('benchmark_evidence'): raise SystemExit('native evidence wrapper missing')
 for row in evidence['benchmark_evidence']:
@@ -100,4 +114,4 @@ for marker in (
 doc=(DOC/'SMX-022-CANONICAL-ENCODING-STORE-SPIKE.md').read_text()
 for marker in ('SMX-024','SMX-025','known_unloaded','QuotaExceededError','synchronous=FULL','protected `AssetId`'):
     if marker not in doc: raise SystemExit(f'decision record missing {marker}')
-print(f'SMX-022 spike contracts valid: {len(fixtures["workloads"])} workloads, {len(evidence["benchmark_evidence"])} native and {len(browser_evidence["benchmark_evidence"])} browser benchmark records; production modules remain planned.')
+print(f'SMX-022 spike contracts valid: {len(fixtures["workloads"])} workloads, {len(evidence["benchmark_evidence"])} native and {len(browser_evidence["benchmark_evidence"])} browser benchmark records; downstream production ownership remains explicit.')
