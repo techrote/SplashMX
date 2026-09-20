@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SplashMX</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <strong>SplashMX</strong>
+      <span id="revision" class="muted" aria-live="polite"></span>
+    </div>
+    <button id="inspect-toggle" type="button" data-testid="inspect-toggle">Inspect</button>
+  </header>
+
+  <main class="workspace">
+    <section class="panel stage-panel" aria-labelledby="stage-title">
+      <div class="panel-heading">
+        <div>
+          <h1 id="stage-title">Stage</h1>
+          <p class="muted">Create and arrange Things. Select Things to group or add intent.</p>
+        </div>
+        <form id="create-form" class="inline-form">
+          <label for="new-label">New Thing</label>
+          <input id="new-label" name="label" value="Thing" autocomplete="off">
+          <button type="submit" data-testid="create-thing">Add Thing</button>
+        </form>
+      </div>
+      <div class="toolbar" aria-label="Stage actions">
+        <button id="group-selected" type="button" data-testid="group-selected">Group selected</button>
+        <button id="make-reusable" type="button" data-testid="make-reusable">Make reusable</button>
+        <button id="add-rule" type="button" data-testid="add-rule">Add Rule</button>
+        <button id="add-behaviour" type="button" data-testid="add-behaviour">Add Behaviour</button>
+      </div>
+      <div id="stage" class="stage" data-testid="stage" aria-live="polite"></div>
+    </section>
+
+    <section class="panel tools-panel" aria-labelledby="tools-title">
+      <h2 id="tools-title">Thing tools</h2>
+
+      <form id="port-form" class="stack-form">
+        <fieldset>
+          <legend>Add a port to the selected Thing</legend>
+          <label>Port ID <input name="port_id" value="activated" required></label>
+          <label>Name <input name="name" value="Activated" required></label>
+          <label>Kind
+            <select name="kind">
+              <option value="event">Event</option>
+              <option value="command">Command</option>
+              <option value="value">Value</option>
+            </select>
+          </label>
+          <label>Direction
+            <select name="direction">
+              <option value="out">Out</option>
+              <option value="in">In</option>
+              <option value="read">Read</option>
+              <option value="write">Write</option>
+              <option value="readwrite">Read and write</option>
+            </select>
+          </label>
+          <button type="submit" data-testid="add-port">Add port</button>
+        </fieldset>
+      </form>
+
+      <form id="connection-form" class="stack-form">
+        <fieldset>
+          <legend>Connect Things</legend>
+          <label>From Thing <select name="source_thing_id" data-role="thing-select"></select></label>
+          <label>From port <input name="source_port_id" value="activated" required></label>
+          <label>To Thing <select name="target_thing_id" data-role="thing-select"></select></label>
+          <label>To port <input name="target_port_id" value="activate" required></label>
+          <button type="submit" data-testid="connect">Connect</button>
+        </fieldset>
+      </form>
+
+      <form id="timeline-form" class="stack-form">
+        <fieldset>
+          <legend>Timeline</legend>
+          <p class="muted">Optional authored animation for the selected Thing.</p>
+          <label>Property <input name="property" value="x" required></label>
+          <label>Start <input name="start" type="number" value="0"></label>
+          <label>End <input name="end" type="number" value="100"></label>
+          <button type="submit" data-testid="add-timeline">Add track</button>
+        </fieldset>
+      </form>
+
+      <form id="import-form" class="stack-form">
+        <fieldset>
+          <legend>Import media</legend>
+          <label>Source file <input name="file" type="file" required data-testid="import-file"></label>
+          <label>Media kind <input name="media_kind" value="audio" required></label>
+          <label>Licence <input name="licence" value="CC0" required></label>
+          <label>Provenance <input name="provenance" value="author import" required></label>
+          <button type="submit" data-testid="import-media">Import</button>
+        </fieldset>
+      </form>
+    </section>
+
+    <aside id="inspect" class="panel inspect-panel" hidden aria-labelledby="inspect-title">
+      <h2 id="inspect-title">Inspect</h2>
+      <p class="muted">Stable SplashMX identities and authored details for the current selection.</p>
+      <pre id="inspect-data" data-testid="inspect-data"></pre>
+    </aside>
+  </main>
+
+  <div id="status" class="status" role="status" aria-live="polite">Ready.</div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
