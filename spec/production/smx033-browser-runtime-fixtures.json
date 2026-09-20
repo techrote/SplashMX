@@ -1,0 +1,28 @@
+{
+  "schema": "splashmx.smx033-browser-runtime-fixtures/1",
+  "issue": "SMX-033",
+  "architecture_version": "1.0",
+  "upstream_contracts": ["UXG-001", "UXG-012", "BV-001", "BV-020", "R-019-01", "SMX-025", "SMX-029", "SMX-031", "SMX-032"],
+  "fixtures": [
+    {"id":"BRW-001","kind":"runtime","action":"Play from authored revision","expect":"transient WorldRuntime only; canonical revision unchanged"},
+    {"id":"BRW-002","kind":"runtime","action":"Stop after runtime mutation","expect":"discard Play state and return to authored state"},
+    {"id":"BRW-003","kind":"boundary","action":"semantic edit during Play","expect":"typed rejection; canonical revision unchanged"},
+    {"id":"BRW-004","kind":"persistence","action":"Save authored project","expect":"SMX-025 verified atomic project head"},
+    {"id":"BRW-005","kind":"persistence","action":"Reload verified save","expect":"candidate validates before replacing active session"},
+    {"id":"BRW-006","kind":"persistence","action":"Reload after unsaved edit","expect":"exact saved revision replaces unsaved active revision only after successful validation"},
+    {"id":"BRW-007","kind":"failure","action":"storage permission denied","expect":"author-language diagnostic; active project unchanged"},
+    {"id":"BRW-008","kind":"failure","action":"storage quota exceeded","expect":"author-language diagnostic; active project unchanged"},
+    {"id":"BRW-009","kind":"failure","action":"corrupt local store reload","expect":"typed failure; active project unchanged"},
+    {"id":"BRW-010","kind":"identity","action":"create Connection with ConnectionId","expect":"semantic ConnectionId survives save/reload"},
+    {"id":"BRW-011","kind":"identity","action":"submit connection_handle or transport_peer_id","expect":"reject before authoring; never substitute for ConnectionId"},
+    {"id":"BRW-012","kind":"rebuild","action":"fresh local reload with Rule/Behaviour","expect":"exact authored Behaviour revision recompiles through constrained IR"},
+    {"id":"BRW-013","kind":"accessibility","action":"navigate project controls","expect":"semantic nav/buttons and named controls"},
+    {"id":"BRW-014","kind":"accessibility","action":"Control+Enter","expect":"Play keyboard command"},
+    {"id":"BRW-015","kind":"accessibility","action":"Escape","expect":"Stop keyboard command"},
+    {"id":"BRW-016","kind":"accessibility","action":"Control+S","expect":"local Save keyboard command"},
+    {"id":"BRW-017","kind":"accessibility","action":"Alt+I","expect":"Inspect toggle keyboard command"},
+    {"id":"BRW-018","kind":"diagnostics","action":"surface internal storage/runtime failure","expect":"typed author-language diagnostic in Inspect; no raw traceback"},
+    {"id":"BRW-019","kind":"measurement","action":"real pinned Chromium vertical","expect":"browser/runtime/build/workload/sample metadata plus startup/interaction/save/reload/memory observations"},
+    {"id":"BRW-020","kind":"measurement","action":"interpret CI measurements","expect":"named observation only; never a universal performance SLO"}
+  ]
+}
