@@ -1,0 +1,40 @@
+{
+  "schema": "splashmx.smx034-package-substrate-fixtures/1",
+  "issue": "SMX-034",
+  "selection": {
+    "requirements": "exact-and-caret-release-triplets",
+    "resolver": "bounded-deterministic-pubgrub-family",
+    "bundle": "SPB1-deterministic-cbor-index-pathless-raw-blobs",
+    "runtime_authority": "exact-resolution-lock"
+  },
+  "fixtures": [
+    {"id":"PS-001","class":"version","claim":"exact requirement matches one normal release only"},
+    {"id":"PS-002","class":"version","claim":"caret major boundary excludes next major"},
+    {"id":"PS-003","class":"version","claim":"caret 0.minor boundary excludes next minor"},
+    {"id":"PS-004","class":"version","claim":"caret 0.0.patch boundary excludes next patch"},
+    {"id":"PS-005","class":"version","claim":"wildcard comparator OR and abbreviated grammar fail closed"},
+    {"id":"PS-006","class":"resolution","claim":"same snapshot selects deterministic highest compatible non-revoked revision"},
+    {"id":"PS-007","class":"resolution","claim":"transitive requirements produce exact selected closure"},
+    {"id":"PS-008","class":"resolution","claim":"solver can reject highest candidate and choose coherent lower candidate"},
+    {"id":"PS-009","class":"resolution","claim":"incompatible transitive requirements surface one-version-per-PackageId conflict"},
+    {"id":"PS-010","class":"resolution","claim":"revoked revision is not newly selected or silently substituted after lock"},
+    {"id":"PS-011","class":"resolution","claim":"missing required revision fails typed"},
+    {"id":"PS-012","class":"resolution","claim":"missing optional dependency uses only declared fallback"},
+    {"id":"PS-013","class":"resolution","claim":"lazy dependency remains explicit and cannot hide runtime floating lookup"},
+    {"id":"PS-014","class":"resource","claim":"solver-work bound fails closed"},
+    {"id":"PS-015","class":"resource","claim":"declared exact-closure byte bound fails closed"},
+    {"id":"PS-016","class":"bundle","claim":"same ordered immutable inputs produce deterministic SPB1 bytes"},
+    {"id":"PS-017","class":"bundle","claim":"truncated or header-length-mismatched bundle fails before publication"},
+    {"id":"PS-018","class":"bundle","claim":"wrong magic or unsupported schema fails closed"},
+    {"id":"PS-019","class":"bundle","claim":"index allocation is bounded before decode"},
+    {"id":"PS-020","class":"bundle","claim":"artifact digest substitution fails exact verification"},
+    {"id":"PS-021","class":"bundle","claim":"path/extraction metadata injection is outside the closed SPB1 entry schema"},
+    {"id":"PS-022","class":"bundle","claim":"overlap gap out-of-range and unindexed payload bytes fail closed"},
+    {"id":"PS-023","class":"bundle","claim":"duplicate digest and per-entry resource overflow fail closed"},
+    {"id":"PS-024","class":"authority","claim":"recursive serialized capability grants/tokens/host handles are rejected"},
+    {"id":"PS-025","class":"authority","claim":"install script/native/GDScript/JavaScript authority is absent from ordinary package semantics"},
+    {"id":"PS-026","class":"protected-media","claim":"protected Asset revision requires digest source identity/metadata media semantics provenance licence and derivation as one complete record"},
+    {"id":"PS-027","class":"trust","claim":"publisher/provenance/licence metadata does not mint execution capability"},
+    {"id":"PS-028","class":"identity","claim":"catalog URL friendly name cache placement and SPB1 offset cannot replace PackageId PackageRevisionId or artifact digest roles"}
+  ]
+}
