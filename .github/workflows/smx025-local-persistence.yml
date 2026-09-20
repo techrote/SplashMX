@@ -1,0 +1,77 @@
+name: SMX-025 local persistence
+
+on:
+  pull_request:
+    paths:
+      - 'src/splashmx/storage/**'
+      - 'src/MODULES.json'
+      - 'spec/production/conformance-registry.json'
+      - 'tests/production/test_smx025.py'
+      - 'tests/production/smx025_browser_harness.mjs'
+      - 'tools/validate_smx025.py'
+      - 'docs/implementation/SMX-025-LOCAL-PERSISTENCE.md'
+      - '.github/workflows/smx025-local-persistence.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/splashmx/storage/**'
+      - 'src/MODULES.json'
+      - 'spec/production/conformance-registry.json'
+      - 'tests/production/test_smx025.py'
+      - 'tests/production/smx025_browser_harness.mjs'
+      - 'tools/validate_smx025.py'
+      - 'docs/implementation/SMX-025-LOCAL-PERSISTENCE.md'
+      - '.github/workflows/smx025-local-persistence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-local-store:
+    name: Native SQLite crash/recovery campaign
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Validate SMX-025 production contract
+        run: python tools/validate_smx025.py
+      - name: Run SMX-023 canonical-core regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx023.py' -v
+      - name: Run SMX-024 serialization/protected-media regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx024.py' -v
+      - name: Run SMX-025 native persistence adversarial tests
+        run: python -m unittest discover -s tests/production -p 'test_smx025.py' -v
+
+  browser-local-store:
+    name: Real Chromium IndexedDB recovery campaign
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+      - name: Syntax-check production browser adapter
+        run: node --check src/splashmx/storage/browser_indexeddb.mjs
+      - name: Install pinned browser harness
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Run real Chromium SMX-025 interruption/corruption campaign
+        run: node tests/production/smx025_browser_harness.mjs
+      - name: Print browser evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx025-browser-results.json ]; then
+            cat artifacts/smx025-browser-results.json
+          fi
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx025-browser-evidence
+          path: artifacts/smx025-browser-results.json
+          if-no-files-found: warn
+          retention-days: 30
