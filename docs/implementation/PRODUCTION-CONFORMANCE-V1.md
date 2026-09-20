@@ -10,6 +10,8 @@ SMX-021 creates the implementation substrate needed to keep Architecture v1 mach
 
 `spec/production/conformance-registry.json` contains exactly one entry for every Architecture-v1 production gate. Each gate records the frozen requirement in implementation terms, retained evidence lineage, declared production module owners, current regression evidence and future SMX issues that must port the evidence to real production boundaries.
 
+A gate's `future_issue_codes` list is an obligation queue, not a permanent non-empty marker. Once all listed obligations for that gate have landed, the list may be empty only if every declared owner module is `implemented` and the gate has real `tests/production/` regression coverage. This allows completed gates to reach an explicit terminal state without weakening the guard against prematurely deleting future work.
+
 The registry also carries a non-droppable cross-cutting regression list. R-016-01..04, R-018-01..04, R-019-01 and protected-media atomicity may acquire stronger production tests, but they may not silently disappear from conformance coverage.
 
 ## Typed failures
