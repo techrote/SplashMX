@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "src" / "MODULES.json"
+REGISTRY = ROOT / "spec" / "production" / "conformance-registry.json"
 CORE = ROOT / "src" / "splashmx" / "canonical" / "core.py"
 TESTS = ROOT / "tests" / "production" / "test_smx023.py"
 DOC = ROOT / "docs" / "implementation" / "SMX-023-CANONICAL-CORE.md"
@@ -19,7 +20,7 @@ def require(value: bool, message: str) -> None:
 
 
 def main() -> None:
-    for path in (MANIFEST, CORE, TESTS, DOC, WORKFLOW):
+    for path in (MANIFEST, REGISTRY, CORE, TESTS, DOC, WORKFLOW):
         require(path.is_file(), f"missing SMX-023 artefact: {path.relative_to(ROOT)}")
 
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -34,6 +35,18 @@ def main() -> None:
         "PortId", "ConnectionId", "AssetId", "ProjectId", "ProjectRevisionId",
     ):
         require(identity in module["canonical_identity_inputs"], f"missing identity role {identity}")
+
+    registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+    gate01 = next(row for row in registry["gate_entries"] if row["id"] == "GATE-01")
+    gate06 = next(row for row in registry["gate_entries"] if row["id"] == "GATE-06")
+    for current in ("tools/validate_smx023.py", "tests/production/test_smx023.py"):
+        require(current in gate01["current_tests"], f"GATE-01 missing SMX-023 production evidence: {current}")
+    require("tests/production/test_smx023.py" in gate06["current_tests"], "GATE-06 missing SMX-023 R-018 production evidence")
+    require("SMX-023" not in gate01["future_issue_codes"], "GATE-01 still treats completed SMX-023 coverage as future")
+    for regression_id in ("R-018-01", "R-018-02", "R-018-03", "R-018-04", "R-019-01"):
+        regression = next(row for row in registry["non_droppable_regressions"] if row["id"] == regression_id)
+        require("SMX-023" not in regression["future_issue_codes"], f"{regression_id} still treats SMX-023 as future coverage")
+        require("canonical.core" in regression["owner_modules"], f"{regression_id} lost canonical.core ownership")
 
     core = CORE.read_text(encoding="utf-8")
     for marker in (
@@ -72,7 +85,7 @@ def main() -> None:
     require("python tools/validate_smx023.py" in workflow, "SMX-023 workflow lacks validator")
     require("test_smx023.py" in workflow, "SMX-023 workflow lacks production tests")
 
-    print("SMX-023 canonical-core contract valid: module, docs, workflow and adversarial tests present.")
+    print("SMX-023 canonical-core contract valid: module, registry, docs, workflow and adversarial tests present.")
 
 
 if __name__ == "__main__":
