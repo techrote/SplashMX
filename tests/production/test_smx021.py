@@ -43,7 +43,30 @@ class SMX021GuardrailTests(unittest.TestCase):
             self.assertTrue(row["evidence"])
             self.assertTrue(row["owner_modules"])
             self.assertTrue(row["current_tests"])
-            self.assertTrue(row["future_issue_codes"])
+            self.assertIsInstance(row["future_issue_codes"], list)
+
+    def test_completed_gates_can_exhaust_future_obligations_safely(self) -> None:
+        modules = {row["module_id"]: row for row in MANIFEST["modules"]}
+        exhausted = [
+            gate for gate in REGISTRY["gate_entries"]
+            if not gate["future_issue_codes"]
+        ]
+        self.assertTrue(exhausted)
+        for gate in exhausted:
+            self.assertTrue(
+                all(
+                    modules[module_id]["status"] == "implemented"
+                    for module_id in gate["owner_modules"]
+                ),
+                gate["id"],
+            )
+            self.assertTrue(
+                any(
+                    path.startswith("tests/production/")
+                    for path in gate["current_tests"]
+                ),
+                gate["id"],
+            )
 
     def test_evidence_and_current_test_lineage_exists(self) -> None:
         for gate in REGISTRY["gate_entries"]:
