@@ -10,13 +10,13 @@ permissions:
 
 jobs:
   generic-publishing:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
+          python-version: '3.13'
       - name: Validate inherited and publication contracts
         run: |
           python tools/validate_smx014.py
@@ -41,3 +41,26 @@ jobs:
           python -m unittest tests.production.test_smx035_adversarial -v
           python -m unittest tests.production.test_smx036 -v
           python -m unittest tests.production.test_smx036_adversarial -v
+
+  generic-browser-player:
+    name: Real Chromium immutable creation prepare-before-activate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned browser harness dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Validate SMX-036 contract
+        run: python tools/validate_smx036.py
+      - name: Run real Chromium generic-player gate
+        run: node tests/production/smx036_browser_harness.mjs
