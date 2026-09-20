@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SplashMX Player</title></head>
+<body>
+<main>
+  <h1>SplashMX Player</h1>
+  <form id="load-form">
+    <label for="locator">Creation</label>
+    <input id="locator" name="locator" value="play" autocomplete="off">
+    <label for="locator-role">Identity role</label>
+    <select id="locator-role"><option value="alias">Friendly alias</option><option value="creation_revision">Exact creation revision</option><option value="hosted_release">Hosted release</option></select>
+    <button id="load" type="submit">Load</button>
+  </form>
+  <p id="status" role="status" aria-live="polite">Not loaded</p>
+  <section aria-labelledby="active-title"><h2 id="active-title">Active creation</h2><pre id="active">None</pre></section>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
