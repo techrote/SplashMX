@@ -57,11 +57,11 @@ MigrationPrepare = Callable[[PackageRuntimeState, Mapping[PackageId, ValidatedPa
 
 def _descriptor(locked: LockedPackage) -> ExactArtifactDescriptor:
     return ExactArtifactDescriptor(
-        f"package-bundle:{locked.package_revision_id}",
-        ArtifactKind.OPAQUE_EXACT,
-        locked.bundle_digest,
-        "application/vnd.splashmx.spb1",
-        locked.bundle_size,
+        artifact_id=f"package-bundle:{locked.package_revision_id}",
+        kind=ArtifactKind.OPAQUE_EXACT,
+        digest=locked.bundle_digest,
+        size_bytes=locked.bundle_size,
+        media_type="application/vnd.splashmx.spb1",
     )
 
 
@@ -93,8 +93,6 @@ def validate_locked_bundle(locked: LockedPackage, bundle_bytes: bytes, *, suppor
     expected_children = {
         str(dep.package_id): dep for dep in manifest.dependencies if dep.kind.value != "optional"
     }
-    # The exact lock stores child revisions, while the manifest stores requirements;
-    # cardinality must agree. Resolution owns the PackageId->revision binding.
     if len(locked.dependencies) != len(expected_children):
         fail("package.lock_dependency_mismatch", "locked dependency closure differs from manifest")
     expected_artifacts = {spec.artifact_id: spec for spec in manifest.artifacts}
@@ -107,8 +105,6 @@ def validate_locked_bundle(locked: LockedPackage, bundle_bytes: bytes, *, suppor
             fail("package.artifact_mismatch", f"artifact {artifact_id} differs from exact manifest descriptor")
         if set(spec.required_features) - set(supported_features):
             fail("package.unsupported_feature", f"artifact {artifact_id} requires unsupported feature")
-    # decode_manifest has already reconstructed and revalidated each complete
-    # ProtectedAssetRevision, which rejects cross-revision field synthesis.
     return ValidatedPackage(locked, manifest, bytes(bundle_bytes), False)
 
 
