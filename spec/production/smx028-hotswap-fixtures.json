@@ -1,0 +1,47 @@
+{
+  "schema": "splashmx.smx028-hotswap-fixtures/1",
+  "issue": "SMX-028",
+  "module": "execution.hotswap",
+  "architecture_gates": ["GATE-02", "GATE-09"],
+  "authority": "docs/architecture/ARCHITECTURE-V1.md#36-behaviour-state-and-hot-replacement",
+  "protected_media_fields": [
+    "digest",
+    "source_identity",
+    "source_metadata",
+    "audio_or_media_semantics",
+    "provenance",
+    "licence_attribution",
+    "derivation_lineage"
+  ],
+  "fixtures": [
+    {"id": "HS-001", "claim": "compatible replacement preserves ThingId and BehaviourAttachmentId"},
+    {"id": "HS-002", "claim": "explicit preserve carries complete private state"},
+    {"id": "HS-003", "claim": "schema migration consumes or explicitly drops every old field"},
+    {"id": "HS-004", "claim": "missing migration input rejects before publication"},
+    {"id": "HS-005", "claim": "source revision mismatch rejects before publication"},
+    {"id": "HS-006", "claim": "target revision mismatch rejects before publication"},
+    {"id": "HS-007", "claim": "invalid target IR rejects before publication"},
+    {"id": "HS-008", "claim": "pending timer without map/cancel semantics rejects"},
+    {"id": "HS-009", "claim": "mapped timer preserves identity due tick sequence and payload"},
+    {"id": "HS-010", "claim": "pending timer may be cancelled only explicitly"},
+    {"id": "HS-011", "claim": "queued continuation is mapped explicitly"},
+    {"id": "HS-012", "claim": "map to absent target handler rejects atomically"},
+    {"id": "HS-013", "claim": "pending service request defaults to reject"},
+    {"id": "HS-014", "claim": "pending service request preservation is explicit"},
+    {"id": "HS-015", "claim": "pending service request cancellation is explicit"},
+    {"id": "HS-016", "claim": "required target capability denial rejects atomically"},
+    {"id": "HS-017", "claim": "required target capability is rebound to stable Behaviour principal"},
+    {"id": "HS-018", "claim": "revoked or expired capability cannot cross replacement"},
+    {"id": "HS-019", "claim": "capability and host authority are not serialized through private state"},
+    {"id": "HS-020", "claim": "attachment-local RNG state is preserved rather than reseeded"},
+    {"id": "HS-021", "claim": "committed emitted work is not retroactively rewritten"},
+    {"id": "HS-022", "claim": "optional capability denial yields only explicit reduced mode"},
+    {"id": "HS-023", "claim": "public Thing state is unchanged by Behaviour replacement"},
+    {"id": "HS-024", "claim": "protected source audio provenance semantics remain outside hot-swap mutation surface"}
+  ],
+  "retained_research": [
+    "docs/research/SMX-004-BEHAVIOUR-FIXTURES.json",
+    "experiments/smx-008-streaming-model/test_model.py",
+    "experiments/smx-015-object-fabric-harness/test_p1_hotswap.py"
+  ]
+}
