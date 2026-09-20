@@ -30,6 +30,10 @@
     {"id":"PPK-027","class":"protected-media","expectation":"Protected Asset revision is complete and cross-revision field mixing is rejected."},
     {"id":"PPK-028","class":"provenance","expectation":"Source metadata, provenance, licence/attribution, remix policy and derivation lineage round-trip separately from trust."},
     {"id":"PPK-029","class":"compatibility","expectation":"Unsupported required package or artifact features fail with typed incompatibility."},
-    {"id":"PPK-030","class":"artifact","expectation":"Package artifact set, kinds, sizes and digests match the validated manifest exactly."}
+    {"id":"PPK-030","class":"artifact","expectation":"Package artifact set, kinds, sizes and digests match the validated manifest exactly."},
+    {"id":"PPK-031","class":"lock","expectation":"A same-count dependency tuple cannot substitute a different PackageRevisionId for the manifest-declared exact child edge."},
+    {"id":"PPK-032","class":"lock","expectation":"Every locked child human version must satisfy the parent manifest requirement before migration or execution."},
+    {"id":"PPK-033","class":"optional","expectation":"Optional dependencies declared transitively by selected package manifests are resolved as isolated extensions or use their fallback without perturbing the hard closure."},
+    {"id":"PPK-034","class":"lazy","expectation":"Lazy acquisition is allowed only when every selected incoming dependency edge is lazy, independent of traversal or catalog order."}
   ]
 }
