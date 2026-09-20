@@ -36,3 +36,4 @@ jobs:
           python -m unittest tests.production.test_smx028 -v
           python -m unittest tests.production.test_smx030 -v
           python -m unittest tests.production.test_smx035 -v
+          python -m unittest tests.production.test_smx035_adversarial -v
