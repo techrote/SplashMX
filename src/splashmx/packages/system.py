@@ -108,6 +108,37 @@ def validate_locked_bundle(locked: LockedPackage, bundle_bytes: bytes, *, suppor
     return ValidatedPackage(locked, manifest, bytes(bundle_bytes), False)
 
 
+def validate_lock_dependencies(lock: ResolutionLock, package: ValidatedPackage) -> None:
+    """Bind every non-optional manifest edge to the exact child revision in ``lock``.
+
+    A child-count match is not sufficient: an attacker or corrupt lock could swap a
+    same-count dependency to another revision. Runtime publication therefore checks
+    PackageId lookup, the authored version requirement, and the exact ordered child
+    PackageRevisionId tuple before capability preflight, migration or Behaviour work.
+    """
+    expected_revisions = []
+    for dependency in package.manifest.dependencies:
+        if dependency.kind.value == "optional":
+            continue
+        child = lock.packages.get(dependency.package_id)
+        if child is None:
+            fail(
+                "package.lock_dependency_mismatch",
+                f"locked dependency {dependency.package_id} required by {package.manifest.package_id} is missing",
+            )
+        if not dependency.requirement.matches(child.human_version):
+            fail(
+                "package.lock_dependency_mismatch",
+                f"locked dependency {dependency.package_id} version {child.human_version} violates {dependency.requirement}",
+            )
+        expected_revisions.append(child.package_revision_id)
+    if tuple(expected_revisions) != tuple(package.locked.dependencies):
+        fail(
+            "package.lock_dependency_mismatch",
+            f"exact dependency revisions for {package.manifest.package_id} differ from its validated manifest",
+        )
+
+
 def reconcile_components(previous: PortableComponent | None, candidate: PortableComponent, *, allow_interface_change: bool = False) -> None:
     if previous is None:
         return
@@ -138,11 +169,12 @@ def _preflight(package: ValidatedPackage, broker: CapabilityBroker | None, *, po
 class PackageSystem:
     """Prepare-before-publish package state.
 
-    Acquisition, SPB1 parse, manifest validation, protected-asset reconstruction,
-    artifact closure, feature checks, capability preflight and public-interface
-    reconciliation all finish before ``migration_prepare`` is called. Only a fully
-    prepared candidate replaces ``state``; failure leaves the previous exact lock
-    and live state coherent. Immutable cache population is explicitly non-semantic.
+    Acquisition, SPB1 parse, manifest validation, exact lock-edge validation,
+    protected-asset reconstruction, artifact closure, feature checks, capability
+    preflight and public-interface reconciliation all finish before
+    ``migration_prepare`` is called. Only a fully prepared candidate replaces
+    ``state``; failure leaves the previous exact lock and live state coherent.
+    Immutable cache population is explicitly non-semantic.
     """
     def __init__(
         self, *, source: PackageSource, cache: ImmutableArtifactCache | None = None,
@@ -167,7 +199,9 @@ class PackageSystem:
                 continue
             payload, cache_hit = acquire_locked_bundle(locked, self.source, self.cache)
             validated = validate_locked_bundle(locked, payload, supported_features=self.supported_features)
-            staged[package_id] = ValidatedPackage(validated.locked, validated.manifest, validated.bundle_bytes, cache_hit)
+            package = ValidatedPackage(validated.locked, validated.manifest, validated.bundle_bytes, cache_hit)
+            validate_lock_dependencies(lock, package)
+            staged[package_id] = package
         for package_id, locked in lock.packages.items():
             if not locked.lazy and package_id not in staged:
                 fail("package.update_incomplete", f"non-lazy locked package {package_id} was not staged")
@@ -204,6 +238,7 @@ class PackageSystem:
         payload, cache_hit = acquire_locked_bundle(locked, self.source, self.cache)
         validated = validate_locked_bundle(locked, payload, supported_features=self.supported_features)
         package = ValidatedPackage(validated.locked, validated.manifest, validated.bundle_bytes, cache_hit)
+        validate_lock_dependencies(self.state.lock, package)
         _preflight(package, self.capability_broker, policy_time=policy_time)
         component = package.manifest.root_component
         reconcile_components(self.state.components.get(component.definition_id), component)
@@ -218,5 +253,6 @@ class PackageSystem:
 
 __all__ = [
     "MappingPackageSource", "MigrationPrepare", "PackageRuntimeState", "PackageSource", "PackageSystem",
-    "ValidatedPackage", "acquire_locked_bundle", "reconcile_components", "validate_locked_bundle",
+    "ValidatedPackage", "acquire_locked_bundle", "reconcile_components", "validate_lock_dependencies",
+    "validate_locked_bundle",
 ]
