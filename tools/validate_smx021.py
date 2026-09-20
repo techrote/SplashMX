@@ -154,10 +154,11 @@ def main() -> None:
         f"registry must contain exactly {EXPECTED_GATES}; got {gate_ids}",
     )
 
-    module_ids = {
-        module["module_id"]
+    modules = {
+        module["module_id"]: module
         for module in manifest.get("modules", [])
     }
+    module_ids = set(modules)
     require(
         "contracts.conformance" in module_ids,
         "Phase-0 conformance module missing",
@@ -200,8 +201,8 @@ def main() -> None:
             f"{entry['id']} lacks current test lineage",
         )
         require(
-            isinstance(future, list) and future,
-            f"{entry['id']} lacks future test/issue lineage",
+            isinstance(future, list),
+            f"{entry['id']} future test/issue lineage must be a list",
         )
         for rel in current:
             require(
@@ -212,6 +213,28 @@ def main() -> None:
             require(
                 re.fullmatch(r"SMX-\d{3}", issue) is not None,
                 f"{entry['id']} invalid future issue code {issue}",
+            )
+
+        # Phase-0 began with at least one future production obligation on every
+        # gate.  As those obligations land, an empty future list is the desired
+        # terminal state—not an error.  It is only valid once every declared
+        # owner module is implemented and real production regression coverage
+        # exists, preventing premature deletion of future work.
+        if not future:
+            incomplete_owners = sorted(
+                module_id
+                for module_id in owners
+                if modules[module_id]["status"] != "implemented"
+            )
+            require(
+                not incomplete_owners,
+                f"{entry['id']} exhausted future obligations before owner "
+                f"modules were implemented: {incomplete_owners}",
+            )
+            require(
+                any(path.startswith("tests/production/") for path in current),
+                f"{entry['id']} exhausted future obligations without "
+                "production regression coverage",
             )
 
     regressions = registry.get("non_droppable_regressions")
