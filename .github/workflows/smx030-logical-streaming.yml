@@ -1,0 +1,44 @@
+name: SMX-030 logical streaming
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  logical-streaming:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Validate retained SMX-008 streaming contract
+        run: python tools/validate_smx008.py
+      - name: Run retained SMX-008 streaming model
+        run: python -m unittest discover -s experiments/smx-008-streaming-model -p 'test_model.py' -v
+      - name: Validate SMX-024 canonical serialization dependency
+        run: python tools/validate_smx024.py
+      - name: Run SMX-024 canonical serialization regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx024.py' -v
+      - name: Validate SMX-025 local persistence dependency
+        run: python tools/validate_smx025.py
+      - name: Run SMX-025 local persistence regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx025.py' -v
+      - name: Validate SMX-028 hot replacement dependency
+        run: python tools/validate_smx028.py
+      - name: Run SMX-028 hot replacement regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx028.py' -v
+      - name: Validate SMX-029 lifecycle and WorldSave dependency
+        run: python tools/validate_smx029.py
+      - name: Run SMX-029 lifecycle and WorldSave regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx029.py' -v
+      - name: Validate SMX-030 production contract
+        run: python tools/validate_smx030.py
+      - name: Run SMX-030 logical streaming adversarial tests
+        run: python -m unittest discover -s tests/production -p 'test_smx030.py' -v

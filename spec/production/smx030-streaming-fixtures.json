@@ -1,0 +1,50 @@
+{
+  "schema": "splashmx.smx030-streaming-fixtures/1",
+  "issue": "SMX-030",
+  "authority": [
+    "docs/architecture/ARCHITECTURE-V1.md",
+    "docs/research/SMX-008-STREAMING-MIGRATION.md",
+    "docs/research/SMX-015-OBJECT-FABRIC-HARNESS.md",
+    "docs/implementation/SMX-024-CANONICAL-SERIALIZATION.md",
+    "docs/implementation/SMX-025-LOCAL-PERSISTENCE.md",
+    "docs/implementation/SMX-028-HOT-REPLACEMENT.md",
+    "docs/implementation/SMX-029-LIFECYCLE-WORLDSAVE.md"
+  ],
+  "retained_streaming_invariants": [
+    "STR-001", "STR-002", "STR-003", "STR-004", "STR-005", "STR-006", "STR-007", "STR-008", "STR-009", "STR-010",
+    "STR-011", "STR-012", "STR-013", "STR-014", "STR-015", "STR-016", "STR-017", "STR-018", "STR-019", "STR-020"
+  ],
+  "protected_media_fields": [
+    "digest", "source_identity", "source_metadata", "audio_or_media_semantics", "provenance", "licence_attribution", "derivation_lineage"
+  ],
+  "fixtures": [
+    {"id":"STP-001","claim":"A selected Thing can become known-unloaded while its containment parent and an inventory/reference holder remain resident."},
+    {"id":"STP-002","claim":"Reload resolves the exact declared dependency closure, not the containment region."},
+    {"id":"STP-003","claim":"Exact dependency order is deterministic after graph resolution."},
+    {"id":"STP-004","claim":"Missing required exact bytes fail typed and publish no partial activation."},
+    {"id":"STP-005","claim":"Length or digest corruption fails before decoding or activation."},
+    {"id":"STP-006","claim":"A canonical artifact for another ProjectRevisionId is incompatible."},
+    {"id":"STP-007","claim":"A same-ID canonical Thing whose fields differ from the authored basis is incompatible."},
+    {"id":"STP-008","claim":"A Behaviour artifact with the wrong exact behaviour revision cannot satisfy an attachment."},
+    {"id":"STP-009","claim":"Behaviour IR round-trips through the bounded exact artifact profile and revalidates before use."},
+    {"id":"STP-010","claim":"Unknown required artifact features fail closed before activation."},
+    {"id":"STP-011","claim":"Missing descriptor graph nodes produce typed failure rather than implicit resolution."},
+    {"id":"STP-012","claim":"Dependency depth is independently bounded."},
+    {"id":"STP-013","claim":"Dependency descriptor count is independently bounded."},
+    {"id":"STP-014","claim":"Declared aggregate and per-artifact bytes are bounded before fetch/activation."},
+    {"id":"STP-015","claim":"Bounded exact declarative dependency cycles are permitted without recursive publication."},
+    {"id":"STP-016","claim":"Verified immutable cache bytes permit exact offline reuse after the source disappears."},
+    {"id":"STP-017","claim":"Cache eviction changes neither WorldSave bytes nor loaded/known-unloaded/tombstoned/unknown meaning."},
+    {"id":"STP-018","claim":"An evicted artifact may be refetched only if the same exact descriptor verifies."},
+    {"id":"STP-019","claim":"Cache capacity pressure is advisory and cannot rewrite semantic state."},
+    {"id":"STP-020","claim":"Cancellation before or after acquisition leaves the old coherent runtime published."},
+    {"id":"STP-021","claim":"A tombstoned Thing cannot be resurrected by later acquisition."},
+    {"id":"STP-022","claim":"Tombstoning removes retained queued/timer work so stale work cannot recreate the object."},
+    {"id":"STP-023","claim":"Known-unloaded and unknown references remain distinct while the target is not resident."},
+    {"id":"STP-024","claim":"A loaded Thing cannot be deliberately streamed out without an exact reload catalog."},
+    {"id":"STP-025","claim":"Requesting stream-in for an already loaded Thing is a no-op and performs no hidden I/O."},
+    {"id":"STP-026","claim":"Competing protected AssetId revisions remain complete alternatives and cannot be field-mixed."},
+    {"id":"STP-027","claim":"A complete protected asset revision may join the staged closure atomically after canonical verification."},
+    {"id":"STP-028","claim":"Opaque exact data is integrity checked and inert at the streaming layer; corrupt opaque data blocks activation."}
+  ]
+}
