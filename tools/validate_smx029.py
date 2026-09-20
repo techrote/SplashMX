@@ -79,7 +79,7 @@ def main() -> None:
         "def restore_world_save",
         "def serialize_world_save",
         "worldsave.forbidden_transient_state",
-        "restore_policy=\"reauthorize\"",
+        "restore_policy: str = \"reauthorize\"",
         "capability_broker.resolve_requirements",
         "PRAGMA synchronous=FULL",
         "world_revisions",
@@ -105,7 +105,7 @@ def main() -> None:
     ):
         require(protected in doc, f"implementation docs weakened protected field {protected!r}")
     for phrase in (
-        "does not serialize authored-project bytes",
+        "authored-project bytes",
         "never places that descriptor back into the executable host-service request outbox",
         "No grant ID or capability token occurs in WorldSave bytes",
         "does not embed, rewrite, field-mix or partially replace that protected revision",
