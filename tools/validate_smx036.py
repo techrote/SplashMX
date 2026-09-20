@@ -26,6 +26,9 @@ def main() -> int:
         require(path.is_file(), f"missing SMX-036 artifact: {path.relative_to(ROOT)}")
 
     doc = DOC.read_text(encoding="utf-8")
+    # Contract prose is wrapped for readability and may use Markdown emphasis;
+    # validate semantic phrases rather than depending on physical line wrapping.
+    doc_contract = " ".join(doc.replace("**", "").split())
     for phrase in (
         "Ordinary Publish",
         "per-creation engine build",
@@ -37,7 +40,7 @@ def main() -> int:
         "Target-private stripping",
         "no runtime floating",
     ):
-        require(phrase in doc, f"SMX-036 contract lost required phrase: {phrase}")
+        require(phrase in doc_contract, f"SMX-036 contract lost required phrase: {phrase}")
 
     fixture_data = json.loads(FIXTURES.read_text(encoding="utf-8"))
     require(
