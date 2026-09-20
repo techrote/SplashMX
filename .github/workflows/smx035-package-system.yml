@@ -1,0 +1,39 @@
+name: SMX-035 production package system
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  package-system:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate inherited and production contracts
+        run: |
+          python tools/validate_smx013.py
+          python tools/validate_smx016.py
+          python tools/validate_smx024.py
+          python tools/validate_smx027.py
+          python tools/validate_smx028.py
+          python tools/validate_smx030.py
+          python tools/validate_smx034.py
+          python tools/validate_smx035.py
+      - name: Run production package regressions
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx024 -v
+          python -m unittest tests.production.test_smx027 -v
+          python -m unittest tests.production.test_smx028 -v
+          python -m unittest tests.production.test_smx030 -v
+          python -m unittest tests.production.test_smx035 -v
+          python -m unittest tests.production.test_smx035_adversarial -v
