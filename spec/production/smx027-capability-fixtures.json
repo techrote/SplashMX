@@ -1,0 +1,37 @@
+{
+  "schema": "splashmx-smx027-capability-fixtures-v1",
+  "status": "production-conformance-fixtures",
+  "issue": "SMX-027",
+  "source_lineage": ["SMX-006", "SMX-016", "SMX-026"],
+  "corrective_repairs": ["R-016-02", "R-016-03", "R-016-04"],
+  "fixtures": [
+    {"id":"CAP-001","purpose":"Deny service use when exact principal has no grant.","lineage":["ST-001","AT-011"]},
+    {"id":"CAP-002","purpose":"Signing, provenance and licence metadata never create runtime authority.","lineage":["ST-009","AT-011"]},
+    {"id":"CAP-003","purpose":"A parent principal grant does not authorize a contained child Behaviour.","lineage":["ST-003","AT-012"]},
+    {"id":"CAP-004","purpose":"Target, operation and byte dimensions are enforced together.","lineage":["ST-002"]},
+    {"id":"CAP-005","purpose":"Delegated scope only narrows and lifetime never widens.","lineage":["ST-004","AT-013"]},
+    {"id":"CAP-006","purpose":"Non-delegable child grant cannot delegate further.","lineage":["ST-004","AT-013"]},
+    {"id":"CAP-007","purpose":"Delegation depth is bounded before new-grant allocation.","lineage":["AT-013","R-016-03"]},
+    {"id":"CAP-008","purpose":"Delegation descendant count is bounded before new-grant allocation.","lineage":["AT-013","R-016-03"]},
+    {"id":"CAP-009","purpose":"Trusted grant snapshots reject missing ancestry.","lineage":["AT-014","R-016-03"]},
+    {"id":"CAP-010","purpose":"Trusted grant snapshots reject cyclic ancestry without unbounded traversal.","lineage":["AT-014","R-016-03"]},
+    {"id":"CAP-011","purpose":"Ancestor revocation invalidates descendant leases immediately.","lineage":["ST-005"]},
+    {"id":"CAP-012","purpose":"Ancestor expiry invalidates descendant leases immediately.","lineage":["ST-005"]},
+    {"id":"CAP-013","purpose":"Required capability denial fails preflight explicitly.","lineage":["ST-006"]},
+    {"id":"CAP-014","purpose":"Optional capability denial may select only an explicitly declared reduced mode.","lineage":["ST-006"]},
+    {"id":"CAP-015","purpose":"ServiceRequest principal is derived from ThingId plus BehaviourAttachmentId origin.","lineage":["AT-017"]},
+    {"id":"CAP-016","purpose":"Admission performs authorization but never invokes the host adapter.","lineage":["AT-015"]},
+    {"id":"CAP-017","purpose":"Revocation after admission wins at the final pre-host recheck.","lineage":["AT-015","R-016-04"]},
+    {"id":"CAP-018","purpose":"Expiry after admission wins at the final pre-host recheck.","lineage":["AT-015","R-016-04"]},
+    {"id":"CAP-019","purpose":"Recursive serialized capability/host/session authority is rejected at service ingress.","lineage":["AT-007","AT-022","R-016-02"]},
+    {"id":"CAP-020","purpose":"A copied grant ID in payload cannot launder another principal's authority.","lineage":["AT-017"]},
+    {"id":"CAP-021","purpose":"Pending and admission-window service quotas are principal-scoped and pre-allocation.","lineage":["ST-011","AT-016"]},
+    {"id":"CAP-022","purpose":"Unknown services and out-of-scope requests fail before host use.","lineage":["ST-001","AT-010"]},
+    {"id":"CAP-023","purpose":"Consumed admitted calls cannot be replayed.","lineage":["AT-015"]},
+    {"id":"CAP-024","purpose":"Raw host objects and exception details do not cross back into ordinary content.","lineage":["AT-010","AT-025"]}
+  ],
+  "protected_media": {
+    "fields": ["digest","source_identity","source_metadata","audio_or_media_semantics","provenance","licence_attribution","derivation_lineage"],
+    "rule": "capability/runtime context cannot replace or field-mix a protected AssetId revision"
+  }
+}
