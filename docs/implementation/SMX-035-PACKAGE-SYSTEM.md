@@ -6,7 +6,7 @@ Status: implementation authority for issue #60 below Architecture v1.0 and the S
 
 SMX-035 makes package metadata a distribution layer around the existing canonical Definition/Thing model. `PackageId` names package lineage, `PackageRevisionId` names one immutable package revision, and a promoted portable component retains the original `DefinitionId` and public `PortId` identities. Package/container/cache/catalog identity never substitutes for canonical semantic identity.
 
-The only authored version requirements accepted by the v1 resolver are exact `=X.Y.Z` and caret `^X.Y.Z`. Resolution is explicit. Runtime, streaming, offline reload and lazy activation consume an immutable `ResolutionLock`; they never consult floating ranges, a mutable catalog, repository location or cache membership to choose another revision.
+The only authored version requirements accepted by the v1 resolver are exact `=X.Y.Z` and caret `^X.Y.Z`. Resolution is explicit. **Runtime authority is the exact ResolutionLock.** Runtime, streaming, offline reload and lazy activation consume that immutable lock; they never consult floating ranges, a mutable catalog, repository location or cache membership to choose another revision.
 
 ## Resolver and exact lock
 
