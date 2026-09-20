@@ -195,12 +195,15 @@ class SMX021GuardrailTests(unittest.TestCase):
             if row["status"] == "active"
         ]
         self.assertEqual(active, ["contracts.conformance"])
-        planned = [
+        non_conformance = [
             row
             for row in MANIFEST["modules"]
-            if row["status"] == "planned"
+            if row["module_id"] != "contracts.conformance"
         ]
-        self.assertGreaterEqual(len(planned), 10)
+        self.assertTrue(non_conformance)
+        self.assertTrue(
+            all(row["status"] in {"planned", "implemented"} for row in non_conformance)
+        )
 
     def test_forbidden_identity_class_contract_is_exact(self) -> None:
         self.assertEqual(

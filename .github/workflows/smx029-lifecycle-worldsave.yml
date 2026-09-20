@@ -1,0 +1,40 @@
+name: SMX-029 lifecycle and WorldSave
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lifecycle-worldsave:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Validate retained SMX-007 lifecycle contract
+        run: python tools/validate_smx007.py
+      - name: Run retained SMX-007 lifecycle model
+        run: python -m unittest discover -s experiments/smx-007-lifecycle-model -p 'test_model.py' -v
+      - name: Validate SMX-025 local persistence dependency
+        run: python tools/validate_smx025.py
+      - name: Run SMX-025 persistence regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx025.py' -v
+      - name: Validate SMX-027 capability dependency
+        run: python tools/validate_smx027.py
+      - name: Run SMX-027 capability regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx027.py' -v
+      - name: Validate SMX-028 hot replacement dependency
+        run: python tools/validate_smx028.py
+      - name: Run SMX-028 hot replacement regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx028.py' -v
+      - name: Validate SMX-029 production contract
+        run: python tools/validate_smx029.py
+      - name: Run SMX-029 lifecycle and WorldSave adversarial tests
+        run: python -m unittest discover -s tests/production -p 'test_smx029.py' -v

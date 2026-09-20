@@ -1,0 +1,57 @@
+{
+  "schema": "splashmx.smx029-lifecycle-fixtures/1",
+  "issue": "SMX-029",
+  "architecture_version": "1.0",
+  "retained_research": [
+    "docs/research/SMX-007-LIFECYCLE-RESTORE.md",
+    "docs/research/SMX-007-LIFECYCLE-FIXTURES.json",
+    "docs/research/SMX-015-OBJECT-FABRIC-FIXTURES.json",
+    "docs/implementation/SMX-025-LOCAL-PERSISTENCE.md",
+    "docs/implementation/SMX-028-HOT-REPLACEMENT.md"
+  ],
+  "protected_media_fields": [
+    "digest",
+    "source_identity",
+    "source_metadata",
+    "audio_or_media_semantics",
+    "provenance",
+    "licence_attribution",
+    "derivation_lineage"
+  ],
+  "retained_lifecycle_invariants": [
+    "LIF-001","LIF-002","LIF-003","LIF-004","LIF-005","LIF-006",
+    "LIF-007","LIF-008","LIF-009","LIF-010","LIF-011","LIF-012",
+    "LIF-013","LIF-014","LIF-015","LIF-016","LIF-017","LIF-018"
+  ],
+  "retained_corrective_findings": ["R-016-02","R-016-04"],
+  "fixtures": [
+    {"id":"WS-001","name":"fresh process restores persistent runtime state without surviving process objects","covers":["LIF-004","LIF-005"]},
+    {"id":"WS-002","name":"authored project and WorldSave state remain separate planes","covers":["LIF-004"]},
+    {"id":"WS-003","name":"snapshot is deterministic and does not mutate lifecycle state","covers":["LIF-002","LIF-003"]},
+    {"id":"WS-004","name":"active and dormant are resident lifecycle states with explicit transitions","covers":["LIF-010"]},
+    {"id":"WS-005","name":"unload preserves identity and durable state while removing residency","covers":["LIF-001","LIF-006","LIF-011"]},
+    {"id":"WS-006","name":"rehydration reconstructs private state and pending timer from retained records","covers":["LIF-005","LIF-006","LIF-013"]},
+    {"id":"WS-007","name":"destruction creates a durable nonresident tombstone","covers":["LIF-012","LIF-018"]},
+    {"id":"WS-008","name":"tombstoned known-unloaded and unknown references remain distinct","covers":["LIF-011","LIF-012"]},
+    {"id":"WS-009","name":"behaviour attachment private state survives exact fresh-runtime restore","covers":["LIF-004","LIF-016"]},
+    {"id":"WS-010","name":"deterministic attachment PRNG state resumes at the saved position","covers":["LIF-006","LIF-015"]},
+    {"id":"WS-011","name":"durable timer identity due tick sequence handler and payload restore exactly","covers":["LIF-006","LIF-009"]},
+    {"id":"WS-012","name":"queued internal work retains deterministic sequence ordering","covers":["LIF-006","LIF-015"]},
+    {"id":"WS-013","name":"external service wait persists only as a non-authoritative deferred descriptor","covers":["LIF-007","LIF-008"]},
+    {"id":"WS-014","name":"committed emitted outbox is not implicitly replayed by restore","covers":["LIF-007"]},
+    {"id":"WS-015","name":"first-creation hook is not replayed during restore","covers":["LIF-014"]},
+    {"id":"WS-016","name":"process browser network session and capability handles are rejected recursively","covers":["LIF-004","LIF-008","LIF-017","R-016-02"]},
+    {"id":"WS-017","name":"external-wait payload cannot smuggle serialized capability authority","covers":["LIF-008","R-016-02"]},
+    {"id":"WS-018","name":"current capability policy is rebound before restored attachment publication","covers":["LIF-008","LIF-017","R-016-04"]},
+    {"id":"WS-019","name":"revoked capability cannot be resurrected by WorldSave data","covers":["LIF-008","LIF-017","R-016-04"]},
+    {"id":"WS-020","name":"missing exact Behaviour revision fails restore before publication","covers":["LIF-013","LIF-016"]},
+    {"id":"WS-021","name":"authored ProjectRevisionId mismatch fails restore without reinterpretation","covers":["LIF-013","LIF-016"]},
+    {"id":"WS-022","name":"attachment identity mismatch fails restore before live state changes","covers":["LIF-013","LIF-016"]},
+    {"id":"WS-023","name":"WorldSave encoding is deterministic bounded and canonical","covers":["LIF-003","LIF-015"]},
+    {"id":"WS-024","name":"WorldRevisionId digest rejects semantic tampering","covers":["LIF-013","LIF-016"]},
+    {"id":"WS-025","name":"pre-commit interruption preserves the previous coherent WorldSave head","covers":["LIF-013"]},
+    {"id":"WS-026","name":"post-commit interruption exposes the complete newly committed WorldSave head","covers":["LIF-013"]},
+    {"id":"WS-027","name":"corrupt or incompatible restore leaves the prior coherent persistent state available","covers":["LIF-013","LIF-016"]},
+    {"id":"WS-028","name":"WorldSave never owns or field-mixes protected AssetId revision bundles","covers":["XREG-PROTECTED-MEDIA"]}
+  ]
+}
