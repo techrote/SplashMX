@@ -8,11 +8,14 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs/implementation/SMX-036-GENERIC-PUBLISHING.md"
+BROWSER_DOC = ROOT / "docs/implementation/SMX-036-BROWSER-PLAYER.md"
 FIXTURES = ROOT / "spec/production/smx036-publishing-fixtures.json"
 SOURCE = ROOT / "src/splashmx/publishing/generic.py"
+BROWSER_SERVER = ROOT / "src/splashmx/publishing/browser_server.py"
 MODULES = ROOT / "src/MODULES.json"
 TESTS = ROOT / "tests/production/test_smx036.py"
 ADVERSARIAL = ROOT / "tests/production/test_smx036_adversarial.py"
+BROWSER_HARNESS = ROOT / "tests/production/smx036_browser_harness.mjs"
 WORKFLOW = ROOT / ".github/workflows/smx036-generic-publishing.yml"
 
 
@@ -22,7 +25,18 @@ def require(condition: bool, message: str) -> None:
 
 
 def main() -> int:
-    for path in (DOC, FIXTURES, SOURCE, MODULES, TESTS, ADVERSARIAL, WORKFLOW):
+    for path in (
+        DOC,
+        BROWSER_DOC,
+        FIXTURES,
+        SOURCE,
+        BROWSER_SERVER,
+        MODULES,
+        TESTS,
+        ADVERSARIAL,
+        BROWSER_HARNESS,
+        WORKFLOW,
+    ):
         require(path.is_file(), f"missing SMX-036 artifact: {path.relative_to(ROOT)}")
 
     doc = DOC.read_text(encoding="utf-8")
@@ -41,6 +55,17 @@ def main() -> int:
         "no runtime floating",
     ):
         require(phrase in doc_contract, f"SMX-036 contract lost required phrase: {phrase}")
+
+    browser_doc = " ".join(BROWSER_DOC.read_text(encoding="utf-8").replace("**", "").split())
+    for phrase in (
+        "real browser-facing generic-player shell",
+        "Prepare-before-activate browser path",
+        "Real Chromium gate",
+        "failed preparation therefore cannot replace the previously active creation",
+        "Protected source/audio/provenance boundary",
+        "does not implement Godot realization",
+    ):
+        require(phrase in browser_doc, f"SMX-036 browser contract lost required phrase: {phrase}")
 
     fixture_data = json.loads(FIXTURES.read_text(encoding="utf-8"))
     require(
@@ -78,6 +103,18 @@ def main() -> int:
         "publication.offline_unavailable",
     ):
         require(token in source, f"SMX-036 production boundary missing token: {token}")
+
+    browser_source = BROWSER_SERVER.read_text(encoding="utf-8")
+    for token in (
+        "BrowserPlayerBridge",
+        "GenericPlayer",
+        "HostedReleaseStore",
+        "load_hosted",
+        "creation_revision",
+        "hosted_release",
+        "publication.invalid_browser_request",
+    ):
+        require(token in browser_source, f"SMX-036 browser adapter missing token: {token}")
 
     modules = json.loads(MODULES.read_text(encoding="utf-8"))
     publishing = next(
@@ -117,6 +154,19 @@ def main() -> int:
         "test_creation_revision_and_release_cannot_be_rebound",
     ):
         require(token in adversarial, f"SMX-036 adversarial regression missing: {token}")
+
+    browser_harness = BROWSER_HARNESS.read_text(encoding="utf-8")
+    for token in (
+        "chromium.launch",
+        "publication.unsupported_feature",
+        "failed preparation replaced the active creation",
+        "server active state changed after failed preparation",
+    ):
+        require(token in browser_harness, f"SMX-036 real-browser regression missing: {token}")
+
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    require("generic-browser-player:" in workflow, "SMX-036 real-browser workflow job missing")
+    require("smx036_browser_harness.mjs" in workflow, "SMX-036 Chromium harness is not executed by CI")
 
     print("SMX-036 generic publishing contract: OK")
     return 0
