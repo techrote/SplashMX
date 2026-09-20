@@ -148,6 +148,32 @@ Timing/quota observations are environment-specific evidence, not product SLOs or
 
 SMX-024 owns the production deterministic-CBOR implementation, exact record/schema layout, bounded parser, golden bytes, shard-policy identifier, migration fixtures and protected Asset serialization. SMX-025 owns IndexedDB/OPFS and SQLite adapters, typed quota/denial/corruption failures, reopen/interruption recovery, orphan GC, backup/export behavior, checkpoint/GC cadence and tuning. Neither may turn database rows, paths, DOM/FileSystem handles, cache keys, byte offsets or shard placement into canonical identity.
 
+## SMX-026 production execution register
+
+### D-125 — SMX-026 implements one production constrained IR for beginner Rules and advanced Behaviours
+
+**Status:** DECISION / production implementation beneath Architecture v1.
+
+`src/splashmx/execution/ir.py` implements versioned `splashmx.behaviour-ir/1`, the first beginner Rule compiler and the direct advanced `IRProgram` surface over one deterministic `ExecutionRuntime`. Activations stage public/private mutation, deterministic random state and follow-on work, preflight the full effect set, then commit state before publishing ordered events/timers/service requests. Unknown or host/foreign-state opcodes fail closed before launch. Ordinary content has no GDScript/C#/JavaScript/native/raw-host fallback.
+
+Author-visible fan-out uses explicit semantic Behaviour-attachment order then handler declaration order. Because canonical serialization physically sorts attachment-map records by semantic ID, execution deliberately refuses to infer scheduling order from map/hash/canonical-byte/lexical UUID order; multi-attachment callers must provide the semantic sequence explicitly until production-core integration carries that authored projection.
+
+### E-090 — SMX-026 ports ordering/amplification falsification into deterministic production tests
+
+**Status:** REPRODUCIBLE REPOSITORY EVIDENCE, 2026-09-20.
+
+`tests/production/test_smx026.py` exercises compiled Rules and a materially nontrivial advanced Behaviour through the same IR/executor, commit-before-follow-on visibility, exact revision binding, runtime/authored-state separation, attachment-private state, deterministic PRNG rollback, explicit timer representation/cancellation and same-input trace reproduction. Adversarial tests independently exhaust instruction/CPU-proxy, recursion, allocation, emitted-work, timer, pending-timer, queue, service-request, pending-service and activation-run bounds; effect-preflight failures preserve prior state. The suite also rejects unknown/host/foreign-state opcodes and recursively injected transient authority in IR literals/external payloads, carrying SMX-016 R-016-02 into `execution.ir`.
+
+The evidence is semantic production-runtime evidence, not calibrated OS/Godot/browser sandbox or throughput certification.
+
+### O-031 — Capability authorization, hot replacement, persistence and physical execution remain downstream
+
+**Status:** OPEN downstream implementation obligations; not an SMX-026 acceptance blocker.
+
+SMX-026 `request_service` only stages an attributed semantic request. Principal grants, delegation/revocation and the final authorization recheck immediately before a trusted host adapter remain SMX-027. Behaviour replacement/pending-work migration remains SMX-028; durable timer/continuation snapshot and fresh-process restore remain SMX-029; production-core integration, including preserving authored Behaviour attachment order into execution plans, remains SMX-031; Godot scheduler realization/performance and calibrated hostile physical limits remain SMX-037–041.
+
+Protected media remains outside the execution mutation surface: a stable `AssetId` still selects the indivisible source digest + source identity + source metadata + audio/media semantics + provenance + licence/attribution + derivation lineage revision.
+
 ## Historical late-campaign regression anchors
 
 These compact anchors retain exact marker strings consumed by already-merged SMX-015/016/018/019 validators. They point to the byte-identical pre-v1 log for full text and do not re-open or duplicate the frozen decisions above.
