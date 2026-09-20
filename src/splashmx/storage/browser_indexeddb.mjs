@@ -176,8 +176,10 @@ export class IndexedDBProjectStore {
   async _initializeFormat() {
     const tx = this._transaction(['metadata'], 'readwrite');
     const store = tx.objectStore('metadata');
-    const currentSchema = await requestResult(store.get('store_schema'));
-    const currentVersion = await requestResult(store.get('store_format_version'));
+    const schemaRequest = store.get('store_schema');
+    const versionRequest = store.get('store_format_version');
+    const currentSchema = await requestResult(schemaRequest);
+    const currentVersion = await requestResult(versionRequest);
     if (currentSchema === undefined && currentVersion === undefined) {
       store.put(STORE_SCHEMA, 'store_schema');
       store.put(STORE_FORMAT_VERSION, 'store_format_version');
@@ -191,8 +193,10 @@ export class IndexedDBProjectStore {
   async _assertFormat() {
     const tx = this._transaction(['metadata'], 'readonly');
     const store = tx.objectStore('metadata');
-    const schema = await requestResult(store.get('store_schema'));
-    const version = await requestResult(store.get('store_format_version'));
+    const schemaRequest = store.get('store_schema');
+    const versionRequest = store.get('store_format_version');
+    const schema = await requestResult(schemaRequest);
+    const version = await requestResult(versionRequest);
     await transactionDone(tx);
     if (schema !== STORE_SCHEMA) {
       throw new SplashMXStorageError('storage.unsupported_store_format', 'browser local-store schema is unsupported');
@@ -275,9 +279,6 @@ export class IndexedDBProjectStore {
       }
       IndexedDBProjectStore._interrupt(tx, faultAt, 'shards_recorded');
 
-      // Queue readback inside the same transaction. Digest checks here catch adapter
-      // corruption before the head can advance; canonical/schema checks remain above
-      // this adapter and are mandatory before activation.
       const verifyRevision = await requestResult(revisions.get(rkey));
       if (!verifyRevision || verifyRevision.rootDigest !== rootDigest || !equalBytes(bytes(verifyRevision.rootManifest, 'verified root'), prepared.rootManifest)) {
         tx.abort();
@@ -315,6 +316,9 @@ export class IndexedDBProjectStore {
     const project = String(projectId || '');
     if (!project) throw new SplashMXStorageError('storage.invalid_input', 'projectId is required');
     try {
+      // Fetch all physical rows before doing WebCrypto work. Awaiting crypto while an
+      // IndexedDB transaction has no pending request can let the transaction become
+      // inactive in conforming browsers.
       const tx = this._transaction(['revisions', 'shards', 'heads'], 'readonly');
       const revisionId = await requestResult(tx.objectStore('heads').get(project));
       if (revisionId === undefined) {
@@ -327,31 +331,34 @@ export class IndexedDBProjectStore {
         try { tx.abort(); } catch {}
         throw new SplashMXStorageError('storage.corrupt_store', 'project head references a missing revision');
       }
-      const rootManifest = bytes(row.rootManifest, 'stored rootManifest');
-      if (row.rootDigest !== await digest(rootManifest)) {
-        try { tx.abort(); } catch {}
-        throw new SplashMXStorageError('storage.corrupt_store', 'stored root-manifest digest mismatch');
-      }
       const keys = Array.isArray(row.shardKeys) ? row.shardKeys : null;
       if (!keys || new Set(keys).size !== keys.length) {
         try { tx.abort(); } catch {}
         throw new SplashMXStorageError('storage.corrupt_store', 'stored revision shard index is malformed');
       }
-      const shards = new Map();
+      const physicalShards = [];
       for (const key of keys) {
         const shard = await requestResult(tx.objectStore('shards').get(shardKey(project, String(revisionId), key)));
         if (!shard) {
           try { tx.abort(); } catch {}
           throw new SplashMXStorageError('storage.corrupt_store', `stored shard ${key} is missing`);
         }
-        const payload = bytes(shard.payload, `stored shard ${key}`);
-        if (shard.digest !== await digest(payload)) {
-          try { tx.abort(); } catch {}
-          throw new SplashMXStorageError('storage.corrupt_store', `stored shard ${key} failed digest verification`);
-        }
-        shards.set(String(key), payload);
+        physicalShards.push([String(key), shard]);
       }
       await transactionDone(tx);
+
+      const rootManifest = bytes(row.rootManifest, 'stored rootManifest');
+      if (row.rootDigest !== await digest(rootManifest)) {
+        throw new SplashMXStorageError('storage.corrupt_store', 'stored root-manifest digest mismatch');
+      }
+      const shards = new Map();
+      for (const [key, shard] of physicalShards) {
+        const payload = bytes(shard.payload, `stored shard ${key}`);
+        if (shard.digest !== await digest(payload)) {
+          throw new SplashMXStorageError('storage.corrupt_store', `stored shard ${key} failed digest verification`);
+        }
+        shards.set(key, payload);
+      }
       return { projectId: project, revisionId: String(revisionId), rootManifest, shards };
     } catch (error) {
       if (error instanceof SplashMXStorageError) throw error;
