@@ -1,0 +1,30 @@
+name: SMX-026 execution IR
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  execution-ir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Validate SMX-004 retained behaviour fixtures
+        run: python tools/validate_smx004.py
+      - name: Run retained SMX-004 behaviour falsification model
+        run: python -m unittest discover -s experiments/smx-004-behaviour-model -p 'test_*.py' -v
+      - name: Validate SMX-016 retained security fixtures
+        run: python tools/validate_smx016.py
+      - name: Validate SMX-026 production contract
+        run: python tools/validate_smx026.py
+      - name: Run canonical-core dependency regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx023.py' -v
+      - name: Run SMX-026 execution adversarial tests
+        run: python -m unittest discover -s tests/production -p 'test_smx026.py' -v
