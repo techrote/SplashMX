@@ -14,6 +14,12 @@ def creation(revision: str, *, required_features=()):
     return publish_creation(CreationId("browser-creation"), project, ResolutionLock("browser-catalog", {}), {}, required_features=required_features)
 
 
+def _stop(*_args) -> None:
+    # HTTPServer.shutdown() may deadlock when called from the serve_forever thread.
+    # Raising KeyboardInterrupt lets the existing finally path close cleanly.
+    raise KeyboardInterrupt
+
+
 def main() -> int:
     store = HostedReleaseStore()
     store.publish_release(HostedReleaseId("release-good"), creation("project-good"))
@@ -22,7 +28,7 @@ def main() -> int:
     store.retarget_alias("unsupported", HostedReleaseId("release-unsupported"))
     server = run_server("127.0.0.1", 0, store)
     print(f"SMX036 READY http://127.0.0.1:{server.server_address[1]}", flush=True)
-    signal.signal(signal.SIGTERM, lambda *_: server.shutdown())
+    signal.signal(signal.SIGTERM, _stop)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
