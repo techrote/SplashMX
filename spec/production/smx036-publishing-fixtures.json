@@ -1,0 +1,29 @@
+{
+  "schema": "splashmx.smx036-publishing-fixtures/1",
+  "fixtures": [
+    {"id":"PUB-001","class":"identity","contract":"CreationId lineage and CreationRevisionId role separation"},
+    {"id":"PUB-002","class":"immutability","contract":"CreationRevisionId is a digest-bound immutable payload identity"},
+    {"id":"PUB-003","class":"project","contract":"canonical project root manifest is exact-digest bound"},
+    {"id":"PUB-004","class":"project","contract":"every canonical project shard is exact-digest bound"},
+    {"id":"PUB-005","class":"lock","contract":"resolution lock is exact-digest bound"},
+    {"id":"PUB-006","class":"closure","contract":"every locked package revision is physically present in offline closure"},
+    {"id":"PUB-007","class":"closure","contract":"lazy packages remain part of exact offline closure"},
+    {"id":"PUB-008","class":"dependency","contract":"package descriptor revision/digest/size equals exact lock"},
+    {"id":"PUB-009","class":"dependency","contract":"non-optional package edges bind exact child revisions"},
+    {"id":"PUB-010","class":"activation","contract":"tampered creation envelope fails before activation"},
+    {"id":"PUB-011","class":"activation","contract":"tampered project bytes fail before activation"},
+    {"id":"PUB-012","class":"activation","contract":"tampered package bytes fail before activation"},
+    {"id":"PUB-013","class":"compatibility","contract":"unknown required creation feature fails before activation"},
+    {"id":"PUB-014","class":"capability","contract":"active package capability policy completes before activation"},
+    {"id":"PUB-015","class":"hosted","contract":"immutable hosted release cannot retarget"},
+    {"id":"PUB-016","class":"hosted","contract":"friendly alias may retarget without becoming semantic identity"},
+    {"id":"PUB-017","class":"offline","contract":"offline lookup is exact CreationRevisionId and never floats"},
+    {"id":"PUB-018","class":"worldsave","contract":"WorldSaveId remains distinct from CreationRevisionId"},
+    {"id":"PUB-019","class":"worldsave","contract":"WorldSave basis explicitly names creation and authored project revision"},
+    {"id":"PUB-020","class":"protected-media","contract":"competing revisions for one AssetId are rejected across closure"},
+    {"id":"PUB-021","class":"protected-media","contract":"target derivative references but cannot replace canonical Asset revision"},
+    {"id":"PUB-022","class":"provenance","contract":"source/audio/provenance/licence/derivation remain indivisible"},
+    {"id":"PUB-023","class":"authority","contract":"creation manifest contains no host/session/capability grant authority"},
+    {"id":"PUB-024","class":"build","contract":"ordinary Publish has no per-creation engine export or compile step"}
+  ]
+}

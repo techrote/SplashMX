@@ -1,0 +1,43 @@
+name: SMX-036 generic publishing
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  generic-publishing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate inherited and publication contracts
+        run: |
+          python tools/validate_smx014.py
+          python tools/validate_smx019.py
+          python tools/validate_smx024.py
+          python tools/validate_smx027.py
+          python tools/validate_smx029.py
+          python tools/validate_smx030.py
+          python tools/validate_smx033.py
+          python tools/validate_smx035.py
+          python tools/validate_smx036.py
+      - name: Run production publication regressions
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx024 -v
+          python -m unittest tests.production.test_smx027 -v
+          python -m unittest tests.production.test_smx029 -v
+          python -m unittest tests.production.test_smx030 -v
+          python -m unittest tests.production.test_smx033 -v
+          python -m unittest tests.production.test_smx035 -v
+          python -m unittest tests.production.test_smx035_adversarial -v
+          python -m unittest tests.production.test_smx036 -v
+          python -m unittest tests.production.test_smx036_adversarial -v
