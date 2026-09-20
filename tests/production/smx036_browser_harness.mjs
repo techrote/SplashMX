@@ -22,11 +22,10 @@ try {
   const page = await browser.newPage();
   await page.goto(baseURL, {waitUntil: 'domcontentloaded'});
   await page.getByRole('button', {name: 'Load'}).click();
-  await page.getByRole('status').waitFor();
+  await page.waitForFunction(() => document.querySelector('#status').textContent.startsWith('Ready: sha256:'));
   const ready = await page.getByRole('status').textContent();
-  if (!ready.startsWith('Ready: sha256:')) throw new Error(`good creation did not become ready: ${ready}`);
   const goodRevision = await page.locator('#active').getAttribute('data-revision');
-  if (!goodRevision?.startsWith('sha256:')) throw new Error('active CreationRevisionId missing');
+  if (!goodRevision?.startsWith('sha256:')) throw new Error(`active CreationRevisionId missing after ${ready}`);
 
   await page.locator('#locator').fill('unsupported');
   await page.getByRole('button', {name: 'Load'}).click();
