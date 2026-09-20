@@ -1,0 +1,42 @@
+name: SMX-028 hot replacement
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  hotswap:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Validate retained SMX-004 behaviour contract
+        run: python tools/validate_smx004.py
+      - name: Run retained SMX-004 behaviour model
+        run: python -m unittest discover -s experiments/smx-004-behaviour-model -p 'test_model.py' -v
+      - name: Validate retained SMX-008 streaming and migration contract
+        run: python tools/validate_smx008.py
+      - name: Run retained SMX-008 streaming replacement model
+        run: python -m unittest discover -s experiments/smx-008-streaming-model -p 'test_model.py' -v
+      - name: Run retained SMX-015 destructive hot-swap fixtures
+        run: python -m unittest discover -s experiments/smx-015-object-fabric-harness -p 'test_p1_hotswap.py' -v
+      - name: Validate SMX-026 execution dependency
+        run: python tools/validate_smx026.py
+      - name: Run SMX-026 scheduler regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx026.py' -v
+      - name: Validate SMX-027 capability dependency
+        run: python tools/validate_smx027.py
+      - name: Run SMX-027 capability regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx027.py' -v
+      - name: Validate SMX-028 production contract
+        run: python tools/validate_smx028.py
+      - name: Run SMX-028 adversarial hot-replacement tests
+        run: python -m unittest discover -s tests/production -p 'test_smx028.py' -v
