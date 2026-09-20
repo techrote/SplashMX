@@ -1,0 +1,88 @@
+name: SMX-033 browser runtime persistence
+
+on:
+  pull_request:
+    paths:
+      - 'src/splashmx/editor/**'
+      - 'src/splashmx/runtime/**'
+      - 'src/splashmx/storage/**'
+      - 'spec/production/smx033-browser-runtime-fixtures.json'
+      - 'tests/production/test_smx033.py'
+      - 'tests/production/smx033_browser_harness.mjs'
+      - 'tools/validate_smx033.py'
+      - 'docs/implementation/SMX-033-BROWSER-RUNTIME.md'
+      - '.github/workflows/smx033-browser-runtime.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/splashmx/editor/**'
+      - 'src/splashmx/runtime/**'
+      - 'src/splashmx/storage/**'
+      - 'spec/production/smx033-browser-runtime-fixtures.json'
+      - 'tests/production/test_smx033.py'
+      - 'tests/production/smx033_browser_harness.mjs'
+      - 'tools/validate_smx033.py'
+      - 'docs/implementation/SMX-033-BROWSER-RUNTIME.md'
+      - '.github/workflows/smx033-browser-runtime.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  browser-runtime-contract:
+    name: Production Play Stop persistence diagnostics adversarial tests
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Retain crash-safe persistence dependency
+        run: python tools/validate_smx025.py
+      - name: Retain lifecycle dependency
+        run: python tools/validate_smx029.py
+      - name: Retain production-core gate dependency
+        run: python tools/validate_smx031.py
+      - name: Retain browser-authoring dependency
+        run: python tools/validate_smx032.py
+      - name: Validate SMX-033 contract
+        run: python tools/validate_smx033.py
+      - name: Run SMX-033 adversarial and boundary tests
+        run: python -m unittest discover -s tests/production -p 'test_smx033.py' -v
+
+  measured-browser-runtime:
+    name: Pinned Chromium Play Stop Save Reload accessibility campaign
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned browser harness dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Validate SMX-033 contract
+        run: python tools/validate_smx033.py
+      - name: Run measured real Chromium production loop
+        run: node tests/production/smx033_browser_harness.mjs
+      - name: Print measured evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx033-browser-results.json ]; then cat artifacts/smx033-browser-results.json; fi
+      - name: Upload measured browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx033-browser-runtime-evidence
+          path: artifacts/smx033-browser-results.json
+          if-no-files-found: warn
+          retention-days: 30
