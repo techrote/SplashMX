@@ -161,7 +161,12 @@ def run_server(host: str, port: int, *, project_id: str = "local-project", store
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SplashMX browser authoring shell"); parser.add_argument("--host", default="127.0.0.1"); parser.add_argument("--port", type=int, default=8765); parser.add_argument("--project-id", default="local-project"); parser.add_argument("--store-path", default=".splashmx/local-project.sqlite3"); args = parser.parse_args(argv)
-    server = run_server(args.host, args.port, project_id=args.project_id, store_path=args.store_path); print(f"SMX033 READY http://{args.host}:{server.server_address[1]}", flush=True)
+    server = run_server(args.host, args.port, project_id=args.project_id, store_path=args.store_path)
+    url = f"http://{args.host}:{server.server_address[1]}"
+    # Retain the SMX-032 readiness marker because its browser regression remains a
+    # non-droppable upstream gate while SMX-033 adds the expanded runtime marker.
+    print(f"SMX032 READY {url}", flush=True)
+    print(f"SMX033 READY {url}", flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally: server.server_close()
