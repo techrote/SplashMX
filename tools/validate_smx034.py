@@ -33,7 +33,7 @@ def main() -> int:
         "Trust is not capability",
         "No ambient install authority",
         "SMX-035 production handoff",
-        "one exact revision per `PackageId`",
+        "One exact revision per `PackageId`",
         "Runtime floating resolution",
     ]
     for phrase in required_phrases:
