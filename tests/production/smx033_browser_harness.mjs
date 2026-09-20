@@ -90,7 +90,9 @@ try {
   assert.equal(rejected.status, 409); assert.equal(rejected.payload.error.code, "authoring.forbidden_transient_identity");
   evidence.checks.r019_01_semantic_connection = true;
 
-  const authoredBeforePlay = (await state(page)).canonical.project_revision_id;
+  // Raw boundary probes intentionally bypass app.js state publication. Use the
+  // successful production response as the exact authored basis for Play.
+  const authoredBeforePlay = connected.payload.state.canonical.project_revision_id;
   t = performance.now(); await page.keyboard.press("Control+Enter");
   s = await waitFor(page, (x) => x.runtime.mode === "play", "Play mode"); evidence.metrics_ms.play_start = performance.now() - t;
   assert.equal(s.canonical.project_revision_id, authoredBeforePlay);
@@ -100,7 +102,8 @@ try {
   evidence.checks.play_stop_transient = true;
 
   t = performance.now(); await page.keyboard.press("Control+s"); s = await waitFor(page, (x) => x.storage.saved_revision_id === authoredBeforePlay, "save"); evidence.metrics_ms.save = performance.now() - t;
-  await raw(page, "createThing", { label: "Unsaved edit" }); s = await state(page); assert.equal(s.canonical.things.length, 3);
+  await page.evaluate(() => window.splashmxAct("createThing", { label: "Unsaved edit" }));
+  s = await waitFor(page, (x) => x.canonical.things.length === 3, "unsaved edit");
   t = performance.now(); await page.getByTestId("reload").click(); s = await waitFor(page, (x) => x.canonical.things.length === 2 && x.canonical.project_revision_id === authoredBeforePlay, "verified reload"); evidence.metrics_ms.reload_saved = performance.now() - t;
   assert.equal(s.canonical.connections[0].connection_id, "semantic-browser-connection");
   evidence.checks.save_reload_non_destructive = true;
