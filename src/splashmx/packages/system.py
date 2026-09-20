@@ -57,8 +57,11 @@ MigrationPrepare = Callable[[PackageRuntimeState, Mapping[PackageId, ValidatedPa
 
 def _descriptor(locked: LockedPackage) -> ExactArtifactDescriptor:
     return ExactArtifactDescriptor(
-        f"package-bundle:{locked.package_revision_id}", ArtifactKind.OPAQUE_EXACT,
-        locked.bundle_digest, locked.bundle_size,
+        f"package-bundle:{locked.package_revision_id}",
+        ArtifactKind.OPAQUE_EXACT,
+        locked.bundle_digest,
+        "application/vnd.splashmx.spb1",
+        locked.bundle_size,
     )
 
 
