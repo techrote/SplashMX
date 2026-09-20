@@ -1,0 +1,92 @@
+name: SMX-032 browser authoring
+
+on:
+  pull_request:
+    paths:
+      - 'src/splashmx/editor/**'
+      - 'src/splashmx/canonical/**'
+      - 'src/splashmx/execution/**'
+      - 'src/MODULES.json'
+      - 'spec/production/smx032-editor-fixtures.json'
+      - 'tests/production/test_smx032.py'
+      - 'tests/production/smx032_browser_harness.mjs'
+      - 'tools/validate_smx032.py'
+      - 'docs/implementation/SMX-032-BROWSER-AUTHORING.md'
+      - '.github/workflows/smx032-browser-authoring.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/splashmx/editor/**'
+      - 'src/splashmx/canonical/**'
+      - 'src/splashmx/execution/**'
+      - 'src/MODULES.json'
+      - 'spec/production/smx032-editor-fixtures.json'
+      - 'tests/production/test_smx032.py'
+      - 'tests/production/smx032_browser_harness.mjs'
+      - 'tools/validate_smx032.py'
+      - 'docs/implementation/SMX-032-BROWSER-AUTHORING.md'
+      - '.github/workflows/smx032-browser-authoring.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  authoring-contract:
+    name: Production authoring contract + adversarial tests
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Retain canonical core dependency
+        run: python tools/validate_smx023.py
+      - name: Retain protected serialization dependency
+        run: python tools/validate_smx024.py
+      - name: Retain common IR dependency
+        run: python tools/validate_smx026.py
+      - name: Retain production-core gate dependency
+        run: python tools/validate_smx031.py
+      - name: Validate SMX-032 production authoring contract
+        run: python tools/validate_smx032.py
+      - name: Run SMX-032 production adversarial and boundary tests
+        run: python -m unittest discover -s tests/production -p 'test_smx032.py' -v
+
+  browser-authoring:
+    name: Real Chromium create-group-reuse-connect-import campaign
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+      - name: Install pinned browser harness dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Validate SMX-032 production authoring contract
+        run: python tools/validate_smx032.py
+      - name: Run real Chromium authoring campaign
+        run: node tests/production/smx032_browser_harness.mjs
+      - name: Print measured browser evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx032-browser-results.json ]; then
+            cat artifacts/smx032-browser-results.json
+          fi
+      - name: Upload browser authoring evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx032-browser-authoring-evidence
+          path: artifacts/smx032-browser-results.json
+          if-no-files-found: warn
+          retention-days: 30

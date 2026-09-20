@@ -1,0 +1,32 @@
+{
+  "schema": "splashmx.smx032-editor-fixtures/1",
+  "issue": "SMX-032",
+  "architecture_version": "1.0",
+  "upstream_contracts": ["AUTH-001", "AUTH-002", "AUTH-003", "AUTH-006", "AUTH-008", "AUTH-010", "AUTH-011", "AUTH-022", "AUTH-027", "UXG-001", "UXG-003", "UXG-004", "UXG-005", "UXG-011", "UXG-012", "R-019-01"],
+  "fixtures": [
+    {"id":"EDT-001","kind":"production","action":"Create a Thing from a blank Stage.","expect":"One SMX-023 semantic transaction publishes a new ProjectRevisionId and stable ThingId."},
+    {"id":"EDT-002","kind":"boundary","action":"Change selection and Inspect visibility.","expect":"Editor state changes without advancing the canonical ProjectRevisionId or entering authored state."},
+    {"id":"EDT-003","kind":"production","action":"Group two existing Things.","expect":"Existing ThingIds are preserved and only explicit containment relationships are added."},
+    {"id":"EDT-004","kind":"adversarial","action":"Attempt grouping with one unknown Thing.","expect":"Whole transaction fails; no group or partial containment is published."},
+    {"id":"EDT-005","kind":"production","action":"Make an ordinary group reusable.","expect":"A local Definition/Instance is created while the first concrete ThingIds remain unchanged."},
+    {"id":"EDT-006","kind":"production","action":"Instantiate the local reusable Definition.","expect":"The new instance receives independent concrete ThingIds while sharing Definition semantics."},
+    {"id":"EDT-007","kind":"production","action":"Attach beginner Rule and Behaviour projections with equivalent actions.","expect":"Both lower through the SMX-026 versioned constrained IR rather than separate interpreters."},
+    {"id":"EDT-008","kind":"adversarial","action":"Submit an unsupported Rule action.","expect":"Compilation fails before a Behaviour attachment is published."},
+    {"id":"EDT-009","kind":"production","action":"Connect an event output to a command input.","expect":"Connection records stable ThingId + PortId endpoints and canonical ConnectionId."},
+    {"id":"EDT-010","kind":"adversarial","action":"Use a hierarchy path as a PortId.","expect":"Stable semantic identity validation rejects it before publication."},
+    {"id":"EDT-011","kind":"adversarial","action":"Connect to a missing target port.","expect":"Connection transaction rolls back atomically with no partial record."},
+    {"id":"EDT-012","kind":"production","action":"Use a Behaviour without any Timeline track.","expect":"Non-Timeline interactivity remains a first-class valid project."},
+    {"id":"EDT-013","kind":"production","action":"Add optional Timeline keyframes to an authored Thing property.","expect":"Track targets stable ThingId/property semantics and does not create behavioural ownership."},
+    {"id":"EDT-014","kind":"adversarial","action":"Attempt to target Timeline through implementation-locator vocabulary.","expect":"The authoring boundary rejects the target without advancing the project revision."},
+    {"id":"EDT-015","kind":"production","action":"Import media with complete source/media/provenance/licence/derivation metadata.","expect":"A stable AssetId selects one digest-bound indivisible ProtectedAssetRevision and the Thing references that exact revision."},
+    {"id":"EDT-016","kind":"adversarial","action":"Import media with incomplete provenance metadata.","expect":"Import fails atomically with neither Asset nor Thing published."},
+    {"id":"EDT-017","kind":"adversarial","action":"Attempt to reuse an existing AssetId for competing source bytes.","expect":"Existing immutable revision remains authoritative and no competing Thing is published."},
+    {"id":"EDT-018","kind":"adversarial","action":"Mix one protected revision field while retaining the old revision digest.","expect":"SMX-024 validation rejects the synthetic field-mixed revision."},
+    {"id":"EDT-019","kind":"adversarial","action":"Submit transport/session authority in authored state.","expect":"Canonical validation rejects transient authority and leaves the old project revision unchanged."},
+    {"id":"EDT-020","kind":"boundary","action":"Render the ordinary Stage and Thing tools.","expect":"Basic author UI requires SplashMX vocabulary and contains no engine/build/package implementation terminology."},
+    {"id":"EDT-021","kind":"regression","action":"Inspect a stable ConnectionId in the author projection.","expect":"R-019-01 remains enforced: semantic ConnectionId survives while transport connection identity remains non-canonical."},
+    {"id":"EDT-022","kind":"browser","action":"Drive create/group/reuse/ports/connect/Rule/Behaviour/Timeline/Inspect in real Chromium.","expect":"The browser remains a thin action/view projection over the production transaction boundary."},
+    {"id":"EDT-023","kind":"browser-adversarial","action":"Send an invalid connection request through the browser bridge.","expect":"Typed failure is returned and the canonical connection set is unchanged."},
+    {"id":"EDT-024","kind":"browser-adversarial","action":"Send incomplete protected-media metadata through the browser bridge.","expect":"Typed failure is returned and neither canonical Thing nor protected Asset is published."}
+  ]
+}
