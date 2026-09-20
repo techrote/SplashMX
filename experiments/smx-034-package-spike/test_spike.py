@@ -143,6 +143,32 @@ class ResolverTests(unittest.TestCase):
         self.assertEqual(result.selected, {})
         self.assertEqual(result.optional_fallbacks["pkg:optional"], "builtin:none")
 
+    def test_optional_conflict_cannot_perturb_required_revision(self):
+        catalog = {
+            "pkg:c": [rev("pkg:c", "1.5.0"), rev("pkg:c", "2.5.0")],
+        }
+        result = resolve(
+            catalog,
+            [
+                dep("pkg:c", "^1.0.0", "required"),
+                dep("pkg:c", "^2.0.0", "optional", "builtin:no-c"),
+            ],
+        )
+        self.assertEqual(str(result.selected["pkg:c"].version), "1.5.0")
+        self.assertEqual(result.optional_fallbacks, {"pkg:c": "builtin:no-c"})
+
+    def test_optional_transitive_failure_uses_fallback_without_leaking_subtree(self):
+        catalog = {
+            "pkg:optional": [rev("pkg:optional", "1.0.0", deps=[dep("pkg:missing-child", "=1.0.0")])],
+        }
+        result = resolve(
+            catalog,
+            [dep("pkg:optional", "=1.0.0", "optional", "builtin:safe")],
+        )
+        self.assertEqual(result.selected, {})
+        self.assertEqual(result.optional_fallbacks, {"pkg:optional": "builtin:safe"})
+        self.assertNotIn("pkg:missing-child", result.selected)
+
     def test_lazy_dependency_is_explicitly_marked(self):
         catalog = {"pkg:lazy": [rev("pkg:lazy", "1.0.0")]}
         result = resolve(catalog, [dep("pkg:lazy", "=1.0.0", "lazy")])
