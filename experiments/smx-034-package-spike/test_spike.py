@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from hashlib import sha256
-import struct
 import unittest
 
 from splashmx.canonical.serialization import encode_canonical_cbor
@@ -244,7 +243,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_protected_asset_field_mixing_surface_is_closed(self):
         manifest = good_manifest()
-        del manifest["protected_assets"][0]["audio"] if "audio" in manifest["protected_assets"][0] else manifest["protected_assets"][0]["media_semantics"]
+        del manifest["protected_assets"][0]["media_semantics"]
         with self.assertRaises(PackageSpikeError) as caught:
             validate_manifest(manifest)
         self.assertEqual(caught.exception.code, "package.incomplete_protected_asset")
