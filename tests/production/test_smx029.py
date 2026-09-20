@@ -512,7 +512,7 @@ class SMX029LifecycleWorldSaveTests(unittest.TestCase):
             with SQLiteWorldSaveStore(path) as store:
                 store.save(snap)
 
-            script = r'''\
+            script = r'''
 import json, sys
 from splashmx.canonical.core import BehaviourAttachmentId, BehaviourAttachmentRecord, CanonicalDocument, ProjectId, ProjectRevisionId, ThingId, ThingRecord
 from splashmx.execution.ir import IRHandler, IRInstruction, IRProgram, literal
