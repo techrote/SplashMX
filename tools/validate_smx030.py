@@ -24,7 +24,8 @@ def main() -> None:
     architecture = text("docs/architecture/ARCHITECTURE-V1.md")
     for phrase in (
         "known-unloaded",
-        "exact immutable dependency",
+        "Logical residency is object/subgraph-centric.",
+        "Cache eviction is non-semantic.",
         "A stable `AssetId` selects one complete immutable protected revision",
     ):
         require(phrase in architecture, f"Architecture-v1 authority missing {phrase!r}")
