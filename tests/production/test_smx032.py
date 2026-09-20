@@ -8,9 +8,7 @@ from splashmx.canonical.core import (
     ConnectionId,
     DefinitionId,
     PortId,
-    ProjectRevisionId,
     RelationshipKind,
-    SemanticError,
     ThingId,
 )
 from splashmx.canonical.serialization import ProtectedAssetRevision, SerializationError
@@ -143,7 +141,7 @@ class AuthoringSessionTests(unittest.TestCase):
     def test_hierarchy_path_cannot_be_smuggled_in_as_port_identity(self) -> None:
         thing = self.session.create_thing(label="Button", thing_id="button")
         revision = self.session.document.project_revision_id
-        with self.assertRaises(SemanticError):
+        with self.assertRaises(AuthoringError):
             self.session.add_port(thing, port_id="Stage/Button", name="Bad", kind="event", direction="out")
         self.assertEqual(self.session.document.project_revision_id, revision)
 
