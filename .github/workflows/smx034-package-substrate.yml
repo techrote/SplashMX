@@ -1,0 +1,38 @@
+name: SMX-034 package substrate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  package-substrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate inherited package and security contracts
+        run: |
+          python tools/validate_smx013.py
+          python tools/validate_smx016.py
+          python tools/validate_smx024.py
+          python tools/validate_smx027.py
+          python tools/validate_smx030.py
+          python tools/validate_smx034.py
+      - name: Run production boundary regressions
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx024 -v
+          python -m unittest tests.production.test_smx027 -v
+          python -m unittest tests.production.test_smx030 -v
+      - name: Run SMX-034 adversarial spike
+        env:
+          PYTHONPATH: src:experiments/smx-034-package-spike
+        run: python -m unittest discover -s experiments/smx-034-package-spike -p 'test_*.py' -v
