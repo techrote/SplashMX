@@ -76,6 +76,12 @@ def _serialization_failure(exc: SerializationError) -> StorageError:
         "serialization.incompatible_profile",
     }:
         code = "storage.incompatible_revision"
+    elif exc.code in {
+        "serialization.migration_failed",
+        "serialization.migration_limit",
+        "serialization.invalid_migration",
+    }:
+        code = "storage.migration_failed"
     else:
         code = "storage.corrupt_store"
     return StorageError(code, "stored project revision failed canonical validation", cause=exc)
