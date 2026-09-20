@@ -1,0 +1,38 @@
+name: SMX-024 canonical serialization
+
+on:
+  pull_request:
+    paths:
+      - 'src/splashmx/canonical/**'
+      - 'src/MODULES.json'
+      - 'tests/production/test_smx024.py'
+      - 'tools/validate_smx024.py'
+      - 'docs/implementation/SMX-024-CANONICAL-SERIALIZATION.md'
+      - '.github/workflows/smx024-canonical-serialization.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/splashmx/canonical/**'
+      - 'src/MODULES.json'
+      - 'tests/production/test_smx024.py'
+      - 'tools/validate_smx024.py'
+      - 'docs/implementation/SMX-024-CANONICAL-SERIALIZATION.md'
+      - '.github/workflows/smx024-canonical-serialization.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  canonical-serialization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Validate SMX-024 production contract
+        run: python tools/validate_smx024.py
+      - name: Run SMX-023 canonical-core regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx023.py' -v
+      - name: Run SMX-024 canonical-serialization adversarial tests
+        run: python -m unittest discover -s tests/production -p 'test_smx024.py' -v
