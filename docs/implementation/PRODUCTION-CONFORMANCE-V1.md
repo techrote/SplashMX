@@ -34,9 +34,11 @@ Browser measurements may additionally identify the browser/version. Later perfor
 
 ## Production module ownership and identity guard
 
-`src/MODULES.json` declares the production module map anticipated by SMX-021–052. Only `contracts.conformance` is active in Phase 0; all semantic/runtime modules remain planned until their owning issues land.
+`src/MODULES.json` declares the production module map anticipated by SMX-021–052. Only `contracts.conformance` is active in Phase 0; semantic/runtime modules transition from `planned` to `implemented` only when their owning production issues genuinely land.
 
 The manifest is validated against a common forbidden durable identity set. Host/transient identities may exist inside private adapters but cannot be declared as canonical identity inputs. The guard deliberately permits semantic `ConnectionId` while rejecting transient `connection_handle`, preserving R-019-01.
+
+SMX-032 activates `browser.editor` as a production authoring projection. Its canonical identity inputs are `ThingId`, `DefinitionId`, `ConnectionId` and `AssetId`; browser/DOM/session handles remain non-canonical. GATE-04 now carries direct production unit and real-Chromium authoring evidence while retaining SMX-033, SMX-036 and SMX-048 as future obligations. The protected-media cross-cutting regression now also names `browser.editor`, because media import is an authoring boundary that must preserve the complete immutable Asset revision.
 
 ## CI and future issues
 
@@ -48,3 +50,5 @@ python -m unittest discover -s tests/production -p 'test_smx021.py' -v
 ```
 
 Future production issues must update the registry/module manifest when they activate an owned module or replace a future test obligation with real production coverage. Passing a pre-v1 harness remains evidence lineage, not production certification.
+
+For SMX-032, the direct production authoring tests and pinned real-Chromium campaign are registered under GATE-04, while the P4 gate remains explicitly open for SMX-033. This distinction prevents a working editor shell from being mistaken for completed browser Play/Stop, persistence, diagnostics, accessibility, publication or human-usability qualification.
