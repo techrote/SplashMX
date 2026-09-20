@@ -1,0 +1,94 @@
+name: SMX-031 production core gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/splashmx/canonical/**'
+      - 'src/splashmx/execution/**'
+      - 'src/splashmx/runtime/**'
+      - 'src/splashmx/security/**'
+      - 'src/splashmx/storage/**'
+      - 'src/MODULES.json'
+      - 'spec/production/**'
+      - 'tests/production/smx031_harness.py'
+      - 'tests/production/test_smx031.py'
+      - 'tools/validate_smx031.py'
+      - 'tools/measure_smx031.py'
+      - 'docs/implementation/SMX-031-PRODUCTION-CORE-GATE.md'
+      - '.github/workflows/smx031-production-core-gate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/splashmx/canonical/**'
+      - 'src/splashmx/execution/**'
+      - 'src/splashmx/runtime/**'
+      - 'src/splashmx/security/**'
+      - 'src/splashmx/storage/**'
+      - 'src/MODULES.json'
+      - 'spec/production/**'
+      - 'tests/production/smx031_harness.py'
+      - 'tests/production/test_smx031.py'
+      - 'tools/validate_smx031.py'
+      - 'tools/measure_smx031.py'
+      - 'docs/implementation/SMX-031-PRODUCTION-CORE-GATE.md'
+      - '.github/workflows/smx031-production-core-gate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  production-core:
+    name: Production core vertical + adversarial campaign
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Validate SMX-023 canonical core dependency
+        run: python tools/validate_smx023.py
+      - name: Validate SMX-024 canonical serialization dependency
+        run: python tools/validate_smx024.py
+      - name: Validate SMX-025 local persistence dependency
+        run: python tools/validate_smx025.py
+      - name: Validate SMX-026 execution IR dependency
+        run: python tools/validate_smx026.py
+      - name: Validate SMX-027 capability dependency
+        run: python tools/validate_smx027.py
+      - name: Validate SMX-028 hot replacement dependency
+        run: python tools/validate_smx028.py
+      - name: Validate SMX-029 lifecycle dependency
+        run: python tools/validate_smx029.py
+      - name: Validate SMX-030 exact streaming dependency
+        run: python tools/validate_smx030.py
+      - name: Validate SMX-031 integration contract
+        run: python tools/validate_smx031.py
+      - name: Run production dependencies and integrated adversarial campaign
+        run: |
+          python -m unittest discover -s tests/production -p 'test_smx023.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx024.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx025.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx026.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx027.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx028.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx029.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx030.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx031.py' -v
+      - name: Measure integrated non-UI production vertical
+        run: python tools/measure_smx031.py --samples 5 --output artifacts/smx031-core-evidence.json
+      - name: Print production-core evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx031-core-evidence.json ]; then
+            cat artifacts/smx031-core-evidence.json
+          fi
+      - name: Upload production-core evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx031-production-core-evidence
+          path: artifacts/smx031-core-evidence.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,55 @@
+{
+  "schema": "splashmx.smx031-core-gate-fixtures/1",
+  "issue": "SMX-031",
+  "architecture_version": "1.0",
+  "authority": [
+    "docs/architecture/ARCHITECTURE-V1.md",
+    "docs/architecture/IMPLEMENTATION-ROADMAP-V1.md",
+    "docs/implementation/PRODUCTION-PROGRAMME-V1.md"
+  ],
+  "production_modules": [
+    "canonical.core",
+    "canonical.serialization",
+    "storage.local",
+    "execution.ir",
+    "security.capabilities",
+    "execution.hotswap",
+    "runtime.lifecycle",
+    "runtime.streaming"
+  ],
+  "protected_media_fields": [
+    "digest",
+    "source_identity",
+    "source_metadata",
+    "audio_or_media_semantics",
+    "provenance",
+    "licence_attribution",
+    "derivation_lineage"
+  ],
+  "fixtures": [
+    {"id": "PCG-001", "requirement": "create a canonical local project using only production semantic transactions"},
+    {"id": "PCG-002", "requirement": "promote a containment group to a reusable local Definition and instantiate it with independent stable ThingIds"},
+    {"id": "PCG-003", "requirement": "attach a compiled beginner Rule and advanced Behaviour through the common production IR"},
+    {"id": "PCG-004", "requirement": "persist a stable-port Connection through play, stop and physical project round-trip"},
+    {"id": "PCG-005", "requirement": "Play mutates transient runtime state while the authored canonical revision remains unchanged"},
+    {"id": "PCG-006", "requirement": "Stop discards transient Play state and reconstructs authored defaults without semantic identity churn"},
+    {"id": "PCG-007", "requirement": "save/reload uses the production crash-safe local project store"},
+    {"id": "PCG-008", "requirement": "fresh-process WorldSave restore reproduces exact public/private state from semantic data plus exact programs"},
+    {"id": "PCG-009", "requirement": "WorldSave contains no engine, browser, network session, process or capability handles"},
+    {"id": "PCG-010", "requirement": "a durable inventory reference remains meaningful while its target is known-unloaded"},
+    {"id": "PCG-011", "requirement": "exact streaming rehydrates the target without treating containment as an implicit load unit"},
+    {"id": "PCG-012", "requirement": "missing exact stream dependencies fail with a typed error and no partial activation"},
+    {"id": "PCG-013", "requirement": "cache eviction is non-semantic and cannot rewrite WorldSave or protected assets"},
+    {"id": "PCG-014", "requirement": "tombstoned Things cannot be resurrected by an exact streaming catalog"},
+    {"id": "PCG-015", "requirement": "compatible Behaviour hot replacement preserves stable Thing/attachment identity and private state"},
+    {"id": "PCG-016", "requirement": "failed Behaviour replacement rolls back without partial runtime publication"},
+    {"id": "PCG-017", "requirement": "instruction amplification hits the independent execution budget and rolls back staged public mutation"},
+    {"id": "PCG-018", "requirement": "a required capability without an explicit grant is denied with no ambient authority"},
+    {"id": "PCG-019", "requirement": "failed canonical transactions leave the previous coherent project revision unchanged"},
+    {"id": "PCG-020", "requirement": "the same ProjectRevisionId cannot be rebound to different protected Asset bytes"},
+    {"id": "PCG-021", "requirement": "corrupt WorldSave bytes fail before a fresh runtime is published"},
+    {"id": "PCG-022", "requirement": "protected Asset round-trip preserves the complete indivisible revision field set"},
+    {"id": "PCG-023", "requirement": "a competing complete protected Asset revision cannot field-mix during streaming activation"},
+    {"id": "PCG-024", "requirement": "benchmark evidence for the integrated non-UI vertical uses splashmx.benchmark-evidence/1 metadata"}
+  ]
+}
