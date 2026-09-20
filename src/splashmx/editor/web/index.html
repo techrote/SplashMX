@@ -7,15 +7,23 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#stage">Skip to Stage</a>
   <header class="topbar">
     <div>
       <strong>SplashMX</strong>
       <span id="revision" class="muted" aria-live="polite"></span>
+      <span id="mode" class="muted" aria-live="polite">Edit mode</span>
     </div>
-    <button id="inspect-toggle" type="button" data-testid="inspect-toggle">Inspect</button>
+    <nav aria-label="Project actions" class="toolbar">
+      <button id="play" type="button" data-testid="play" aria-keyshortcuts="Control+Enter">Play</button>
+      <button id="stop" type="button" data-testid="stop" aria-keyshortcuts="Escape">Stop</button>
+      <button id="save" type="button" data-testid="save" aria-keyshortcuts="Control+S">Save</button>
+      <button id="reload" type="button" data-testid="reload">Reload saved</button>
+      <button id="inspect-toggle" type="button" data-testid="inspect-toggle" aria-keyshortcuts="Alt+I">Inspect</button>
+    </nav>
   </header>
 
-  <main class="workspace">
+  <main class="workspace" id="workspace">
     <section class="panel stage-panel" aria-labelledby="stage-title">
       <div class="panel-heading">
         <div>
@@ -34,7 +42,7 @@
         <button id="add-rule" type="button" data-testid="add-rule">Add Rule</button>
         <button id="add-behaviour" type="button" data-testid="add-behaviour">Add Behaviour</button>
       </div>
-      <div id="stage" class="stage" data-testid="stage" aria-live="polite"></div>
+      <div id="stage" class="stage" data-testid="stage" aria-live="polite" tabindex="-1"></div>
     </section>
 
     <section class="panel tools-panel" aria-labelledby="tools-title">
@@ -47,18 +55,12 @@
           <label>Name <input name="name" value="Activated" required></label>
           <label>Kind
             <select name="kind">
-              <option value="event">Event</option>
-              <option value="command">Command</option>
-              <option value="value">Value</option>
+              <option value="event">Event</option><option value="command">Command</option><option value="value">Value</option>
             </select>
           </label>
           <label>Direction
             <select name="direction">
-              <option value="out">Out</option>
-              <option value="in">In</option>
-              <option value="read">Read</option>
-              <option value="write">Write</option>
-              <option value="readwrite">Read and write</option>
+              <option value="out">Out</option><option value="in">In</option><option value="read">Read</option><option value="write">Write</option><option value="readwrite">Read and write</option>
             </select>
           </label>
           <button type="submit" data-testid="add-port">Add port</button>
@@ -101,8 +103,12 @@
 
     <aside id="inspect" class="panel inspect-panel" hidden aria-labelledby="inspect-title">
       <h2 id="inspect-title">Inspect</h2>
-      <p class="muted">Stable SplashMX identities and authored details for the current selection.</p>
+      <p class="muted">Stable SplashMX identities, authored details and recoverable diagnostics.</p>
+      <h3>Selection</h3>
       <pre id="inspect-data" data-testid="inspect-data"></pre>
+      <h3>Diagnostics</h3>
+      <div id="diagnostics" data-testid="diagnostics" role="log" aria-live="polite" aria-relevant="additions text"></div>
+      <button id="clear-diagnostics" type="button">Clear diagnostics</button>
     </aside>
   </main>
 
