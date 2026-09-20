@@ -32,13 +32,31 @@ def main() -> int:
         "CatalogSnapshot",
         "Trust is not capability",
         "No ambient install authority",
-        "digest + source identity + source metadata + audio/media semantics + provenance + licence/attribution + derivation lineage",
         "SMX-035 production handoff",
         "one exact revision per `PackageId`",
         "Runtime floating resolution",
     ]
     for phrase in required_phrases:
         require(phrase in doc, f"SMX-034 selection lost required phrase: {phrase}")
+
+    # Keep the protected Asset contract explicit without requiring one particular
+    # prose sentence. These are the seven indivisible semantic groups inherited
+    # from Architecture v1 and the production serialization/streaming work.
+    protected_phrases = [
+        "revision/content digest",
+        "source digest and logical source identity",
+        "exact source metadata",
+        "audio/media semantic metadata",
+        "provenance",
+        "licence/attribution",
+        "derivation lineage",
+    ]
+    for phrase in protected_phrases:
+        require(phrase in doc, f"SMX-034 protected-media contract lost: {phrase}")
+    require(
+        "may not combine fields from competing Asset revisions" in doc,
+        "SMX-034 must continue to reject protected-Asset field mixing",
+    )
 
     data = json.loads(FIXTURES.read_text(encoding="utf-8"))
     require(data.get("schema") == "splashmx.smx034-package-substrate-fixtures/1", "wrong fixture schema")
