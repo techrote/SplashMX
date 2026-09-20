@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from hashlib import sha256
 import re
 import struct
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 from splashmx.canonical.serialization import DecodeLimits, decode_canonical_cbor, encode_canonical_cbor
 
@@ -117,19 +117,24 @@ class ResolverLimits:
 @dataclass
 class _State:
     selected: dict[str, Revision] = field(default_factory=dict)
-    constraints: dict[str, list[Requirement]] = field(default_factory=dict)
+    hard_constraints: dict[str, list[Requirement]] = field(default_factory=dict)
+    optional_constraints: dict[str, list[tuple[Requirement, str]]] = field(default_factory=dict)
     required: set[str] = field(default_factory=set)
     lazy: set[str] = field(default_factory=set)
-    optional_fallbacks: dict[str, str] = field(default_factory=dict)
+    skipped_optional: set[str] = field(default_factory=set)
     depth: dict[str, int] = field(default_factory=dict)
     decisions: int = 0
 
     def clone(self) -> "_State":
         return _State(
             dict(self.selected),
-            {key: list(value) for key, value in self.constraints.items()},
-            set(self.required), set(self.lazy), dict(self.optional_fallbacks),
-            dict(self.depth), self.decisions,
+            {key: list(value) for key, value in self.hard_constraints.items()},
+            {key: list(value) for key, value in self.optional_constraints.items()},
+            set(self.required),
+            set(self.lazy),
+            set(self.skipped_optional),
+            dict(self.depth),
+            self.decisions,
         )
 
 
@@ -145,6 +150,8 @@ def resolve(catalog: Mapping[str, Sequence[Revision]], roots: Sequence[Dependenc
 
     SMX-035 may implement PubGrub rather than this DFS. This spike exists to pin
     observable behavior and hostile bounds, not to turn DFS into production policy.
+    Optional requirements are deliberately soft: their failure selects the declared
+    fallback and may not force a hard requirement onto an incompatible revision.
     """
     state = _State()
 
@@ -152,20 +159,28 @@ def resolve(catalog: Mapping[str, Sequence[Revision]], roots: Sequence[Dependenc
         if depth > limits.max_depth:
             _fail("package.depth_limit", dep.package_id)
         if dep.kind == "optional":
-            target.optional_fallbacks.setdefault(dep.package_id, dep.fallback or "")
-        elif dep.kind == "required":
-            target.required.add(dep.package_id)
+            target.optional_constraints.setdefault(dep.package_id, []).append((dep.requirement, dep.fallback or ""))
         else:
-            target.lazy.add(dep.package_id)
-        target.constraints.setdefault(dep.package_id, []).append(dep.requirement)
+            target.hard_constraints.setdefault(dep.package_id, []).append(dep.requirement)
+            target.skipped_optional.discard(dep.package_id)
+            if dep.kind == "required":
+                target.required.add(dep.package_id)
+            else:
+                target.lazy.add(dep.package_id)
         target.depth[dep.package_id] = max(target.depth.get(dep.package_id, 0), depth)
 
     for root in roots:
         add_need(state, root, 0)
 
+    def requirements_for(target: _State, package_id: str) -> list[Requirement]:
+        hard = target.hard_constraints.get(package_id, ())
+        if hard:
+            return list(hard)
+        return [requirement for requirement, _fallback in target.optional_constraints.get(package_id, ())]
+
     def candidates(target: _State, package_id: str) -> list[Revision]:
         rows = [row for row in catalog.get(package_id, ()) if not row.revoked]
-        constraints = target.constraints.get(package_id, ())
+        constraints = requirements_for(target, package_id)
         rows = [row for row in rows if all(req.matches(row.version) for req in constraints)]
         return sorted(rows, key=lambda row: (row.version, row.revision_id), reverse=True)
 
@@ -179,12 +194,18 @@ def resolve(catalog: Mapping[str, Sequence[Revision]], roots: Sequence[Dependenc
 
     def search(target: _State) -> _State | None:
         check_bounds(target)
-        # Selected revisions must continue satisfying every newly introduced constraint.
+        # A hard requirement always wins over an incompatible optional request. If
+        # only optional requests exist, every such request must match or that edge
+        # takes its declared fallback instead of perturbing hard resolution elsewhere.
         for package_id, row in target.selected.items():
-            if not all(req.matches(row.version) for req in target.constraints.get(package_id, ())):
+            if not all(req.matches(row.version) for req in requirements_for(target, package_id)):
                 return None
 
-        unresolved = sorted(set(target.constraints) - set(target.selected))
+        unresolved = sorted(
+            (set(target.hard_constraints) | set(target.optional_constraints))
+            - set(target.selected)
+            - target.skipped_optional
+        )
         if not unresolved:
             return target
 
@@ -193,12 +214,11 @@ def resolve(catalog: Mapping[str, Sequence[Revision]], roots: Sequence[Dependenc
         ranked = sorted((len(candidates(target, package_id)), package_id) for package_id in unresolved)
         count, package_id = ranked[0]
         rows = candidates(target, package_id)
-        is_optional_only = package_id not in target.required and package_id not in target.lazy
+        is_optional_only = package_id not in target.hard_constraints
         if count == 0:
             if is_optional_only:
                 next_state = target.clone()
-                next_state.constraints.pop(package_id, None)
-                next_state.depth.pop(package_id, None)
+                next_state.skipped_optional.add(package_id)
                 return search(next_state)
             return None
 
@@ -209,21 +229,41 @@ def resolve(catalog: Mapping[str, Sequence[Revision]], roots: Sequence[Dependenc
                 _fail("package.solver_work_limit", "solver decision bound exceeded")
             next_state.selected[package_id] = row
             parent_depth = next_state.depth.get(package_id, 0)
-            try:
-                for dep in row.dependencies:
-                    add_need(next_state, dep, parent_depth + 1)
-                check_bounds(next_state)
-            except PackageSpikeError:
-                raise
+            for child in row.dependencies:
+                add_need(next_state, child, parent_depth + 1)
+            check_bounds(next_state)
             solved = search(next_state)
             if solved is not None:
                 return solved
+
+        # Failure anywhere beneath an optional-only candidate uses the declared
+        # fallback; its attempted subtree lived only in cloned state and is discarded.
+        if is_optional_only:
+            next_state = target.clone()
+            next_state.skipped_optional.add(package_id)
+            return search(next_state)
         return None
 
     solved = search(state)
     if solved is None:
         _fail("package.version_conflict", "no coherent one-version-per-PackageId resolution")
-    return Resolution(dict(sorted(solved.selected.items())), frozenset(solved.lazy), dict(sorted(solved.optional_fallbacks.items())))
+
+    used_fallbacks: dict[str, str] = {}
+    for package_id, declarations in solved.optional_constraints.items():
+        row = solved.selected.get(package_id)
+        unsatisfied = row is None or any(not requirement.matches(row.version) for requirement, _ in declarations)
+        if not unsatisfied:
+            continue
+        fallbacks = {fallback for _requirement, fallback in declarations}
+        if len(fallbacks) != 1:
+            _fail("package.optional_fallback_conflict", f"optional fallbacks disagree for {package_id}")
+        used_fallbacks[package_id] = next(iter(fallbacks))
+
+    return Resolution(
+        dict(sorted(solved.selected.items())),
+        frozenset(solved.lazy),
+        dict(sorted(used_fallbacks.items())),
+    )
 
 
 # SPB1 is deliberately not a filesystem archive. There are no names/paths, links,
@@ -277,7 +317,15 @@ def parse_spb1(data: bytes, *, limits: BundleLimits = BundleLimits()) -> tuple[M
         _fail("package.length_mismatch", "declared bundle lengths do not match input")
     index_bytes = data[_HEADER.size:_HEADER.size + index_len]
     try:
-        index = decode_canonical_cbor(index_bytes, limits=DecodeLimits(max_bytes=limits.max_index_bytes, max_depth=16, max_items=limits.max_entries * 8 + 16, max_string_bytes=4096))
+        index = decode_canonical_cbor(
+            index_bytes,
+            limits=DecodeLimits(
+                max_bytes=limits.max_index_bytes,
+                max_depth=16,
+                max_items=limits.max_entries * 8 + 16,
+                max_string_bytes=4096,
+            ),
+        )
     except Exception as exc:
         _fail("package.invalid_index", str(exc))
     if not isinstance(index, dict) or set(index) != {"schema", "entries"} or index.get("schema") != "splashmx.package-bundle/1":
