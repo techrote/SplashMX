@@ -82,6 +82,8 @@ def main() -> int:
     tests = TESTS.read_text(encoding="utf-8")
     for token in (
         "test_one_revision_per_package_conflict_is_typed",
+        "test_optional_conflict_cannot_perturb_required_revision",
+        "test_optional_transitive_failure_uses_fallback_without_leaking_subtree",
         "test_solver_work_limit_fails_closed",
         "test_digest_substitution_rejected",
         "test_path_or_extraction_metadata_is_not_in_schema",
