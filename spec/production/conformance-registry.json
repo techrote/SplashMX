@@ -64,10 +64,11 @@
         "tools/validate_smx020.py",
         "experiments/smx-020-architecture-freeze/test_architecture_freeze.py",
         "tools/validate_smx022.py",
-        "experiments/smx-022-storage-spike/test_spike.py"
+        "experiments/smx-022-storage-spike/test_spike.py",
+        "tools/validate_smx023.py",
+        "tests/production/test_smx023.py"
       ],
       "future_issue_codes": [
-        "SMX-023",
         "SMX-024",
         "SMX-025",
         "SMX-030",
@@ -266,7 +267,8 @@
       ],
       "current_tests": [
         "tools/validate_smx018.py",
-        "experiments/smx-018-collaboration-harness/test_harness.py"
+        "experiments/smx-018-collaboration-harness/test_harness.py",
+        "tests/production/test_smx023.py"
       ],
       "future_issue_codes": [
         "SMX-042",
@@ -540,7 +542,6 @@
         "collaboration.core"
       ],
       "future_issue_codes": [
-        "SMX-023",
         "SMX-043",
         "SMX-044"
       ]
@@ -556,7 +557,6 @@
         "collaboration.core"
       ],
       "future_issue_codes": [
-        "SMX-023",
         "SMX-043",
         "SMX-044"
       ]
@@ -572,7 +572,6 @@
         "collaboration.core"
       ],
       "future_issue_codes": [
-        "SMX-023",
         "SMX-043",
         "SMX-044"
       ]
@@ -588,7 +587,6 @@
         "collaboration.core"
       ],
       "future_issue_codes": [
-        "SMX-023",
         "SMX-043",
         "SMX-044"
       ]
@@ -605,7 +603,6 @@
         "networking.runtime"
       ],
       "future_issue_codes": [
-        "SMX-023",
         "SMX-033",
         "SMX-046",
         "SMX-047"
