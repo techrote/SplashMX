@@ -152,6 +152,18 @@ def _solve_hard(
     return answer, tuple(incompatibilities)
 
 
+def _optional_dependencies(rows: Sequence[CatalogRow]) -> list[DependencySpec]:
+    dependencies: list[DependencySpec] = []
+    for row in sorted(rows, key=lambda candidate: (str(candidate.package_id), str(candidate.package_revision_id))):
+        dependencies.extend(
+            sorted(
+                (dep for dep in row.dependencies if dep.kind is DependencyKind.OPTIONAL),
+                key=lambda dep: (str(dep.package_id), str(dep.requirement), dep.fallback or ""),
+            )
+        )
+    return dependencies
+
+
 def resolve_packages(
     snapshot: CatalogSnapshot,
     roots: Sequence[DependencySpec],
@@ -160,9 +172,10 @@ def resolve_packages(
 ) -> ResolutionLock:
     """Resolve authored ranges once and freeze an exact immutable runtime lock.
 
-    Optional dependency solving is isolated from the required selection. A failing
-    optional subtree uses only its declared fallback and cannot perturb an already
-    coherent hard revision choice.
+    Optional dependency solving is isolated from the required selection. Optional
+    edges declared by roots *or selected package manifests* are considered in stable
+    order. A failing optional subtree uses only its declared fallback and cannot
+    perturb an already coherent hard revision choice.
     """
     limits = limits or SolverLimits()
     index = _index(snapshot, limits)
@@ -170,40 +183,67 @@ def resolve_packages(
     hard_roots = tuple(dep for dep in roots if dep.kind is not DependencyKind.OPTIONAL)
     selected, _ = _solve_hard(index, hard_roots, limits, budget)
 
-    optional_selected: dict[PackageId, CatalogRow] = {}
-    optional_roots = sorted((dep for dep in roots if dep.kind is DependencyKind.OPTIONAL), key=lambda dep: str(dep.package_id))
-    for dep in optional_roots:
-        if dep.package_id in selected:
-            # Optional request cannot change a required revision. If the hard choice
-            # does not satisfy it, the declared fallback wins.
-            if not dep.requirement.matches(selected[dep.package_id].human_version):
-                continue
+    all_selected: dict[PackageId, CatalogRow] = dict(selected)
+    optional_queue = sorted(
+        (dep for dep in roots if dep.kind is DependencyKind.OPTIONAL),
+        key=lambda dep: (str(dep.package_id), str(dep.requirement), dep.fallback or ""),
+    )
+    optional_queue.extend(_optional_dependencies(tuple(all_selected.values())))
+    queued_row_revisions = {row.package_revision_id for row in all_selected.values()}
+    cursor = 0
+    while cursor < len(optional_queue):
+        dep = optional_queue[cursor]
+        cursor += 1
+        current = all_selected.get(dep.package_id)
+        if current is not None:
+            # An optional edge can use an already-selected compatible revision, but
+            # it can never move an incompatible hard/earlier selection.
             continue
         try:
-            extension, _ = _solve_hard(index, (DependencySpec(dep.package_id, dep.requirement, DependencyKind.REQUIRED),), limits, budget, pinned={**selected, **optional_selected})
+            extension, _ = _solve_hard(
+                index,
+                (DependencySpec(dep.package_id, dep.requirement, DependencyKind.REQUIRED),),
+                limits,
+                budget,
+                pinned=all_selected,
+            )
         except PackageError as exc:
             if exc.code == "package.version_conflict":
                 continue
             raise
+        new_rows: list[CatalogRow] = []
         for package_id, row in extension.items():
-            if package_id not in selected:
-                optional_selected[package_id] = row
+            if package_id in all_selected:
+                continue
+            all_selected[package_id] = row
+            if row.package_revision_id not in queued_row_revisions:
+                queued_row_revisions.add(row.package_revision_id)
+                new_rows.append(row)
+        optional_queue.extend(_optional_dependencies(tuple(new_rows)))
 
-    all_selected = {**selected, **optional_selected}
     if len(all_selected) > limits.max_packages:
         fail("package.package_count_limit", "resolved closure exceeds package bound")
     total_bytes = sum(row.bundle_size for row in all_selected.values())
     if total_bytes > limits.max_total_bytes:
         fail("package.total_byte_limit", "resolved closure exceeds package byte bound")
 
-    # A package is lazy only when every incoming authored edge that selected it is lazy.
-    lazy_ids = {dep.package_id for dep in roots if dep.kind is DependencyKind.LAZY}
+    # Lazy is a property of the complete selected graph, not traversal order. A
+    # package may defer acquisition only if every selected incoming edge is lazy.
+    incoming_kinds: dict[PackageId, list[DependencyKind]] = {package_id: [] for package_id in all_selected}
+    for dep in roots:
+        chosen = all_selected.get(dep.package_id)
+        if chosen is not None and dep.requirement.matches(chosen.human_version):
+            incoming_kinds[dep.package_id].append(dep.kind)
     for row in all_selected.values():
         for child in row.dependencies:
-            if child.kind is not DependencyKind.LAZY:
-                lazy_ids.discard(child.package_id)
-            elif child.package_id not in {d.package_id for d in row.dependencies if d.kind is not DependencyKind.LAZY}:
-                lazy_ids.add(child.package_id)
+            chosen = all_selected.get(child.package_id)
+            if chosen is not None and child.requirement.matches(chosen.human_version):
+                incoming_kinds[child.package_id].append(child.kind)
+    lazy_ids = {
+        package_id
+        for package_id, kinds in incoming_kinds.items()
+        if kinds and all(kind is DependencyKind.LAZY for kind in kinds)
+    }
 
     locked: dict[PackageId, LockedPackage] = {}
     for package_id, row in sorted(all_selected.items(), key=lambda item: str(item[0])):
