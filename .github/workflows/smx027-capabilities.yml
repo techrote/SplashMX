@@ -1,0 +1,32 @@
+name: SMX-027 capabilities
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  capabilities:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+      - name: Validate retained SMX-006 security contract
+        run: python tools/validate_smx006.py
+      - name: Validate retained SMX-016 hostile security fixtures
+        run: python tools/validate_smx016.py
+      - name: Run retained SMX-016 hostile harness
+        run: python -m unittest discover -s experiments/smx-016-security-harness -p 'test_*.py' -v
+      - name: Validate SMX-026 execution dependency
+        run: python tools/validate_smx026.py
+      - name: Run SMX-026 mediated request regressions
+        run: python -m unittest discover -s tests/production -p 'test_smx026.py' -v
+      - name: Validate SMX-027 production contract
+        run: python tools/validate_smx027.py
+      - name: Run SMX-027 adversarial capability tests
+        run: python -m unittest discover -s tests/production -p 'test_smx027.py' -v
