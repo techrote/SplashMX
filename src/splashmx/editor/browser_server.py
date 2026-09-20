@@ -1,8 +1,8 @@
-"""Thin same-origin browser bridge for the SMX-032 authoring shell.
+"""Thin same-origin browser bridge for SplashMX production authoring/runtime.
 
-The HTTP layer owns no document semantics.  Browser actions are decoded, checked and
-forwarded to :mod:`splashmx.editor.authoring`, which in turn publishes only through
-the production canonical transaction boundary.
+The HTTP layer owns no document semantics. Browser actions are decoded and forwarded
+to production authoring, runtime and storage boundaries. Transient Play/editor state
+is explicitly separate from the canonical authored revision.
 """
 from __future__ import annotations
 
@@ -19,6 +19,9 @@ from urllib.parse import urlparse
 from splashmx.canonical.core import SemanticError
 from splashmx.canonical.serialization import SerializationError
 from splashmx.editor.authoring import AuthoringError, AuthoringSession
+from splashmx.editor.browser_runtime import BrowserRuntimeError, BrowserRuntimeSession
+from splashmx.runtime.lifecycle import LifecycleError
+from splashmx.storage.local import StorageError
 
 
 WEB_ROOT = Path(__file__).with_name("web")
@@ -32,13 +35,24 @@ _MAX_REQUEST_BYTES = 8 * 1024 * 1024
 
 
 class BrowserBridge:
-    """Decode bounded JSON actions and delegate to one production authoring session."""
+    """Decode bounded JSON actions and delegate to production coordinators."""
 
-    def __init__(self, session: AuthoringSession | None = None):
-        self.session = session or AuthoringSession.blank()
+    def __init__(
+        self,
+        session: AuthoringSession | None = None,
+        *,
+        store_path: str | Path = ".splashmx/local-project.sqlite3",
+        runtime: BrowserRuntimeSession | None = None,
+    ):
+        authoring = session or AuthoringSession.blank()
+        self.runtime = runtime or BrowserRuntimeSession(authoring, store_path)
+
+    @property
+    def session(self) -> AuthoringSession:
+        return self.runtime.authoring
 
     def state(self) -> dict[str, Any]:
-        return self.session.snapshot()
+        return self.runtime.snapshot()
 
     def apply(self, request: Any) -> dict[str, Any]:
         if not isinstance(request, dict) or not isinstance(request.get("action"), str):
@@ -47,6 +61,32 @@ class BrowserBridge:
         data = request.get("data", {})
         if not isinstance(data, dict):
             raise AuthoringError("authoring.invalid_request", "Authoring action data must be an object.")
+
+        if action == "play":
+            result = self.runtime.play()
+            return {"ok": True, "result": result, "state": self.state()}
+        if action == "stop":
+            result = self.runtime.stop()
+            return {"ok": True, "result": result, "state": self.state()}
+        if action == "save":
+            result = self.runtime.save()
+            return {"ok": True, "result": result, "state": self.state()}
+        if action == "reload":
+            result = self.runtime.reload()
+            return {"ok": True, "result": result, "state": self.state()}
+        if action == "clearDiagnostics":
+            self.runtime.clear_diagnostics()
+            return {"ok": True, "result": None, "state": self.state()}
+
+        # Selection/Inspect are transient editor projection changes and may be used
+        # while playing. Canonical authoring changes require Edit mode so the active
+        # runtime can never silently diverge from its authored basis.
+        if self.runtime.playing and action not in {"select", "inspect"}:
+            raise BrowserRuntimeError(
+                "browser.edit_while_playing",
+                "Stop Play before changing the authored project.",
+            )
+
         result: Any = None
         if action == "createThing":
             result = str(
@@ -181,7 +221,7 @@ def _mapping_list(value: Any, label: str) -> list[dict[str, Any]]:
 
 def make_handler(bridge: BrowserBridge):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "SplashMXAuthoring/1"
+        server_version = "SplashMXAuthoring/2"
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
             return
@@ -234,10 +274,10 @@ def make_handler(bridge: BrowserBridge):
             except (UnicodeDecodeError, json.JSONDecodeError):
                 self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": "That authoring request could not be read."}})
                 return
-            except (AuthoringError, SemanticError, SerializationError) as exc:
+            except (AuthoringError, BrowserRuntimeError, SemanticError, SerializationError, LifecycleError, StorageError) as exc:
                 self._json(
                     HTTPStatus.CONFLICT,
-                    {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}},
+                    {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}, "state": bridge.state()},
                 )
                 return
             except (TypeError, ValueError) as exc:
@@ -248,8 +288,14 @@ def make_handler(bridge: BrowserBridge):
     return Handler
 
 
-def run_server(host: str, port: int, *, project_id: str = "local-project") -> ThreadingHTTPServer:
-    bridge = BrowserBridge(AuthoringSession.blank(project_id))
+def run_server(
+    host: str,
+    port: int,
+    *,
+    project_id: str = "local-project",
+    store_path: str | Path = ".splashmx/local-project.sqlite3",
+) -> ThreadingHTTPServer:
+    bridge = BrowserBridge(AuthoringSession.blank(project_id), store_path=store_path)
     return ThreadingHTTPServer((host, port), make_handler(bridge))
 
 
@@ -258,9 +304,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--project-id", default="local-project")
+    parser.add_argument("--store-path", default=".splashmx/local-project.sqlite3")
     args = parser.parse_args(argv)
-    server = run_server(args.host, args.port, project_id=args.project_id)
-    print(f"SMX032 READY http://{args.host}:{server.server_address[1]}", flush=True)
+    server = run_server(args.host, args.port, project_id=args.project_id, store_path=args.store_path)
+    print(f"SMX033 READY http://{args.host}:{server.server_address[1]}", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
