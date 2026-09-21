@@ -36,10 +36,17 @@ def protected(marker: str) -> ProtectedAssetRevision:
         source_digest="sha256:" + marker * 64,
         source_identity={"kind": "author-import", "logical_name": f"music-{marker}.wav"},
         source_metadata={"bytes": 4096 + ord(marker), "original_extension": "wav"},
-        media_semantics={"kind": "audio", "channels": 2, "sample_rate": 48000, "loop": {"enabled": True, "start_frame": 8, "end_frame": 2048}},
+        media_semantics={
+            "kind": "audio",
+            "channels": 2,
+            "sample_rate": 48000,
+            "loop": {"enabled": True, "start_frame": 8, "end_frame": 2048},
+        },
         provenance={"creator": f"author-{marker}", "source": "original recording"},
         licence_attribution={"licence": "CC0-1.0", "attribution": f"author-{marker}"},
-        derivation_lineage=({"operation": "trim", "tool": "fixture", "parent_digest": "sha256:" + marker * 64},),
+        derivation_lineage=(
+            {"operation": "trim", "tool": "fixture", "parent_digest": "sha256:" + marker * 64},
+        ),
     )
 
 
@@ -54,13 +61,23 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             local_path = Path(tmp) / "project.sqlite3"
             bridge = BrowserBridge(AuthoringSession.blank("browser-people"), store_path=local_path)
-            response = bridge.apply({"action": "createThing", "data": {"label": "Local", "thing_id": "local"}})
+            response = bridge.apply(
+                {"action": "createThing", "data": {"label": "Local", "thing_id": "local"}}
+            )
             state = response["state"]
             self.assertEqual(state["people"]["plane"], "collaboration")
             self.assertEqual(state["together"]["plane"], "runtime-networking")
-            self.assertEqual(state["people"]["head_revision_id"], state["canonical"]["project_revision_id"])
+            self.assertEqual(
+                state["people"]["head_revision_id"],
+                state["canonical"]["project_revision_id"],
+            )
             authored_revision = state["canonical"]["project_revision_id"]
-            bridge.apply({"action": "peoplePresence", "data": {"cursor": "stage", "selections": ["local"]}})
+            bridge.apply(
+                {
+                    "action": "peoplePresence",
+                    "data": {"cursor": "stage", "selections": ["local"]},
+                }
+            )
             self.assertEqual(len(bridge.state()["people"]["presence"]), 1)
             bridge.close()
 
@@ -73,14 +90,49 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             self.assertEqual(state["people"]["presence"], [])
             reopened.close()
 
+    def test_browser_reload_to_known_revision_can_be_followed_by_new_edit(self):
+        """Reload must retain both current-head and original-base causal ancestry."""
+        with tempfile.TemporaryDirectory() as tmp:
+            local_path = Path(tmp) / "project.sqlite3"
+            bridge = BrowserBridge(AuthoringSession.blank("browser-reload"), store_path=local_path)
+            bridge.apply(
+                {"action": "createThing", "data": {"label": "Saved", "thing_id": "saved"}}
+            )
+            saved_revision = bridge.apply({"action": "save", "data": {}})["state"]["canonical"][
+                "project_revision_id"
+            ]
+            bridge.apply(
+                {"action": "createThing", "data": {"label": "Discarded", "thing_id": "discarded"}}
+            )
+            bridge.apply({"action": "reload", "data": {}})
+            self.assertEqual(bridge.state()["canonical"]["project_revision_id"], saved_revision)
+            self.assertFalse(bridge.state()["people"]["unsynced_local_work"])
+            bridge.close()
+
+            reopened = BrowserBridge(AuthoringSession.blank("browser-reload"), store_path=local_path)
+            result = reopened.apply(
+                {"action": "createThing", "data": {"label": "After reload", "thing_id": "after"}}
+            )
+            state = result["state"]
+            self.assertFalse(state["people"]["unsynced_local_work"])
+            self.assertEqual(state["people"]["head_revision_id"], state["canonical"]["project_revision_id"])
+            self.assertEqual(
+                {row["thing_id"] for row in state["canonical"]["things"]},
+                {"saved", "after"},
+            )
+            self.assertNotEqual(state["canonical"]["project_revision_id"], saved_revision)
+            reopened.close()
+
     def test_local_history_storage_fault_does_not_discard_local_candidate(self):
         base = base_project()
         candidate = edit(base, "local-edit", "Still local")
         with tempfile.TemporaryDirectory() as tmp:
             people = PeopleSession(base, Path(tmp) / "people.sqlite3")
+
             def fail(stage: str) -> None:
                 if stage == "after_head":
                     raise RuntimeError("simulated collaboration storage interruption")
+
             self.assertIsNone(people.record_local(candidate, fault_hook=fail))
             status = people.snapshot()
             self.assertTrue(status["unsynced_local_work"])
@@ -88,14 +140,24 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             result = people.retry_local()
             self.assertIsNotNone(result)
             self.assertEqual(result.status, "applied")
-            self.assertEqual(people.head_project().document.things[ThingId("a")].label, "Still local")
+            self.assertEqual(
+                people.head_project().document.things[ThingId("a")].label,
+                "Still local",
+            )
             self.assertFalse(people.snapshot()["unsynced_local_work"])
             people.close()
 
     def test_relay_offline_authentication_and_backpressure_are_fail_closed(self):
         base = base_project()
         remote = edit(base, "remote", "Remote")
-        transaction = create_transaction(actor_id="bob", actor_seq=1, parents=(), permission_epoch=1, base=base, candidate=remote)
+        transaction = create_transaction(
+            actor_id="bob",
+            actor_seq=1,
+            parents=(),
+            permission_epoch=1,
+            base=base,
+            candidate=remote,
+        )
         auth = RelayAuthenticator({"bob": b"b" * 32, "mallory": b"m" * 32})
         packet = auth.sign("bob", transaction)
         with tempfile.TemporaryDirectory() as tmp:
@@ -109,7 +171,10 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             forged = replace(packet, mac_hex="00" * 32)
             with self.assertRaises(CollaborationError) as unauthenticated:
                 people.enqueue_relay(forged, auth)
-            self.assertEqual(unauthenticated.exception.code, "collaboration.unauthenticated_relay")
+            self.assertEqual(
+                unauthenticated.exception.code,
+                "collaboration.unauthenticated_relay",
+            )
             for _ in range(MAX_RELAY_QUEUE):
                 people.enqueue_relay(packet, auth)
             with self.assertRaises(PeopleError) as full:
@@ -119,20 +184,33 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             results = people.drain_relay()
             self.assertEqual(results[0].status, "applied")
             self.assertTrue(all(row.status == "duplicate" for row in results[1:]))
-            self.assertEqual(people.head_project().document.things[ThingId("a")].label, "Remote")
+            self.assertEqual(
+                people.head_project().document.things[ThingId("a")].label,
+                "Remote",
+            )
             people.close()
 
     def test_stale_permission_epoch_is_recoverable_not_authoritative(self):
         base = base_project()
         remote = edit(base, "stale", "Stale remote")
-        transaction = create_transaction(actor_id="bob", actor_seq=1, parents=(), permission_epoch=1, base=base, candidate=remote)
+        transaction = create_transaction(
+            actor_id="bob",
+            actor_seq=1,
+            parents=(),
+            permission_epoch=1,
+            base=base,
+            candidate=remote,
+        )
         auth = RelayAuthenticator({"bob": b"b" * 32})
         with tempfile.TemporaryDirectory() as tmp:
             people = PeopleSession(base, Path(tmp) / "people.sqlite3")
             people.store.advance_permission_epoch(2)
             people.enqueue_relay(auth.sign("bob", transaction), auth)
             result = people.drain_relay()[0]
-            self.assertEqual((result.status, result.reason), ("quarantined", "permission-epoch-mismatch"))
+            self.assertEqual(
+                (result.status, result.reason),
+                ("quarantined", "permission-epoch-mismatch"),
+            )
             self.assertEqual(people.head_project(), base)
             self.assertIsNotNone(people.store.recover_transaction(transaction.tx_id))
             people.close()
@@ -143,7 +221,14 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
         local = asset_project(base, "asset-local", "b")
         remote = asset_project(base, "asset-remote", "c")
         auth = RelayAuthenticator({"bob": b"b" * 32})
-        remote_tx = create_transaction(actor_id="bob", actor_seq=1, parents=(), permission_epoch=1, base=base, candidate=remote)
+        remote_tx = create_transaction(
+            actor_id="bob",
+            actor_seq=1,
+            parents=(),
+            permission_epoch=1,
+            base=base,
+            candidate=remote,
+        )
         with tempfile.TemporaryDirectory() as tmp:
             people = PeopleSession(base, Path(tmp) / "people.sqlite3")
             self.assertEqual(people.record_local(local).status, "applied")
@@ -151,8 +236,14 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             incoming = people.drain_relay()[0]
             self.assertEqual(incoming.status, "applied-conflict")
             conflict = people.store.unresolved_conflicts()[0]
-            self.assertEqual((conflict.kind, conflict.locus), ("protected-asset", "asset:music"))
-            alternatives = [conflict.alternative_a.assets[AssetId("music")], conflict.alternative_b.assets[AssetId("music")]]
+            self.assertEqual(
+                (conflict.kind, conflict.locus),
+                ("protected-asset", "asset:music"),
+            )
+            alternatives = [
+                conflict.alternative_a.assets[AssetId("music")],
+                conflict.alternative_b.assets[AssetId("music")],
+            ]
             result = people.resolve_conflict(conflict.conflict_id, "alternative-b")
             self.assertEqual(result.status, "resolution")
             resolved = people.head_project().assets[AssetId("music")]
@@ -161,13 +252,22 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             # provenance/licence/lineage move together; no field-wise merge is possible.
             self.assertTrue(any(resolved == alternative for alternative in alternatives))
             self.assertFalse(people.store.unresolved_conflicts())
-            self.assertIsNotNone(people.store.conflict(conflict.conflict_id).resolved_by)
+            self.assertIsNotNone(
+                people.store.conflict(conflict.conflict_id).resolved_by
+            )
             people.close()
 
     def test_compaction_and_reopen_retain_unresolved_conflict_meaning(self):
         base = base_project()
         local, remote = edit(base, "local", "Local"), edit(base, "remote", "Remote")
-        remote_tx = create_transaction(actor_id="bob", actor_seq=1, parents=(), permission_epoch=1, base=base, candidate=remote)
+        remote_tx = create_transaction(
+            actor_id="bob",
+            actor_seq=1,
+            parents=(),
+            permission_epoch=1,
+            base=base,
+            candidate=remote,
+        )
         auth = RelayAuthenticator({"bob": b"b" * 32})
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "people.sqlite3"
@@ -177,22 +277,39 @@ class SMX044PeopleConformanceTests(unittest.TestCase):
             people.drain_relay()
             conflict_id = people.store.unresolved_conflicts()[0].conflict_id
             people.store.create_checkpoint_and_compact({"local-author": 1, "bob": 1})
-            self.assertEqual(people.store.unresolved_conflicts()[0].conflict_id, conflict_id)
+            self.assertEqual(
+                people.store.unresolved_conflicts()[0].conflict_id,
+                conflict_id,
+            )
             people.close()
             reopened = PeopleSession(base, path)
-            self.assertEqual(reopened.store.unresolved_conflicts()[0].conflict_id, conflict_id)
+            self.assertEqual(
+                reopened.store.unresolved_conflicts()[0].conflict_id,
+                conflict_id,
+            )
             reopened.close()
 
     def test_future_history_is_quarantined_instead_of_destructively_migrated(self):
         base = base_project()
         remote = edit(base, "future", "Future")
-        transaction = create_transaction(actor_id="bob", actor_seq=1, parents=(), permission_epoch=1, base=base, candidate=remote, history_version=999)
+        transaction = create_transaction(
+            actor_id="bob",
+            actor_seq=1,
+            parents=(),
+            permission_epoch=1,
+            base=base,
+            candidate=remote,
+            history_version=999,
+        )
         auth = RelayAuthenticator({"bob": b"b" * 32})
         with tempfile.TemporaryDirectory() as tmp:
             people = PeopleSession(base, Path(tmp) / "people.sqlite3")
             people.enqueue_relay(auth.sign("bob", transaction), auth)
             result = people.drain_relay()[0]
-            self.assertEqual((result.status, result.reason), ("quarantined", "unsupported-history-version"))
+            self.assertEqual(
+                (result.status, result.reason),
+                ("quarantined", "unsupported-history-version"),
+            )
             self.assertEqual(people.head_project(), base)
             self.assertIsNotNone(people.store.recover_transaction(transaction.tx_id))
             people.close()
