@@ -35,6 +35,10 @@ const [key, cert] = await Promise.all([fs.readFile(keyPath), fs.readFile(certPat
 
 const dedicatedEvents = [];
 let dedicatedClosedCode = null;
+let resolveDedicatedClosed;
+const dedicatedClosed = new Promise((resolve) => {
+  resolveDedicatedClosed = resolve;
+});
 const httpsServer = https.createServer({ key, cert });
 const wss = new WebSocketServer({ server: httpsServer, maxPayload: 65536 });
 wss.on("connection", (socket) => {
@@ -93,6 +97,7 @@ wss.on("connection", (socket) => {
   });
   socket.on("close", (code) => {
     dedicatedClosedCode = code;
+    resolveDedicatedClosed(code);
   });
 });
 await new Promise((resolve) => httpsServer.listen(0, "127.0.0.1", resolve));
@@ -303,7 +308,6 @@ const browserEvidence = await page.evaluate(async ({ wssPort }) => {
     locus: "move",
     payload: { dx: 0 },
   });
-  await new Promise((resolve) => setTimeout(resolve, 200));
 
   return {
     schema: "splashmx.smx047-browser-topology-evidence/1",
@@ -328,13 +332,16 @@ const browserEvidence = await page.evaluate(async ({ wssPort }) => {
   };
 }, { wssPort });
 
-await new Promise((resolve) => setTimeout(resolve, 100));
+const observedCloseCode = await Promise.race([
+  dedicatedClosed,
+  new Promise((resolve) => setTimeout(() => resolve(null), 5000)),
+]);
 const serverEvidence = {
   node: process.version,
   dedicated_join_received: dedicatedEvents.some((event) => event.kind === "join"),
   dedicated_input_received: dedicatedEvents.some((event) => event.kind === "semantic" && event.message_id === "dedicated-input"),
   hostile_malformed_frame_trigger_received: dedicatedEvents.some((event) => event.kind === "semantic" && event.message_id === "trigger-malformed"),
-  malformed_inbound_closed_with_policy_code: dedicatedClosedCode === 1008,
+  malformed_inbound_closed_with_policy_code: observedCloseCode === 1008 && dedicatedClosedCode === 1008,
 };
 if (!serverEvidence.dedicated_join_received || !serverEvidence.dedicated_input_received) {
   throw new Error("dedicated production WSS path was not bidirectional");
