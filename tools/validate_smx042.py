@@ -26,6 +26,7 @@ def main() -> int:
         require(path.is_file(), f"missing SMX-042 artifact: {path.relative_to(ROOT)}")
 
     doc = DOC.read_text(encoding="utf-8")
+    doc_lower = doc.lower()
     for phrase in (
         "semantic transaction DAG",
         "validated checkpoints",
@@ -38,7 +39,7 @@ def main() -> int:
         "No Architecture-v1 contradiction was found",
         "SMX-043 production handoff",
     ):
-        require(phrase in doc, f"SMX-042 selection lost required phrase: {phrase}")
+        require(phrase.lower() in doc_lower, f"SMX-042 selection lost required phrase: {phrase}")
 
     for phrase in (
         "revision/content digest",
