@@ -1,0 +1,94 @@
+name: SMX-037 Godot binding selection
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: 4.7.2
+  PROJECT_PATH: experiments/smx-037-godot-binding-spike
+
+jobs:
+  production-projection-contract:
+    name: Production-core projection + adversarial contract
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Run SMX-037 projection tests
+        env:
+          PYTHONPATH: src:tests/production:tools
+        run: python -m unittest tests.production.test_smx037_godot_selection -v
+      - name: Export production-core projection fixture
+        env:
+          PYTHONPATH: src:tests/production:tools
+        run: python tools/export_smx037_fixture.py --output artifacts/smx037-production-fixture.json
+      - name: Upload production projection
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx037-production-projection
+          path: artifacts/smx037-production-fixture.json
+          if-no-files-found: error
+          retention-days: 30
+
+  real-godot-measurement:
+    name: Godot 4.7.2 realization + scheduler evidence
+    needs: production-projection-contract
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Verify exact Godot baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot --version
+          test "$(godot --version | cut -d. -f1,2)" = "4.7"
+      - name: Measure real binding candidates and scheduler bridge
+        shell: bash
+        env:
+          PYTHONPATH: src:tests/production:tools
+        run: |
+          set -euo pipefail
+          python3 tools/measure_smx037.py --godot godot --samples 7 --output artifacts/smx037-godot-binding-evidence.json
+          cat artifacts/smx037-godot-binding-evidence.json
+      - name: Install exact export templates from image
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.local/share/godot/export_templates/
+          if [ -d "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ]; then
+            mv "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ~/.local/share/godot/export_templates/
+          fi
+      - name: Export same source as Web and Linux targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/build/web" "$GITHUB_WORKSPACE/build/linux"
+          cd "$GITHUB_WORKSPACE/$PROJECT_PATH"
+          godot --headless --editor --quit-after 2
+          godot --headless --export-release "Web" "$GITHUB_WORKSPACE/build/web/index.html"
+          godot --headless --export-release "Linux" "$GITHUB_WORKSPACE/build/linux/smx037.x86_64"
+          test -s "$GITHUB_WORKSPACE/build/web/index.html"
+          test -s "$GITHUB_WORKSPACE/build/linux/smx037.x86_64"
+      - name: Upload measured evidence and target builds
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx037-godot-selection-evidence
+          path: |
+            artifacts/smx037-godot-binding-evidence.json
+            build/web/index.html
+            build/linux/smx037.x86_64
+          if-no-files-found: error
+          retention-days: 30
