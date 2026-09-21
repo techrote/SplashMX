@@ -1,0 +1,72 @@
+{
+  "schema": "splashmx.smx045-network-deployment-fixtures/1",
+  "issue": "SMX-045",
+  "selected_paths": {
+    "peer_primary": "webrtc_datachannel_direct",
+    "peer_nat_relay": "webrtc_datachannel_turn",
+    "peer_fallback": "wss_peer_relay",
+    "dedicated": "wss_dedicated_authority",
+    "signalling": "authenticated_wss",
+    "auth_control_plane": "authorization_code_pkce",
+    "runtime_join": "short_lived_audience_room_bound_ticket"
+  },
+  "typed_outcomes": [
+    "network.auth_required",
+    "network.auth_expired",
+    "network.auth_rejected",
+    "network.tls_failed",
+    "network.signalling_unavailable",
+    "network.signalling_oversize",
+    "network.ice_no_candidate",
+    "network.turn_unavailable",
+    "network.transport_unavailable",
+    "network.transport_fallback",
+    "network.suspended",
+    "network.reconnect_required",
+    "network.reconnect_failed",
+    "network.server_unavailable",
+    "network.authority_lost"
+  ],
+  "selection_invariants": [
+    {"id":"ND-001","statement":"One topology-independent creation/network declaration remains above all selected transport mechanisms."},
+    {"id":"ND-002","statement":"Principal identity, runtime session identity and transient transport identity are role-distinct and reconnect only rebinds transport identity while session remains valid."},
+    {"id":"ND-003","statement":"Peer-hosted browser primary transport is WebRTC DataChannel with WSS signalling and ICE/STUN/TURN traversal."},
+    {"id":"ND-004","statement":"Peer-hosted transport may fall back to a trusted routing-only WSS relay without moving simulation authority into the relay."},
+    {"id":"ND-005","statement":"Dedicated-authoritative baseline transport is WSS for browser/native compatibility; clients never self-promote on server loss."},
+    {"id":"ND-006","statement":"Authentication occurs in a trusted control plane; browser/native public clients use authorization-code plus PKCE and runtime join uses short-lived scoped tickets."},
+    {"id":"ND-007","statement":"Authentication/session tickets and signalling assertions do not grant SplashMX runtime capabilities."},
+    {"id":"ND-008","statement":"TLS/signalling/ICE/TURN/suspension/reconnect/server failures map to typed runtime outcomes without becoming canonical state."},
+    {"id":"ND-009","statement":"Signalling is bounded and cannot import principal, Thing, capability, host-handle, Godot peer or other authority identity."},
+    {"id":"ND-010","statement":"Peer host is simulation authority but remains untrusted for fairness; dedicated authority is an operated service trust domain."},
+    {"id":"ND-011","statement":"WebRTC native plugin dependency is not silently required for the v1 dedicated baseline; optional native WebRTC remains a target adapter decision."},
+    {"id":"ND-012","statement":"ENet/raw UDP is not a browser baseline and WebTransport/custom QUIC remains deferred until a Godot production path is justified."},
+    {"id":"ND-013","statement":"Browser suspension/reconnect is treated as an ordinary lifecycle transition and may create a new transport identity without replacing principal/session identity."},
+    {"id":"ND-014","statement":"CI-local connection and framing measurements are mechanism evidence, never product SLOs."},
+    {"id":"ND-015","statement":"Protected Asset revisions remain indivisible across topology, signalling, relay, reconnect and target projection."},
+    {"id":"ND-016","statement":"Transport IDs, offers, answers, ICE candidates and TLS/session material are transient runtime context and forbidden canonical identity."}
+  ],
+  "adversarial_fixtures": [
+    {"id":"NDF-001","case":"ticket_scope_mismatch","expected":"network.auth_rejected"},
+    {"id":"NDF-002","case":"ticket_expired","expected":"network.auth_expired"},
+    {"id":"NDF-003","case":"ticket_replay","expected":"network.auth_rejected"},
+    {"id":"NDF-004","case":"ticket_signature_tamper","expected":"network.auth_rejected"},
+    {"id":"NDF-005","case":"tls_failure","expected":"network.tls_failed"},
+    {"id":"NDF-006","case":"signalling_unavailable","expected":"network.signalling_unavailable"},
+    {"id":"NDF-007","case":"relay_only_without_turn_candidate","expected":"network.ice_no_candidate"},
+    {"id":"NDF-008","case":"turn_failure_with_wss_peer_relay","expected":"network.transport_fallback"},
+    {"id":"NDF-009","case":"no_peer_transport","expected":"network.transport_unavailable"},
+    {"id":"NDF-010","case":"dedicated_server_loss","expected":"network.authority_lost"},
+    {"id":"NDF-011","case":"expired_session_reconnect","expected":"network.auth_expired"},
+    {"id":"NDF-012","case":"reused_transport_identity_on_reconnect","expected":"network.reconnect_failed"},
+    {"id":"NDF-013","case":"oversize_signalling","expected":"network.signalling_oversize"},
+    {"id":"NDF-014","case":"authority_identity_in_signalling","expected":"network.auth_rejected"},
+    {"id":"NDF-015","case":"incomplete_protected_asset_revision","expected":"reject_before_network_projection"},
+    {"id":"NDF-016","case":"peer_vs_dedicated_trust_conflation","expected":"reject_contract_drift"}
+  ],
+  "inherits": {
+    "smx017_boundary_tests": [
+      "TN-001","TN-002","TN-003","TN-004","TN-005","TN-006","TN-007","TN-008","TN-009","TN-010","TN-011","TN-012","TN-013","TN-014","TN-015","TN-016","TN-017","TN-018","TN-019","TN-020","TN-021","TN-022","TN-023","TN-024","TN-025","TN-026","TN-027","TN-028"
+    ],
+    "non_droppable": ["R-016-01","R-016-02","R-016-03","R-016-04","R-018-01","R-018-02","R-018-03","R-018-04","R-019-01"]
+  }
+}
