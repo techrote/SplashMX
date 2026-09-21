@@ -1,0 +1,242 @@
+name: SMX-038 production Godot runtime
+
+on:
+  pull_request:
+    paths:
+      - 'src/splashmx/runtime/godot.py'
+      - 'src/splashmx/runtime/godot_target/**'
+      - 'src/MODULES.json'
+      - 'spec/production/conformance-registry.json'
+      - 'spec/production/smx038-godot-runtime-fixtures.json'
+      - 'tests/production/test_smx038.py'
+      - 'tests/production/smx038_browser_harness.mjs'
+      - 'tools/export_smx038_fixture.py'
+      - 'tools/measure_smx038.py'
+      - 'tools/validate_smx038.py'
+      - 'docs/implementation/SMX-038-GODOT-RUNTIME.md'
+      - 'docs/03-RAG-INDEX.md'
+      - 'docs/05-DECISION-AND-EVIDENCE-LOG.md'
+      - '.github/workflows/smx038-godot-runtime.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/splashmx/runtime/godot.py'
+      - 'src/splashmx/runtime/godot_target/**'
+      - 'src/MODULES.json'
+      - 'spec/production/conformance-registry.json'
+      - 'spec/production/smx038-godot-runtime-fixtures.json'
+      - 'tests/production/test_smx038.py'
+      - 'tests/production/smx038_browser_harness.mjs'
+      - 'tools/export_smx038_fixture.py'
+      - 'tools/measure_smx038.py'
+      - 'tools/validate_smx038.py'
+      - 'docs/implementation/SMX-038-GODOT-RUNTIME.md'
+      - 'docs/03-RAG-INDEX.md'
+      - 'docs/05-DECISION-AND-EVIDENCE-LOG.md'
+      - '.github/workflows/smx038-godot-runtime.yml'
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: 4.7.2
+  PROJECT_PATH: src/splashmx/runtime/godot_target
+
+jobs:
+  production-godot-contract:
+    name: Production adapters scheduler profiles and adversarial contract
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONPATH: src:tests/production:tools
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Retain execution and capability dependencies
+        run: |
+          python tools/validate_smx026.py
+          python tools/validate_smx027.py
+      - name: Retain lifecycle and production-core dependencies
+        run: |
+          python tools/validate_smx029.py
+          python tools/validate_smx031.py
+      - name: Retain publishing and Godot-selection dependencies
+        run: |
+          python tools/validate_smx036.py
+          python tools/validate_smx037.py
+      - name: Validate SMX-038 durable contract
+        run: python tools/validate_smx038.py
+      - name: Run SMX-038 adversarial and boundary tests
+        run: python -m unittest discover -s tests/production -p 'test_smx038.py' -v
+      - name: Export production-core target fixture
+        run: python tools/export_smx038_fixture.py --output artifacts/smx038-runtime-fixture.json
+      - name: Measure production WorldSave save-load seam
+        run: >-
+          python tools/measure_smx038.py
+          --samples 7
+          --commit-sha "${GITHUB_SHA}"
+          --output artifacts/smx038-semantic-performance.json
+      - name: Print semantic evidence
+        run: cat artifacts/smx038-semantic-performance.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: smx038-semantic-evidence
+          path: |
+            artifacts/smx038-runtime-fixture.json
+            artifacts/smx038-semantic-performance.json
+          if-no-files-found: error
+          retention-days: 30
+
+  real-godot-profiles:
+    name: Godot 4.7.2 native headless materialization and exports
+    needs: production-godot-contract
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.7.2
+    env:
+      PYTHONPATH: src:tests/production:tools
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python in Godot container
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Verify exact Godot baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot --version
+          test "$(godot --version | cut -d. -f1,2)" = "4.7"
+      - name: Generate production target fixture inside generic runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/export_smx038_fixture.py --output "$PROJECT_PATH/runtime_fixture.json"
+          mkdir -p artifacts build/web build/linux
+      - name: Exercise native policy through production Godot source
+        shell: bash
+        run: >-
+          godot --headless --path "$PROJECT_PATH" --
+          --profile=native
+          --output="$GITHUB_WORKSPACE/artifacts/smx038-native-source.json"
+      - name: Exercise headless policy through same production Godot source
+        shell: bash
+        run: >-
+          godot --headless --path "$PROJECT_PATH" --
+          --profile=headless
+          --output="$GITHUB_WORKSPACE/artifacts/smx038-headless-source.json"
+      - name: Validate source-profile evidence
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ('native', 'headless'):
+              row = json.loads(Path(f'artifacts/smx038-{name}-source.json').read_text())
+              assert row['contract'] == 'splashmx.smx038-godot-profile-evidence/1'
+              assert row['profile'] == name
+              assert row['frame_samples'] == 30
+              assert all(row['boundary_results'].values())
+              assert all(row['adapter_results'].values())
+              assert all(row['derivative_results'].values())
+              assert len(row['protected_asset_refs']) == 1
+          headless = json.loads(Path('artifacts/smx038-headless-source.json').read_text())
+          assert headless['active_features'] == ['physics_2d']
+          assert headless['degraded_optional_features'] == ['audio_basic', 'input', 'render_2d']
+          PY
+      - name: Install exact export templates from image
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.local/share/godot/export_templates/
+          if [ -d "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ]; then
+            mv "/root/.local/share/godot/export_templates/${GODOT_VERSION}.stable" ~/.local/share/godot/export_templates/
+          fi
+      - name: Export same generic runtime source as Web and Linux
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot --headless --editor --path "$PROJECT_PATH" --quit-after 2
+          godot --headless --path "$PROJECT_PATH" --export-release "Web" "$GITHUB_WORKSPACE/build/web/index.html"
+          godot --headless --path "$PROJECT_PATH" --export-release "Linux" "$GITHUB_WORKSPACE/build/linux/splashmx-runtime.x86_64"
+          test -s build/web/index.html
+          test -s build/linux/splashmx-runtime.x86_64
+      - name: Exercise exported Linux runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x build/linux/splashmx-runtime.x86_64
+          build/linux/splashmx-runtime.x86_64 --headless -- --profile=native --output="$GITHUB_WORKSPACE/artifacts/smx038-linux-export.json"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row = json.loads(Path('artifacts/smx038-linux-export.json').read_text())
+          assert row['profile'] == 'native'
+          assert row['frame_samples'] == 30
+          assert all(row['boundary_results'].values())
+          assert all(row['adapter_results'].values())
+          assert all(row['derivative_results'].values())
+          PY
+      - name: Print real Godot evidence
+        if: always()
+        shell: bash
+        run: |
+          for f in artifacts/smx038-*.json; do echo "--- $f"; cat "$f"; done
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: smx038-godot-builds-and-evidence
+          path: |
+            artifacts/smx038-*.json
+            build/web/**
+            build/linux/splashmx-runtime.x86_64
+          if-no-files-found: error
+          retention-days: 30
+
+  real-browser-profile:
+    name: Exported Godot web runtime in pinned Chromium
+    needs: real-godot-profiles
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+      - uses: actions/download-artifact@v8
+        with:
+          name: smx038-godot-builds-and-evidence
+          path: .
+      - name: Install pinned browser harness dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+      - name: Serve exported generic runtime
+        run: |
+          python -m http.server 8128 --directory build/web > /tmp/smx038-http.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8128/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/smx038-http.log
+          exit 1
+      - name: Exercise exported browser profile in real Chromium
+        env:
+          SMX038_URL: http://127.0.0.1:8128/
+        run: node tests/production/smx038_browser_harness.mjs
+      - name: Print browser evidence
+        if: always()
+        run: |
+          if [ -f artifacts/smx038-browser-evidence.json ]; then cat artifacts/smx038-browser-evidence.json; fi
+          if [ -f /tmp/smx038-http.log ]; then cat /tmp/smx038-http.log; fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: smx038-browser-evidence
+          path: artifacts/smx038-browser-evidence.json
+          if-no-files-found: error
+          retention-days: 30
