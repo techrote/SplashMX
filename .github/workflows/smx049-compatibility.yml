@@ -1,0 +1,48 @@
+name: SMX-049 historical compatibility
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility-programme:
+    name: Historical generations, migration and runtime retention
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Validate SMX-049 programme contracts
+        run: python tools/validate_smx049.py
+
+      - name: Run SMX-049 adversarial compatibility fixtures
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx049.py' -v
+
+      - name: Re-run canonical migration and protected-asset boundary
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx024.py' -v
+
+      - name: Re-run WorldSave compatibility boundary
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx029.py' -v
+
+      - name: Re-run exact package and publication boundaries
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest discover -s tests/production -p 'test_smx035.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx036.py' -v

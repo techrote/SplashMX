@@ -1,0 +1,97 @@
+{
+  "schema": "splashmx.smx049-compatibility-programme/1",
+  "issue": "SMX-049/#74",
+  "authority": [
+    "docs/architecture/ARCHITECTURE-V1.md",
+    "docs/implementation/SMX-024-CANONICAL-SERIALIZATION.md",
+    "docs/implementation/SMX-036-GENERIC-PUBLISHING.md"
+  ],
+  "policy": {
+    "support_basis": "explicit-generation-rule-plus-executable-fixture",
+    "age_based_last_n_support": false,
+    "max_migration_steps": 8,
+    "migration_commit_rule": "prepare-validate-complete-result-before-publish",
+    "unknown_required_semantics": "typed-fail-closed",
+    "security_revocation_precedence": true,
+    "runtime_identity_not_engine_version": true,
+    "hosted_binding": "exact-creation-revision-plus-exact-runtime-profile",
+    "offline_binding": "exact-creation-revision-plus-exact-runtime-profile",
+    "protected_asset_revision_atomic": true
+  },
+  "current_generations": [
+    {
+      "artifact_class": "canonical-project",
+      "generation": "splashmx.project-revision/schema-0",
+      "status": "supported-historical-fixture",
+      "action": "migrate",
+      "target": "splashmx.project-revision/schema-1",
+      "migration_steps": ["project-schema-0->1"]
+    },
+    {
+      "artifact_class": "canonical-project",
+      "generation": "splashmx.project-revision/schema-1",
+      "status": "current",
+      "action": "direct"
+    },
+    {
+      "artifact_class": "package-component",
+      "generation": "splashmx.package-manifest/1+resolution-lock/1",
+      "status": "current-first-production-generation",
+      "action": "direct"
+    },
+    {
+      "artifact_class": "creation-revision",
+      "generation": "splashmx.creation/1",
+      "status": "current-first-production-generation",
+      "action": "direct",
+      "runtime_profile": "splashmx.generic-player/1"
+    },
+    {
+      "artifact_class": "world-save",
+      "generation": "splashmx.world-save/1",
+      "status": "current-first-production-generation",
+      "action": "direct"
+    }
+  ],
+  "future_transition_rule": {
+    "description": "Before a successor creation generation is supported, the previous creation generation must either have a tested migration or an exact retained runtime. The v2 names here are simulation-only and are not released formats.",
+    "simulated_new_generation": "splashmx.creation/2",
+    "simulated_new_runtime": "splashmx.generic-player/2",
+    "previous_generation_action": "retained-runtime",
+    "previous_runtime": "splashmx.generic-player/1"
+  },
+  "retention": {
+    "reference_based": true,
+    "retain_original_immutable_bytes": true,
+    "retain_adjacent_migrations_while_supported": true,
+    "compaction_requires_new_immutable_revision": true,
+    "never_rewrite_existing_creation_revision": true,
+    "runtime_artifact_content_addressed": true,
+    "runtime_can_be_revoked_for_security": true,
+    "revocation_does_not_grant_fallback_authority": true,
+    "capability_grants_not_historical_state": true,
+    "worldsave_requires_explicit_compatible_basis": true
+  },
+  "fixtures": [
+    {"id": "CMP-001", "case": "project schema 1 direct load", "expected": "direct"},
+    {"id": "CMP-002", "case": "project schema 0 bounded migration", "expected": "migrate-to-schema-1"},
+    {"id": "CMP-003", "case": "future project schema", "expected": "compatibility.unsupported_generation-or-production-parser-unsupported-version"},
+    {"id": "CMP-004", "case": "unknown required semantic feature", "expected": "compatibility.unsupported_required_semantics"},
+    {"id": "CMP-005", "case": "package manifest plus resolution lock v1", "expected": "direct"},
+    {"id": "CMP-006", "case": "unknown historical package generation", "expected": "compatibility.unsupported_generation"},
+    {"id": "CMP-007", "case": "creation/1 direct under generic-player/1", "expected": "direct"},
+    {"id": "CMP-008", "case": "simulated creation/2 transition retains creation/1 runtime", "expected": "retained-runtime"},
+    {"id": "CMP-009", "case": "retained runtime missing", "expected": "compatibility.runtime_unavailable"},
+    {"id": "CMP-010", "case": "retained runtime or artifact revoked", "expected": "compatibility.revoked_artifact"},
+    {"id": "CMP-011", "case": "WorldSave/1 direct with explicit creation/project basis", "expected": "direct"},
+    {"id": "CMP-012", "case": "unknown WorldSave generation", "expected": "compatibility.unsupported_generation"},
+    {"id": "CMP-013", "case": "hosted historical launch", "expected": "exact-creation-and-runtime-profile-no-alias-floating"},
+    {"id": "CMP-014", "case": "offline historical launch", "expected": "exact-creation-and-runtime-profile-no-network-floating"},
+    {"id": "CMP-015", "case": "protected Asset fields across migration/runtime retention", "expected": "one-complete-revision-no-field-mixing"},
+    {"id": "CMP-016", "case": "duplicate runtime references in storage model", "expected": "content-addressed-deduplication"},
+    {"id": "CMP-017", "case": "security fix invalidates historically compatible bytes", "expected": "revocation-wins-over-compatibility"},
+    {"id": "CMP-018", "case": "migration chain exceeds configured bound", "expected": "compatibility.migration_limit"},
+    {"id": "CMP-019", "case": "existing immutable CreationRevision during migration programme change", "expected": "identity-and-bytes-unchanged"},
+    {"id": "CMP-020", "case": "friendly hosted alias moves", "expected": "historical immutable release-remains-addressable"}
+  ]
+}
