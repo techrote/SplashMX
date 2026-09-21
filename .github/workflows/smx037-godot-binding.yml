@@ -26,7 +26,7 @@ jobs:
       - name: Run SMX-037 projection tests
         env:
           PYTHONPATH: src:tests/production:tools
-        run: python -m unittest tests.production.test_smx037_godot_selection -v
+        run: python -m unittest discover -s tests/production -p 'test_smx037_godot_selection.py' -v
       - name: Export production-core projection fixture
         env:
           PYTHONPATH: src:tests/production:tools
