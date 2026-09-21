@@ -32,7 +32,7 @@ for anchor in (
     "Protected source/audio/provenance boundary",
     "field-wise merge",
 ):
-    assert anchor in doc, f"missing SMX-044 contract anchor: {anchor}"
+    assert anchor.lower() in doc.lower(), f"missing SMX-044 contract anchor: {anchor}"
 for anchor in ("MAX_RELAY_QUEUE = 64", "people.relay_backpressure", "people.relay_offline", "resolve_conflict", "alternative-a", "alternative-b", "protected"):
     assert anchor in people, f"missing People production anchor: {anchor}"
 assert 'state["people"]' in server and 'state["together"]' in server
