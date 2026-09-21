@@ -18,5 +18,10 @@ validated checkpoints and conservative causal-stability compaction. The SQLite
 oracle exercises the native physical mapping already selected by SMX-022/025;
 it does not make SQLite identity semantic and it is not browser production code.
 
-The dedicated CI gate also reruns the SMX-018 collaboration harness. Production
+`tools/validate_smx042.py` compares the complete CR-001..028 representability
+map with the authoritative SMX-018 fixture file, so selection evidence cannot
+silently drift from the frozen collaboration conflict corpus.
+
+The dedicated CI gate also reruns the SMX-018 collaboration harness plus the
+SMX-023 canonical-core and SMX-025 persistence regressions. Production
 implementation belongs to SMX-043.
