@@ -7,6 +7,7 @@
  */
 export const MAX_RUNTIME_MESSAGE_BYTES = 65536;
 export const MAX_RUNTIME_JOIN_BYTES = 4096;
+export const SEMANTIC_POLICY_CLOSE_CODE = 4008;
 
 const FORBIDDEN = new Set([
   "capability", "capability_grant", "capability_id", "host_handle",
@@ -69,7 +70,11 @@ export class BrowserRuntimeTransport {
   }
 
   get readyState() {
-    return this.#channel?.readyState ?? "closed";
+    if (this.#channel) return this.#channel.readyState;
+    if (this.#socket) {
+      return ["connecting", "open", "closing", "closed"][this.#socket.readyState] ?? "closed";
+    }
+    return "closed";
   }
 
   onSemantic(callback) {
@@ -162,7 +167,7 @@ export class BrowserRuntimeTransport {
         const decoded = decodeSemanticEnvelope(event.data, this.#maxBytes);
         this.#onSemantic?.(decoded);
       } catch {
-        socket.close(1008, "invalid semantic envelope");
+        socket.close(SEMANTIC_POLICY_CLOSE_CODE, "invalid semantic envelope");
       }
     });
   }

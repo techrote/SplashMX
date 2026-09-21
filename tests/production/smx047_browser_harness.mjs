@@ -341,7 +341,7 @@ const serverEvidence = {
   dedicated_join_received: dedicatedEvents.some((event) => event.kind === "join"),
   dedicated_input_received: dedicatedEvents.some((event) => event.kind === "semantic" && event.message_id === "dedicated-input"),
   hostile_malformed_frame_trigger_received: dedicatedEvents.some((event) => event.kind === "semantic" && event.message_id === "trigger-malformed"),
-  malformed_inbound_closed_with_policy_code: observedCloseCode === 1008 && dedicatedClosedCode === 1008,
+  malformed_inbound_closed_with_policy_code: observedCloseCode === 4008 && dedicatedClosedCode === 4008,
 };
 if (!serverEvidence.dedicated_join_received || !serverEvidence.dedicated_input_received) {
   throw new Error("dedicated production WSS path was not bidirectional");

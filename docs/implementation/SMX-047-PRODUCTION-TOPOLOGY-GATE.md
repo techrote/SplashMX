@@ -59,11 +59,13 @@ The gate exercises:
 4. physical disconnect followed by establishment of a new peer transport while semantic session/Thing identity in the envelope remains unchanged;
 5. a real TLS WebSocket server for the selected dedicated-authoritative path;
 6. runtime join framing and bidirectional semantic delivery;
-7. malformed inbound WSS framing, which must make the browser adapter close the connection with policy code `1008`.
+7. malformed inbound WSS framing, which must make the browser adapter close the connection with application-private close code `4008`.
 
-The first SMX-047 integration pass exposed an acceptance-relevant adapter defect in the SMX-046 implementation: `connectDedicatedWss()` could receive authoritative semantic frames, but `sendSemantic()` was hard-wired to the DataChannel and therefore could not send client intent over the selected dedicated WSS path. SMX-047 repairs `sendSemantic()` to use the open DataChannel **or** the open dedicated WSS socket, preserving the same bounded encoding and keeping the physical socket private. A disconnected adapter still returns `network.reconnect_required`.
+The first SMX-047 integration pass exposed two acceptance-relevant adapter defects in the SMX-046 implementation. First, `connectDedicatedWss()` could receive authoritative semantic frames, but `sendSemantic()` was hard-wired to the DataChannel and therefore could not send client intent over the selected dedicated WSS path. SMX-047 repairs `sendSemantic()` to use the open DataChannel **or** the open dedicated WSS socket, preserving the same bounded encoding and keeping the physical socket private. A disconnected adapter still returns `network.reconnect_required`.
 
-This repair changes no canonical/network semantics; it makes the already-selected physical dedicated adapter genuinely bidirectional.
+Second, malformed dedicated WSS input attempted `WebSocket.close(1008, ...)`. Browser script may initiate a close only with code `1000` or an application-private code in `3000..4999`, so Chromium rejected that close request and left the hostile connection live. The production adapter now uses application-private code `4008` for semantic-policy rejection, and the real server waits for and verifies that close handshake.
+
+These repairs change no canonical/network semantics; they make the already-selected physical dedicated adapter genuinely bidirectional and genuinely fail-closed in the browser API actually used in production.
 
 ## Identity and authority separation
 

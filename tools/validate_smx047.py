@@ -76,6 +76,8 @@ def main() -> int:
     require('this.#channel?.readyState === "open"' in browser_adapter, "peer DataChannel send path")
     require('this.#socket?.readyState === 1' in browser_adapter, "dedicated WSS send path")
     require("encodeSemanticEnvelope(envelope, this.#maxBytes)" in browser_adapter, "shared bounded semantic encoding")
+    require("SEMANTIC_POLICY_CLOSE_CODE = 4008" in browser_adapter, "browser-valid policy close code")
+    require("socket.close(SEMANTIC_POLICY_CLOSE_CODE" in browser_adapter, "malformed WSS frame fails closed")
     require("network.reconnect_required" in browser_adapter, "disconnected send typed failure")
 
     browser_harness = text("tests/production/smx047_browser_harness.mjs")
@@ -86,6 +88,7 @@ def main() -> int:
         "restartIce",
         "dedicated-input",
         "trigger-malformed",
+        "observedCloseCode === 4008",
         "malformed_inbound_closed_with_policy_code",
         "semantic_roundtrip_ms",
     ):
@@ -97,6 +100,7 @@ def main() -> int:
         "## Hostile and degraded network campaign",
         "## Production browser adapter evidence and corrective repair",
         "## Protected source/audio/provenance boundary",
+        "application-private close code `4008`",
         "CI-local mechanism observations",
         "No unresolved topology-specific semantic contradiction",
     ):
