@@ -1,0 +1,46 @@
+name: SMX-042 collaboration substrate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  collaboration-substrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate inherited collaboration and persistence contracts
+        run: |
+          python tools/validate_smx011.py
+          python tools/validate_smx018.py
+          python tools/validate_smx021.py
+          python tools/validate_smx022.py
+          python tools/validate_smx023.py
+          python tools/validate_smx025.py
+          python tools/validate_smx042.py
+      - name: Run inherited production core and persistence regressions
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx023 -v
+          python -m unittest tests.production.test_smx025 -v
+      - name: Run inherited collaboration semantic corpus
+        env:
+          PYTHONPATH: experiments/smx-018-collaboration-harness
+        run: python -m unittest discover -s experiments/smx-018-collaboration-harness -p 'test_*.py' -v
+      - name: Run SMX-042 adversarial substrate spike
+        env:
+          PYTHONPATH: experiments/smx-042-collaboration-substrate-spike
+        run: python -m unittest discover -s experiments/smx-042-collaboration-substrate-spike -p 'test_*.py' -v
+      - name: Reproduce bounded collaboration storage probe
+        env:
+          PYTHONPATH: experiments/smx-042-collaboration-substrate-spike
+        run: python experiments/smx-042-collaboration-substrate-spike/spike.py
