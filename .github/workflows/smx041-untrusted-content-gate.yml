@@ -1,0 +1,47 @@
+name: SMX-041 untrusted-content security gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  untrusted-content-security-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Validate inherited security contracts and SMX-041 coverage
+        run: |
+          python tools/validate_smx016.py
+          python tools/validate_smx024.py
+          python tools/validate_smx026.py
+          python tools/validate_smx027.py
+          python tools/validate_smx035.py
+          python tools/validate_smx036.py
+          python tools/validate_smx038.py
+          python tools/validate_smx040.py
+          python tools/validate_smx041.py
+      - name: Run production hostile-content matrix
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx024 -v
+          python -m unittest tests.production.test_smx026 -v
+          python -m unittest tests.production.test_smx027 -v
+          python -m unittest tests.production.test_smx035_adversarial -v
+          python -m unittest tests.production.test_smx036_adversarial -v
+          python -m unittest tests.production.test_smx038 -v
+          python -m unittest tests.production.test_smx040 -v
+          python -m unittest tests.production.test_smx041 -v
+      - name: Recheck hardened browser decoder worker boundary
+        run: node tests/production/smx040_web_worker_test.mjs
