@@ -1,0 +1,73 @@
+name: SMX-045 network deployment selection
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  network-deployment-selection:
+    name: Auth, transport and failure-boundary spike
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Validate inherited and SMX-045 contracts
+        run: |
+          python tools/validate_smx010.py
+          python tools/validate_smx017.py
+          python tools/validate_smx038.py
+          python tools/validate_smx041.py
+          python tools/validate_smx045.py
+
+      - name: Run inherited topology semantic oracle
+        run: python -m unittest discover -s experiments/smx-017-network-harness -p 'test_model.py' -v
+
+      - name: Run SMX-045 adversarial mechanism spike
+        env:
+          PYTHONPATH: experiments/smx-045-network-deployment-spike
+        run: python -m unittest discover -s experiments/smx-045-network-deployment-spike -p 'test_*.py' -v
+
+      - name: Reproduce bounded network mechanism measurements
+        run: python experiments/smx-045-network-deployment-spike/spike.py
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+
+      - name: Install pinned Chromium mechanism-probe dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+
+      - name: Run real Chromium WebRTC/ICE mechanism probe
+        run: node experiments/smx-045-network-deployment-spike/browser_probe.mjs "$GITHUB_WORKSPACE"
+
+      - name: Print SMX-045 evidence
+        if: always()
+        run: |
+          for file in artifacts/smx045-network-evidence.json artifacts/smx045-browser-evidence.json; do
+            if [ -f "$file" ]; then
+              cat "$file"
+            fi
+          done
+
+      - name: Upload SMX-045 evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx045-network-evidence
+          path: artifacts/smx045-*-evidence.json
+          if-no-files-found: error
+          retention-days: 30
