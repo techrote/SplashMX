@@ -7,6 +7,7 @@
  */
 export const MAX_RUNTIME_MESSAGE_BYTES = 65536;
 export const MAX_RUNTIME_JOIN_BYTES = 4096;
+export const SEMANTIC_POLICY_CLOSE_CODE = 4008;
 
 const FORBIDDEN = new Set([
   "capability", "capability_grant", "capability_id", "host_handle",
@@ -69,7 +70,11 @@ export class BrowserRuntimeTransport {
   }
 
   get readyState() {
-    return this.#channel?.readyState ?? "closed";
+    if (this.#channel) return this.#channel.readyState;
+    if (this.#socket) {
+      return ["connecting", "open", "closing", "closed"][this.#socket.readyState] ?? "closed";
+    }
+    return "closed";
   }
 
   onSemantic(callback) {
@@ -120,8 +125,16 @@ export class BrowserRuntimeTransport {
   }
 
   sendSemantic(envelope) {
-    if (!this.#channel || this.#channel.readyState !== "open") throw new Error("network.reconnect_required");
-    this.#channel.send(encodeSemanticEnvelope(envelope, this.#maxBytes));
+    const encoded = encodeSemanticEnvelope(envelope, this.#maxBytes);
+    if (this.#channel?.readyState === "open") {
+      this.#channel.send(encoded);
+      return;
+    }
+    if (this.#socket?.readyState === 1) {
+      this.#socket.send(encoded);
+      return;
+    }
+    throw new Error("network.reconnect_required");
   }
 
   async connectDedicatedWss({ url, joinTicket, sessionId, transportId, WebSocketImpl = WebSocket } = {}) {
@@ -154,7 +167,7 @@ export class BrowserRuntimeTransport {
         const decoded = decodeSemanticEnvelope(event.data, this.#maxBytes);
         this.#onSemantic?.(decoded);
       } catch {
-        socket.close(1008, "invalid semantic envelope");
+        socket.close(SEMANTIC_POLICY_CLOSE_CODE, "invalid semantic envelope");
       }
     });
   }
