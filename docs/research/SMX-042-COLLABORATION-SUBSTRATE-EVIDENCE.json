@@ -1,0 +1,76 @@
+{
+  "contract": "splashmx.benchmark-evidence/1",
+  "evidence_id": "SMX-042.sqlite-4096.local",
+  "captured_at_utc": "2026-09-21T05:08:18Z",
+  "target_profile": "native",
+  "runtime": {
+    "name": "CPython",
+    "version": "3.13.5",
+    "build_id": "smx042-spike-v1"
+  },
+  "environment": {
+    "os": "Linux 6.18.44",
+    "arch": "x86_64",
+    "hardware": {
+      "cpu": "AMD EPYC 9V74 80-Core Processor",
+      "gpu": "not-used",
+      "memory_bytes": 6236913664,
+      "note": "Disposable mechanism-selection runner; timings are evidence for this environment, not SLOs."
+    }
+  },
+  "workload": {
+    "id": "SMX-042.sqlite-4096",
+    "description": "4096 sequential semantic transaction envelopes with every 97th retained as held conflict, SQLite WAL/FULL, then checkpoint+stable-frontier payload compaction."
+  },
+  "sample_count": 1,
+  "metrics": [
+    {
+      "name": "ingest",
+      "unit": "ms",
+      "statistic": "single",
+      "value": 166.99
+    },
+    {
+      "name": "compaction",
+      "unit": "ms",
+      "statistic": "single",
+      "value": 17.108
+    },
+    {
+      "name": "history_payload_before",
+      "unit": "bytes",
+      "statistic": "single",
+      "value": 638415
+    },
+    {
+      "name": "history_payload_after",
+      "unit": "bytes",
+      "statistic": "single",
+      "value": 6546
+    },
+    {
+      "name": "receipt_index",
+      "unit": "bytes",
+      "statistic": "single",
+      "value": 420781
+    },
+    {
+      "name": "checkpoint",
+      "unit": "bytes",
+      "statistic": "single",
+      "value": 127
+    },
+    {
+      "name": "retired_payload_count",
+      "unit": "transactions",
+      "statistic": "single",
+      "value": 4054
+    },
+    {
+      "name": "retained_payload_count",
+      "unit": "transactions",
+      "statistic": "single",
+      "value": 42
+    }
+  ]
+}
