@@ -1,0 +1,46 @@
+name: SMX-050 production distribution
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  distribution-runtime:
+    name: Exact hosting, offline retention and recovery
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Validate SMX-050 distribution contracts
+        run: python tools/validate_smx050.py
+
+      - name: Run SMX-050 adversarial distribution fixtures
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx050.py' -v
+
+      - name: Retain exact publication and compatibility boundaries
+        env:
+          PYTHONPATH: src
+        run: |
+          python tools/validate_smx036.py
+          python tools/validate_smx049.py
+          python -m unittest discover -s tests/production -p 'test_smx036.py' -v
+          python -m unittest discover -s tests/production -p 'test_smx049.py' -v
+
+      - name: Retain untrusted-content and production topology gates
+        run: |
+          python tools/validate_smx041.py
+          python tools/validate_smx044.py
+          python tools/validate_smx047.py

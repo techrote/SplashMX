@@ -1,0 +1,39 @@
+{
+  "schema": "splashmx.smx050-distribution/1",
+  "policy": {
+    "hosted_binding": "exact-creation-revision-plus-runtime-digest",
+    "offline_binding": "exact-creation-revision-plus-runtime-digest",
+    "aliases_noncanonical": true,
+    "cache_keys_noncanonical": true,
+    "runtime_revocation_precedence": true,
+    "local_ownership_survives_cloud_loss": true,
+    "protected_asset_revision_atomic": true,
+    "native_packaging": "exact-portable-payload-only-no-os-installer-selection-without-product-evidence"
+  },
+  "fixtures": [
+    {"id":"DST-001","claim":"immutable hosted release binds exact CreationRevisionId"},
+    {"id":"DST-002","claim":"hosted release binds exact runtime profile and digest"},
+    {"id":"DST-003","claim":"friendly alias can move without mutating immutable release"},
+    {"id":"DST-004","claim":"CreationRevision and HostedRelease immutable rebinding is denied"},
+    {"id":"DST-005","claim":"retained runtime artifacts are content addressed"},
+    {"id":"DST-006","claim":"runtime revocation wins over compatibility retention"},
+    {"id":"DST-007","claim":"hosting outage returns typed service-unavailable outcome"},
+    {"id":"DST-008","claim":"collaboration outage does not invalidate local authored ownership"},
+    {"id":"DST-009","claim":"networking outage does not invalidate local installed content"},
+    {"id":"DST-010","claim":"offline launch requires exact installed creation and runtime closure"},
+    {"id":"DST-011","claim":"offline runtime corruption fails closed"},
+    {"id":"DST-012","claim":"recovery round trip preserves canonical project revision"},
+    {"id":"DST-013","claim":"recovery round trip preserves exact CreationRevision closure"},
+    {"id":"DST-014","claim":"recovery round trip preserves exact runtime bytes and digest"},
+    {"id":"DST-015","claim":"recovery round trip preserves WorldSave semantic bytes"},
+    {"id":"DST-016","claim":"tampered creation blob is rejected before import"},
+    {"id":"DST-017","claim":"tampered runtime blob is rejected before import"},
+    {"id":"DST-018","claim":"protected source identity and exact metadata remain indivisible"},
+    {"id":"DST-019","claim":"protected audio and media semantics remain indivisible"},
+    {"id":"DST-020","claim":"protected provenance licence attribution and derivation lineage remain indivisible"},
+    {"id":"DST-021","claim":"CDN/cache eviction cannot change canonical semantic identity"},
+    {"id":"DST-022","claim":"runtime storage cost counts unique digest times explicit copies"},
+    {"id":"DST-023","claim":"qualified native package binds one exact offline install"},
+    {"id":"DST-024","claim":"unsupported native installer target fails typed rather than improvising authority"}
+  ]
+}
