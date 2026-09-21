@@ -1,0 +1,29 @@
+{
+  "contract": "splashmx.smx037-godot-binding-fixtures/1",
+  "cases": [
+    {"id":"GBS-001","claim":"ThingId remains the lookup key when private Godot bindings are destroyed and recreated."},
+    {"id":"GBS-002","claim":"NodePath, RID, ResourceUID and transport/process handles are rejected from the target projection fixture."},
+    {"id":"GBS-003","claim":"A semantic-only Thing can have zero Godot bindings without ceasing to exist."},
+    {"id":"GBS-004","claim":"Sparse facet realization creates engine objects only for requested private target facets."},
+    {"id":"GBS-005","claim":"Node-per-Thing realization remains a measured comparison candidate, not a canonical identity rule."},
+    {"id":"GBS-006","claim":"Scene-subtree realization remains a measured comparison candidate, not a canonical ownership rule."},
+    {"id":"GBS-007","claim":"Central scheduler bridge orders semantic work by explicit SplashMX keys rather than SceneTree callback order."},
+    {"id":"GBS-008","claim":"Reversing engine/event arrival insertion order produces the same semantic activation trace."},
+    {"id":"GBS-009","claim":"Unsupported required target features fail before binding activation."},
+    {"id":"GBS-010","claim":"Unsupported optional target features may be omitted without rewriting canonical project data."},
+    {"id":"GBS-011","claim":"Headless profile can omit render/audio/input bindings while preserving the same semantic fixture revision."},
+    {"id":"GBS-012","claim":"Web and native export profiles consume the same spike source and semantic fixture contract."},
+    {"id":"GBS-013","claim":"Representative render path uses private Node2D bindings only."},
+    {"id":"GBS-014","claim":"Representative physics path uses private Area2D/CollisionShape2D bindings only."},
+    {"id":"GBS-015","claim":"Representative audio path uses a private AudioStreamPlayer binding only."},
+    {"id":"GBS-016","claim":"Representative input is normalized into scheduler work rather than becoming durable device identity."},
+    {"id":"GBS-017","claim":"Protected Asset projection carries only exact AssetId plus immutable revision digest and cannot field-mix source/audio/provenance metadata."},
+    {"id":"GBS-018","claim":"Binding recreation preserves the exact protected Asset revision reference."},
+    {"id":"GBS-019","claim":"Creation, churn, scheduler, object-count and memory metrics are emitted from real Godot 4.7.2 execution."},
+    {"id":"GBS-020","claim":"Runtime startup is measured separately as headless process launch-to-exit evidence."},
+    {"id":"GBS-021","claim":"Measured timings are evidence for the named CI environment, not universal target SLOs."},
+    {"id":"GBS-022","claim":"Selection prefers the sparse-facet layout only after semantic and adversarial gates pass."},
+    {"id":"GBS-023","claim":"The selected layout may use zero, one or multiple private engine objects per Thing."},
+    {"id":"GBS-024","claim":"No Godot binding object is serialized back into the production core or protected-media revision."}
+  ]
+}
