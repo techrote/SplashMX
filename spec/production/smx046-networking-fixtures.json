@@ -1,0 +1,83 @@
+{
+  "authority": [
+    "docs/architecture/ARCHITECTURE-V1.md",
+    "docs/research/SMX-010-RUNTIME-MULTIPLAYER.md",
+    "docs/research/SMX-017-NETWORK-HARNESS-FIXTURES.json",
+    "docs/research/SMX-045-NETWORK-DEPLOYMENT-SELECTION.md"
+  ],
+  "browser_adapter": "src/splashmx/runtime/web/network_transport.mjs",
+  "deferred_security_ports": [
+    {
+      "guarantee": "forged sender, cross-room admission and stale authority epochs fail before semantic mutation",
+      "production_test": "test_at023_forged_sender_and_cross_room_admission_fail_before_semantics",
+      "source_id": "AT-023"
+    },
+    {
+      "guarantee": "message bytes/tree/rate/queue have independent transport-agnostic bounds",
+      "production_test": "test_at024_message_bytes_and_tree_depth_are_independently_bounded",
+      "source_id": "AT-024"
+    }
+  ],
+  "gate": "GATE-05",
+  "issue": "SMX-046",
+  "limits": {
+    "dedup_ids_per_sender": 512,
+    "join_ticket_bytes": 4096,
+    "messages_per_session_tick": 64,
+    "pending_reliable_events_per_thing": 128,
+    "runtime_message_bytes": 65536,
+    "serialized_authority_depth": 32,
+    "signalling_bytes": 65536
+  },
+  "production_boundary": "src/splashmx/runtime/network.py",
+  "production_invariants": [
+    {"id":"NETP-001","statement":"principal_id, session_id, transport_id and ThingId are role-distinct; reconnect only rebinds transient transport identity"},
+    {"id":"NETP-002","statement":"client input remains declared intent; only current authority may publish replicated state/events"},
+    {"id":"NETP-003","statement":"authority migration is peer-hosted only, requires a confirmed semantic checkpoint, is atomic and increments the authority epoch"},
+    {"id":"NETP-004","statement":"dedicated-authority loss fails closed and never promotes an ordinary client"},
+    {"id":"NETP-005","statement":"relevance is independent of residency/existence; known-unloaded state coalesces and reliable events are bounded"},
+    {"id":"NETP-006","statement":"tombstoned targets discard pending delivery and cannot resurrect through network work"},
+    {"id":"NETP-007","statement":"ingress validates room/session/sender, message size/tree, authority epoch, replay/order, declared loci, rate and queue bounds independently"},
+    {"id":"NETP-008","statement":"network payloads cannot import capability, host, engine, process, session or transport authority"},
+    {"id":"NETP-009","statement":"runtime snapshots/checkpoints exclude transient session/transport/process handles"},
+    {"id":"NETP-010","statement":"protected Asset revisions remain complete indivisible source/audio/provenance/licence/derivation bundles across topology, reconnect and migration"},
+    {"id":"NETP-011","statement":"browser peer primary is WebRTC DataChannel with ICE restart; dedicated baseline is authenticated WSS and insecure ws is rejected"},
+    {"id":"NETP-012","statement":"OAuth PKCE remains control-plane authentication; runtime peers receive only short-lived single-use room/audience-scoped admission"}
+  ],
+  "residual_scope": [
+    "Public-Internet NAT/TURN and hostile-WAN qualification remains SMX-047 gate work.",
+    "Identity-provider vendor and TURN credential deployment are operational choices below this semantic contract.",
+    "CI-local WebRTC timing is mechanism evidence only, not a product SLO."
+  ],
+  "schema": "splashmx.smx046-production-networking-fixtures/1",
+  "source_fixture_ports": [
+    {"production_test":"test_TN001_same_authoritative_semantics_across_offline_peer_and_dedicated","source_id":"TN-001"},
+    {"production_test":"test_TN002_control_transfer_does_not_transfer_simulation_authority","source_id":"TN-002"},
+    {"production_test":"test_TN003_transport_rebind_preserves_principal","source_id":"TN-003"},
+    {"production_test":"test_TN004_reconnect_requires_new_transport_identity","source_id":"TN-004"},
+    {"production_test":"test_TN005_non_controller_input_rejected","source_id":"TN-005"},
+    {"production_test":"test_TN006_duplicate_input_is_rejected_without_semantic_mutation","source_id":"TN-006"},
+    {"production_test":"test_TN007_reordered_input_is_rejected","source_id":"TN-007"},
+    {"production_test":"test_TN008_stale_authority_epoch_is_rejected","source_id":"TN-008"},
+    {"production_test":"test_TN009_unconfirmed_host_loss_cannot_migrate","source_id":"TN-009"},
+    {"production_test":"test_TN010_confirmed_host_migration_bumps_epoch_and_preserves_state","source_id":"TN-010"},
+    {"production_test":"test_TN011_forged_remote_state_is_not_input","source_id":"TN-011"},
+    {"production_test":"test_TN012_undeclared_input_rejected","source_id":"TN-012"},
+    {"production_test":"test_TN013_out_of_range_input_rejected","source_id":"TN-013"},
+    {"production_test":"test_TN014_nested_capability_injection_rejected","source_id":"TN-014"},
+    {"production_test":"test_TN015_host_handle_injection_rejected","source_id":"TN-015"},
+    {"production_test":"test_TN016_oversized_message_rejected","source_id":"TN-016"},
+    {"production_test":"test_TN017_known_unloaded_state_is_coalesced","source_id":"TN-017"},
+    {"production_test":"test_TN018_reliable_event_survives_unload_and_deduplicates","source_id":"TN-018"},
+    {"production_test":"test_TN019_relevance_leave_is_not_unload_or_destroy","source_id":"TN-019"},
+    {"production_test":"test_TN020_tombstone_drops_pending_and_rejects_future_delivery","source_id":"TN-020"},
+    {"production_test":"test_TN021_stale_state_cannot_roll_back","source_id":"TN-021"},
+    {"production_test":"test_TN022_non_authority_state_rejected","source_id":"TN-022"},
+    {"production_test":"test_TN023_undeclared_state_locus_rejected","source_id":"TN-023"},
+    {"production_test":"test_TN024_protected_asset_bundle_is_atomic","source_id":"TN-024"},
+    {"production_test":"test_TN025_topology_projection_does_not_mutate_protected_bundle","source_id":"TN-025"},
+    {"production_test":"test_TN026_semantic_snapshot_contains_no_transport_or_engine_identity","source_id":"TN-026"},
+    {"production_test":"test_TN027_thing_identity_is_identical_across_topologies","source_id":"TN-027"},
+    {"production_test":"test_TN028_checkpoint_excludes_transport_peer_and_session_handle","source_id":"TN-028"}
+  ]
+}
