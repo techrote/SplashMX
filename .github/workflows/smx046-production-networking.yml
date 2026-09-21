@@ -1,0 +1,73 @@
+name: SMX-046 production networking
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  production-networking:
+    name: Runtime authority, reconnect and hostile ingress
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Validate inherited and production networking contracts
+        run: |
+          python tools/validate_smx010.py
+          python tools/validate_smx017.py
+          python tools/validate_smx041.py
+          python tools/validate_smx045.py
+          python tools/validate_smx046.py
+
+      - name: Run retained topology semantic oracle
+        run: python -m unittest discover -s experiments/smx-017-network-harness -p 'test_model.py' -v
+
+      - name: Run SMX-046 production adversarial and boundary suite
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx046.py' -v
+
+  browser-production-transport:
+    name: Real Chromium production WebRTC adapter
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+
+      - name: Install pinned Chromium harness dependency
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright@1.55.0 install --with-deps chromium
+
+      - name: Run real Chromium production transport gate
+        run: node tests/production/smx046_browser_harness.mjs "$GITHUB_WORKSPACE"
+
+      - name: Print browser evidence
+        if: always()
+        run: test ! -f artifacts/smx046-browser-evidence.json || cat artifacts/smx046-browser-evidence.json
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx046-browser-evidence
+          path: artifacts/smx046-browser-evidence.json
+          if-no-files-found: error
+          retention-days: 30
