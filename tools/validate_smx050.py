@@ -32,7 +32,7 @@ def main() -> None:
 
     required_doc_anchors = (
         "exact CreationRevisionId + exact runtime profile + exact runtime digest",
-        "Aliases and CDN/cache keys are non-canonical",
+        "CDN/cache keys are non-canonical",
         "Cloud/service loss does not invalidate local project ownership",
         "No OS-specific installer technology is selected by SMX-050",
         "Protected source/audio/provenance invariant",
