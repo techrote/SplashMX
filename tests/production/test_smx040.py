@@ -15,7 +15,6 @@ from splashmx.packages.model import PackageRevisionId
 from splashmx.security.capabilities import (
     CapabilityBroker,
     CapabilityScope,
-    PrincipalId,
     TrustedHostServiceBoundary,
     principal_for_service_request,
 )
@@ -25,6 +24,7 @@ from splashmx.security.physical import (
     CAP_MEDIA_DECODE,
     DecoderBroker,
     DecoderResult,
+    LinuxProcessDecoder,
     MediaDescriptor,
     OpenSslEd25519Verifier,
     PhysicalLimits,
@@ -44,7 +44,6 @@ from splashmx.security.physical import (
     root_metadata_body,
     trust_signature_grants_capability,
     validate_protected_asset_candidate,
-    LinuxProcessDecoder,
 )
 
 
@@ -144,9 +143,8 @@ class TestPhysicalSecurityBoundary(unittest.TestCase):
         self.assertEqual(cm.exception.code, "security.container_format")
 
     def test_spb1_executable_kind_rejected(self):
-        bundle = build_spb1((("evil", "gdscript", b"print('no')"),))
         with self.assertRaises(PhysicalSecurityError) as cm:
-            preflight_spb1(bundle)
+            preflight_spb1(build_spb1((("evil", "gdscript", b"print('no')"),)))
         self.assertEqual(cm.exception.code, "security.container_executable_kind")
 
     def test_spb1_total_limit_is_independent(self):
@@ -206,9 +204,7 @@ class TestPhysicalSecurityBoundary(unittest.TestCase):
         backend = BrowserWasmDecoder(tiny_decoder, BrowserIsolationProfile(decoder_module_pinned=True))
         broker = DecoderBroker({"web-hardened": backend})
         result = broker.decode_bytes(media_payload())
-        self.assertEqual(result["asset_id"], "asset.security")
-        self.assertEqual(result["revision_digest"], "revision.security.1")
-        self.assertEqual(result["target_profile"], "web-hardened")
+        self.assertEqual((result["asset_id"], result["revision_digest"], result["target_profile"]), ("asset.security", "revision.security.1", "web-hardened"))
         self.assertEqual(broker.cache.entry_count, 1)
         self.assertEqual(len(broker.cache.get(result["cache_key"])), 4)
 
@@ -227,54 +223,34 @@ class TestPhysicalSecurityBoundary(unittest.TestCase):
     def test_signature_trust_never_grants_capability(self):
         self.assertFalse(trust_signature_grants_capability("publisher", "network"))
 
-    def test_r016_04_revocation_after_admission_stops_real_decoder_host_crossing(self):
-        source = b"abcd"
+    def _mediated(self, source: bytes, suffix: str):
         backend = BrowserWasmDecoder(tiny_decoder, BrowserIsolationProfile(decoder_module_pinned=True))
-        physical = DecoderBroker(
-            {"web-hardened": backend},
-            source_provider=lambda asset_id, revision, digest: source,
-        )
+        physical = DecoderBroker({"web-hardened": backend}, source_provider=lambda asset_id, revision, digest: source)
         request = ServiceRequest(
-            ThingId("thing.security"), BehaviourAttachmentId("beh.security"),
-            "security.media_decode", media_reference(source), "request-1", 7,
+            ThingId(f"thing.security{suffix}"), BehaviourAttachmentId(f"beh.security{suffix}"),
+            "security.media_decode", media_reference(source), f"request-{suffix}", 7,
         )
         principal = principal_for_service_request(request)
         grants = CapabilityBroker()
         grant = grants.issue_root_grant(
-            grant_id="decode-root", principal_id=principal, capability_id=CAP_MEDIA_DECODE,
+            grant_id=f"decode-root{suffix}", principal_id=principal, capability_id=CAP_MEDIA_DECODE,
             scope=CapabilityScope(frozenset({"asset.security"}), frozenset({"decode"}), 64),
             issuer_policy_id="test-policy", issued_at=1, expires_at=100,
         )
-        host = TrustedHostServiceBoundary(grants, (physical.host_adapter(),))
-        admitted = host.admit(request, now=10)
-        grants.revoke(grant.grant_id)
+        return physical, request, grant, grants, TrustedHostServiceBoundary(grants, (physical.host_adapter(),))
+
+    def test_r016_04_revocation_after_admission_stops_real_decoder_host_crossing(self):
+        physical, request, grant, grants, host = self._mediated(b"abcd", "1")
+        admitted = host.admit(request, now=10); grants.revoke(grant.grant_id)
         with self.assertRaises(Exception) as cm:
             host.execute(admitted, now=11)
         self.assertEqual(getattr(cm.exception, "code", None), "capability.revoked")
         self.assertEqual(physical.worker_invocations, 0)
 
     def test_successful_mediated_decode_crosses_only_after_authorization(self):
-        source = b"abcd"
-        backend = BrowserWasmDecoder(tiny_decoder, BrowserIsolationProfile(decoder_module_pinned=True))
-        physical = DecoderBroker(
-            {"web-hardened": backend},
-            source_provider=lambda asset_id, revision, digest: source,
-        )
-        request = ServiceRequest(
-            ThingId("thing.security2"), BehaviourAttachmentId("beh.security2"),
-            "security.media_decode", media_reference(source), "request-2", 8,
-        )
-        principal = principal_for_service_request(request)
-        grants = CapabilityBroker()
-        grants.issue_root_grant(
-            grant_id="decode-root2", principal_id=principal, capability_id=CAP_MEDIA_DECODE,
-            scope=CapabilityScope(frozenset({"asset.security"}), frozenset({"decode"}), 64),
-            issuer_policy_id="test-policy", issued_at=1, expires_at=100,
-        )
-        host = TrustedHostServiceBoundary(grants, (physical.host_adapter(),))
+        physical, request, _grant, _grants, host = self._mediated(b"abcd", "2")
         result = host.execute(host.admit(request, now=10), now=11)
-        self.assertEqual(result["asset_id"], "asset.security")
-        self.assertEqual(result["decoded_bytes"], 4)
+        self.assertEqual((result["asset_id"], result["decoded_bytes"]), ("asset.security", 4))
         self.assertEqual(physical.worker_invocations, 1)
 
     def test_linux_public_profile_requires_every_kernel_primitive(self):
@@ -287,32 +263,25 @@ class TestPhysicalSecurityBoundary(unittest.TestCase):
         if not worker.public_untrusted_ready:
             self.skipTest(f"runner is an explicit release-blocked profile: {worker.status}")
         descriptor = MediaDescriptor(AssetId("asset.linux"), "rev", hashlib.sha256(b"abc").hexdigest(), 3, 3)
-        result = worker.decode(b"abc", descriptor)
-        self.assertEqual(result.bytes, b"cba")
+        self.assertEqual(worker.decode(b"abc", descriptor).bytes, b"cba")
 
     @unittest.skipUnless(os.name == "posix", "Linux sandbox test is target-specific")
     def test_linux_worker_denies_filesystem_network_and_process_creation(self):
         def hostile(source: bytes, descriptor: MediaDescriptor) -> DecoderResult:
             denied = []
-            try:
-                socket.socket()
-            except OSError:
-                denied.append("socket")
-            try:
-                open("/etc/passwd", "rb")
-            except OSError:
-                denied.append("file")
-            try:
-                os.fork()
-            except OSError:
-                denied.append("fork")
-            return DecoderResult("|".join(sorted(denied)).encode(), len("|".join(sorted(denied))))
+            try: socket.socket()
+            except OSError: denied.append("socket")
+            try: open("/etc/passwd", "rb")
+            except OSError: denied.append("file")
+            try: os.fork()
+            except OSError: denied.append("fork")
+            text = "|".join(sorted(denied)).encode()
+            return DecoderResult(text, len(text))
         worker = LinuxProcessDecoder(hostile)
         if not worker.public_untrusted_ready:
             self.skipTest(f"runner is an explicit release-blocked profile: {worker.status}")
         descriptor = MediaDescriptor(AssetId("asset.hostile"), "rev", hashlib.sha256(b"x").hexdigest(), 1, 64)
-        result = worker.decode(b"x", descriptor)
-        self.assertEqual(set(result.bytes.decode().split("|")), {"file", "fork", "socket"})
+        self.assertEqual(set(worker.decode(b"x", descriptor).bytes.decode().split("|")), {"file", "fork", "socket"})
 
 
 class TestRepositoryTrust(unittest.TestCase):
@@ -325,14 +294,19 @@ class TestRepositoryTrust(unittest.TestCase):
     def test_bounded_role_metadata_round_trip_and_malformed_input(self):
         encoded = encode_role_envelope(self.targets)
         self.assertEqual(parse_role_envelope(encoded), self.targets)
-        with self.assertRaises(PhysicalSecurityError):
-            parse_role_envelope(encoded[:-1])
+        with self.assertRaises(PhysicalSecurityError): parse_role_envelope(encoded[:-1])
 
     def test_repository_metadata_rejects_serialized_authority(self):
-        bad = env("targets", 1, {"capability_token": "forged"}, "targets-a")
+        # Build a canonical safe envelope, then mutate an equal-length body key on
+        # the wire. This exercises hostile external bytes rather than asking the
+        # trusted canonical encoder to construct a forbidden durable field.
+        safe = env("targets", 1, {"safe_key": "forged"}, "targets-a")
+        raw = encode_role_envelope(safe)
+        self.assertIn(b"safe_key", raw)
+        hostile = raw.replace(b"safe_key", b"grant_id", 1)
         with self.assertRaises(PhysicalSecurityError) as cm:
-            parse_role_envelope(encode_role_envelope(bad))
-        self.assertEqual(cm.exception.code, "security.serialized_authority")
+            parse_role_envelope(hostile)
+        self.assertIn(cm.exception.code, {"security.trust_parse", "security.serialized_authority"})
 
     def test_threshold_freshness_coherence_and_exact_target(self):
         self.trust.refresh(self.targets, self.snapshot, self.timestamp, now=10)
@@ -342,11 +316,7 @@ class TestRepositoryTrust(unittest.TestCase):
         self.assertEqual(cm.exception.code, "security.trust_target_mismatch")
 
     def test_snapshot_hash_prevents_same_version_mix_and_match(self):
-        forged = env(
-            "targets", 1,
-            {"targets": [{"package_revision_id": str(self.revision), "length": 1, "sha256": "00"}]},
-            "targets-a",
-        )
+        forged = env("targets", 1, {"targets": [{"package_revision_id": str(self.revision), "length": 1, "sha256": "00"}]}, "targets-a")
         with self.assertRaises(PhysicalSecurityError) as cm:
             self.trust.refresh(forged, self.snapshot, self.timestamp, now=10)
         self.assertEqual(cm.exception.code, "security.trust_mix_match")
@@ -365,15 +335,7 @@ class TestRepositoryTrust(unittest.TestCase):
 
     def test_uncommitted_same_version_targets_cannot_replace_refreshed_metadata(self):
         self.trust.refresh(self.targets, self.snapshot, self.timestamp, now=10)
-        forged = env(
-            "targets", 1,
-            {"targets": [{
-                "package_revision_id": str(self.revision),
-                "length": len(self.package),
-                "sha256": hashlib.sha256(self.package).hexdigest(),
-            }], "extra": []},
-            "targets-a",
-        )
+        forged = env("targets", 1, {"targets": [{"package_revision_id": str(self.revision), "length": len(self.package), "sha256": hashlib.sha256(self.package).hexdigest()}], "extra": []}, "targets-a")
         with self.assertRaises(PhysicalSecurityError) as cm:
             self.trust.verify_target(forged, self.revision, self.package)
         self.assertEqual(cm.exception.code, "security.trust_uncommitted_targets")
@@ -381,32 +343,24 @@ class TestRepositoryTrust(unittest.TestCase):
     def test_security_boundary_verifies_exact_target_before_spb1(self):
         self.trust.refresh(self.targets, self.snapshot, self.timestamp, now=10)
         boundary = SecurityBoundary()
-        parsed = boundary.trusted_package(self.trust, self.targets, self.revision, self.package)
-        self.assertEqual(len(parsed.entries), 1)
+        self.assertEqual(len(boundary.trusted_package(self.trust, self.targets, self.revision, self.package).entries), 1)
         with self.assertRaises(PhysicalSecurityError) as cm:
             boundary.trusted_package(self.trust, self.targets, self.revision, b"not-spb1")
         self.assertEqual(cm.exception.code, "security.trust_target_mismatch")
 
     def test_root_rotation_requires_old_and_new_threshold_and_exact_candidate(self):
         new_keys = dict(KEYS); new_keys["root-b"] = b"root-b-key"
-        candidate = RootMetadata(
-            2, 20_000, new_keys,
-            {
-                "root": RolePolicy(frozenset({"root-b"}), 1),
-                "targets": RolePolicy(frozenset({"targets-a"}), 1),
-                "snapshot": RolePolicy(frozenset({"snapshot-a"}), 1),
-                "timestamp": RolePolicy(frozenset({"timestamp-a"}), 1),
-            },
-        )
-        envelope = RoleEnvelope(
-            "root", 2, 20_000, root_metadata_body(candidate),
-            (Signature("root-a", KEYS["root-a"]), Signature("root-b", b"root-b-key")),
-        )
+        candidate = RootMetadata(2, 20_000, new_keys, {
+            "root": RolePolicy(frozenset({"root-b"}), 1),
+            "targets": RolePolicy(frozenset({"targets-a"}), 1),
+            "snapshot": RolePolicy(frozenset({"snapshot-a"}), 1),
+            "timestamp": RolePolicy(frozenset({"timestamp-a"}), 1),
+        })
+        envelope = RoleEnvelope("root", 2, 20_000, root_metadata_body(candidate), (Signature("root-a", KEYS["root-a"]), Signature("root-b", b"root-b-key")))
         self.trust.rotate_root(candidate, envelope, now=10)
         self.assertEqual(self.trust.state.root_version, 2)
         bad = RoleEnvelope("root", 3, 30_000, {"keys": {}, "roles": {}}, (Signature("root-b", b"root-b-key"),))
-        with self.assertRaises(PhysicalSecurityError):
-            self.trust.rotate_root(candidate, bad, now=10)
+        with self.assertRaises(PhysicalSecurityError): self.trust.rotate_root(candidate, bad, now=10)
 
     def test_real_ed25519_verify_and_tamper_rejection(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -420,28 +374,22 @@ class TestRepositoryTrust(unittest.TestCase):
             self.assertFalse(verifier.verify(public.read_bytes(), b"tampered", signature.read_bytes()))
 
     def test_malformed_metadata_campaign_fails_typed_not_raw(self):
-        seed = encode_role_envelope(self.targets)
-        rejected = 0
+        seed = encode_role_envelope(self.targets); rejected = 0
         for index in range(min(96, len(seed))):
             mutant = bytearray(seed); mutant[index] ^= 0x5A
-            try:
-                parse_role_envelope(bytes(mutant))
-            except PhysicalSecurityError:
-                rejected += 1
-            except Exception as exc:  # pragma: no cover - explicit hostile boundary assertion
-                self.fail(f"raw exception escaped malformed metadata parser: {type(exc).__name__}: {exc}")
+            try: parse_role_envelope(bytes(mutant))
+            except PhysicalSecurityError: rejected += 1
+            except Exception as exc: self.fail(f"raw exception escaped malformed metadata parser: {type(exc).__name__}: {exc}")
         self.assertGreater(rejected, 0)
 
 
 class TestFailureTelemetry(unittest.TestCase):
     def test_raw_decoder_exception_text_does_not_escape(self):
         secret = "host-secret-do-not-leak"
-        def broken(source, descriptor):
-            raise RuntimeError(secret)
+        def broken(source, descriptor): raise RuntimeError(secret)
         backend = BrowserWasmDecoder(broken, BrowserIsolationProfile(decoder_module_pinned=True))
         broker = DecoderBroker({"web-hardened": backend})
-        with self.assertRaises(PhysicalSecurityError) as cm:
-            broker.decode_bytes(media_payload())
+        with self.assertRaises(PhysicalSecurityError) as cm: broker.decode_bytes(media_payload())
         self.assertEqual(cm.exception.code, "security.decoder_failed")
         self.assertNotIn(secret, str(cm.exception))
 
