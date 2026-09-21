@@ -22,6 +22,9 @@ it does not make SQLite identity semantic and it is not browser production code.
 map with the authoritative SMX-018 fixture file, so selection evidence cannot
 silently drift from the frozen collaboration conflict corpus.
 
+The bounded measurements are mechanism-selection observations only; the spike
+does not freeze product latency, throughput, history-size, or storage SLOs.
+
 The dedicated CI gate also reruns the SMX-018 collaboration harness plus the
 SMX-023 canonical-core and SMX-025 persistence regressions. Production
 implementation belongs to SMX-043.
