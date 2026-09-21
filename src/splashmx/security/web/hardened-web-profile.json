@@ -1,0 +1,15 @@
+{
+  "contract": "splashmx.hardened-web-decoder-profile/1",
+  "worker": {
+    "type": "module",
+    "script": "/splashmx/security/decoder_worker.mjs",
+    "wasm_imports": ["env.memory"],
+    "maximum_linear_memory_bytes": 268435456
+  },
+  "csp": "default-src 'none'; script-src 'self'; worker-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'",
+  "godot_build_attestation": {
+    "javascript_bridge": false,
+    "module_javascript_enabled": false
+  },
+  "release_rule": "If the exact worker, CSP, fixed-memory decoder module, or custom Godot build attestation cannot be supplied, public-untrusted content is blocked."
+}
