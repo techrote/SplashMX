@@ -37,7 +37,7 @@ def main() -> int:
         "principal_id",
         "session_id",
         "transport_id",
-        "peer host is simulation authority",
+        "peer host may be current simulation authority",
         "dedicated-authoritative baseline",
         "SMX-046 production handoff",
         "No Architecture-v1 contradiction was found",
@@ -152,7 +152,7 @@ def main() -> int:
     workflow = WORKFLOW.read_text(encoding="utf-8")
     for token in (
         "validate_smx045.py",
-        "test_spike.py",
+        "test_*.py",
         "browser_probe.mjs",
         "playwright@1.55.0",
         "smx045-network-evidence",
