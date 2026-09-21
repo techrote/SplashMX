@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 import re
 from threading import RLock
-from typing import Any
+from typing import Any, Mapping
 from urllib.parse import urlparse
 
 from splashmx.canonical.core import SemanticError
@@ -32,6 +32,31 @@ WEB_ROOT = Path(__file__).with_name("web")
 _STATIC = {"/": ("index.html", "text/html; charset=utf-8"), "/index.html": ("index.html", "text/html; charset=utf-8"), "/app.js": ("app.js", "text/javascript; charset=utf-8"), "/styles.css": ("styles.css", "text/css; charset=utf-8")}
 _MAX_REQUEST_BYTES = 8 * 1024 * 1024
 _FORBIDDEN_TRANSIENT_FIELDS = {"transportpeerid", "connectionhandle", "socketid", "sessionid", "processhandle", "domnodeidentity"}
+_GENERATED_ID_SUFFIX = re.compile(r"-(\d{6})(?::\d+)?$")
+
+
+def _generated_identity_counter(project) -> int:
+    """Recover the monotonic browser-generated identity floor from canonical state."""
+    document = project.document
+    tokens = [
+        *(str(value) for value in document.things),
+        *(str(value) for value in document.relationships),
+        *(str(value) for value in document.connections),
+        *(str(value) for value in document.definitions),
+        *(str(value) for value in document.instances),
+        *(str(value) for value in project.assets),
+    ]
+    for thing in document.things.values():
+        for attachment in thing.behaviours.values():
+            tokens.append(str(attachment.attachment_id))
+            tokens.append(str(attachment.behaviour_revision))
+        tracks = thing.authored_state.get("timeline_tracks", ())
+        if isinstance(tracks, (list, tuple)):
+            for row in tracks:
+                if isinstance(row, Mapping) and isinstance(row.get("track_id"), str):
+                    tokens.append(row["track_id"])
+    values = [int(match.group(1)) for token in tokens if (match := _GENERATED_ID_SUFFIX.search(token))]
+    return max(values, default=0)
 
 
 def _normalise(value: str) -> str:
@@ -109,9 +134,14 @@ class BrowserBridge:
 
     def _adopt_people_head(self) -> None:
         prior_editor = self.runtime.authoring.editor
+        prior_identity_counter = getattr(self.runtime.authoring, "_identity_counter", 0)
         head = self._people_call("head_project")
         counter = self._people_call("author_revision_counter")
         candidate = AuthoringSession(head, revision_counter=counter)
+        candidate._identity_counter = max(
+            prior_identity_counter,
+            _generated_identity_counter(head),
+        )
         candidate.editor = prior_editor
         candidate.programs.update(rebuild_program_catalog(candidate))
         self.runtime.authoring = candidate
@@ -121,7 +151,14 @@ class BrowserBridge:
         if self.session.project == before_project:
             return
         self._people_call("record_local", self.session.project)
-        if not self._people_call("snapshot")["unsynced_local_work"]:
+        people = self._people_call("snapshot")
+        if (
+            not people["unsynced_local_work"]
+            and people["head_revision_id"] != str(self.session.document.project_revision_id)
+        ):
+            # A genuine merge/conflict can publish a head different from the authored
+            # candidate. Ordinary local edits already are that head and must retain
+            # editor-only counters/program state instead of rebuilding the session.
             self._adopt_people_head()
 
     def receive_relay(self, packet: RelayPacket, authenticator: RelayAuthenticator) -> tuple[Any, ...]:
@@ -179,7 +216,12 @@ class BrowserBridge:
         if action == "save": result = self.runtime.save(); return {"ok": True, "result": result, "state": self.state()}
         if action == "reload":
             before = self.session.project
+            identity_floor = getattr(self.session, "_identity_counter", 0)
             result = self.runtime.reload()
+            self.session._identity_counter = max(
+                identity_floor,
+                _generated_identity_counter(self.session.project),
+            )
             self._record_people_local(before)
             return {"ok": True, "result": result, "state": self.state()}
         if action == "clearDiagnostics": self.runtime.clear_diagnostics(); return {"ok": True, "result": None, "state": self.state()}
