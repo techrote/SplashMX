@@ -1,0 +1,30 @@
+{
+  "contract": "splashmx.smx039-security-mechanism-fixtures/1",
+  "status": "selection/falsification evidence; not sandbox certification",
+  "cases": [
+    {"id":"SEC-001","claim":"ordinary package bytes pass through the production pathless SPB1 parser"},
+    {"id":"SEC-002","claim":"ZIP/TAR-style foreign archive bytes are rejected before extraction semantics exist"},
+    {"id":"SEC-003","claim":"total container bytes are bounded before SPB1 parsing"},
+    {"id":"SEC-004","claim":"per-entry physical byte ceilings are enforced by the production parser"},
+    {"id":"SEC-005","claim":"ordinary packages cannot introduce executable/native/script container entry kinds"},
+    {"id":"SEC-006","claim":"decoder ingress accepts exact structural budget boundaries"},
+    {"id":"SEC-007","claim":"decoder compressed/decoded/pixel/frame dimensions each fail at max plus one"},
+    {"id":"SEC-008","claim":"over-budget media is denied before any decoder call"},
+    {"id":"SEC-009","claim":"recursive serialized authority is denied before any decoder call"},
+    {"id":"SEC-010","claim":"decoder metadata traversal is independently depth/node bounded"},
+    {"id":"SEC-011","claim":"web public-untrusted path requires dedicated worker plus memory-safe fixed-memory WASM and hardened player"},
+    {"id":"SEC-012","claim":"memory-unsafe web decoder backend is a release blocker for untrusted public content"},
+    {"id":"SEC-013","claim":"Linux native public-untrusted path requires process/no-new-privileges/seccomp/Landlock/rlimit stack"},
+    {"id":"SEC-014","claim":"Linux headless uses the same physical decoder-worker gate rather than a privileged shortcut"},
+    {"id":"SEC-015","claim":"target trust requires threshold signatures over an exact immutable target descriptor"},
+    {"id":"SEC-016","claim":"a single signature below threshold cannot authorize target metadata"},
+    {"id":"SEC-017","claim":"revoked keys cannot satisfy a trust threshold"},
+    {"id":"SEC-018","claim":"rollback and expired/frozen metadata fail closed as distinct trust outcomes"},
+    {"id":"SEC-019","claim":"signed target metadata binds PackageRevisionId plus exact length and digest"},
+    {"id":"SEC-020","claim":"root-key rotation requires sequential metadata signed by both old and new thresholds"},
+    {"id":"SEC-021","claim":"the selected Ed25519 primitive verifies a real signature and rejects tampering through OpenSSL"},
+    {"id":"SEC-022","claim":"publisher/signature trust never mints a SplashMX capability grant"},
+    {"id":"SEC-023","claim":"protected Asset replacement remains a complete indivisible canonical revision"},
+    {"id":"SEC-024","claim":"the handoff records explicit physical mechanisms, authority separation and public-content release blockers"}
+  ]
+}
