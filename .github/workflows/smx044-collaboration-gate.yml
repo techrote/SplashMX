@@ -33,6 +33,7 @@ jobs:
         run: |
           python -m unittest tests.production.test_smx043 -v
           python -m unittest tests.production.test_smx044 -v
+          python -m unittest tests.production.test_smx044_threading -v
       - name: Run inherited CR-001 through CR-028 semantic corpus
         env:
           PYTHONPATH: experiments/smx-018-collaboration-harness
