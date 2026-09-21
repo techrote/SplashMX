@@ -1,0 +1,58 @@
+name: SMX-040 production security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  production-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Validate inherited and production security contracts
+        run: |
+          python tools/validate_smx016.py
+          python tools/validate_smx027.py
+          python tools/validate_smx035.py
+          python tools/validate_smx038.py
+          python tools/validate_smx039.py
+          python tools/validate_smx040.py
+      - name: Run retained production security/package/runtime regressions
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx027 -v
+          python -m unittest tests.production.test_smx035_adversarial -v
+          python -m unittest tests.production.test_smx038 -v
+      - name: Run retained SMX-039 physical-boundary spike
+        env:
+          PYTHONPATH: src:experiments/smx-039-security-mechanism-spike
+        run: python -m unittest discover -s experiments/smx-039-security-mechanism-spike -p 'test_*.py' -v
+      - name: Run SMX-040 production adversarial boundary suite
+        env:
+          PYTHONPATH: src
+        run: python -m unittest tests.production.test_smx040 -v
+      - name: Run hardened browser worker contract
+        run: node tests/production/smx040_web_worker_test.mjs
+      - name: Record named-target calibration evidence
+        env:
+          PYTHONPATH: src
+        run: |
+          python tools/measure_smx040.py | tee smx040-evidence.json
+          cat smx040-evidence.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smx040-security-evidence
+          path: smx040-evidence.json
+          retention-days: 14
