@@ -275,7 +275,8 @@ def make_handler(bridge: BrowserBridge):
 class BrowserHTTPServer(ThreadingHTTPServer):
     """Threaded static/API server with explicit bridge lifecycle ownership."""
 
-    daemon_threads = True
+    daemon_threads = False
+    block_on_close = True
 
     def __init__(self, server_address, bridge: BrowserBridge):
         self.bridge = bridge
@@ -283,12 +284,12 @@ class BrowserHTTPServer(ThreadingHTTPServer):
         super().__init__(server_address, make_handler(bridge))
 
     def server_close(self) -> None:
-        try:
-            if not self._bridge_closed:
-                self.bridge.close()
-                self._bridge_closed = True
-        finally:
-            super().server_close()
+        # Let ThreadingMixIn finish active request handlers before closing the
+        # collaboration owner thread they may still be using.
+        super().server_close()
+        if not self._bridge_closed:
+            self.bridge.close()
+            self._bridge_closed = True
 
 
 def run_server(host: str, port: int, *, project_id: str = "local-project", store_path: str | Path = ".splashmx/local-project.sqlite3") -> BrowserHTTPServer:
