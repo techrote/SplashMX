@@ -1,8 +1,8 @@
 """Thin same-origin browser bridge for SplashMX production authoring/runtime.
 
 The HTTP layer owns no document semantics. Browser actions are decoded and forwarded
-to production authoring, runtime and storage boundaries. Transient Play/editor state
-is explicitly separate from the canonical authored revision.
+to production authoring, runtime, storage and People/collaboration boundaries. People
+is explicitly distinct from future Together/runtime networking.
 """
 from __future__ import annotations
 
@@ -19,8 +19,10 @@ from urllib.parse import urlparse
 
 from splashmx.canonical.core import SemanticError
 from splashmx.canonical.serialization import SerializationError
+from splashmx.collaboration.core import CollaborationError, RelayAuthenticator, RelayPacket
 from splashmx.editor.authoring import AuthoringError, AuthoringSession
-from splashmx.editor.browser_runtime import BrowserRuntimeError, BrowserRuntimeSession
+from splashmx.editor.browser_runtime import BrowserRuntimeError, BrowserRuntimeSession, rebuild_program_catalog
+from splashmx.editor.people import PeopleError, PeopleSession
 from splashmx.runtime.lifecycle import LifecycleError
 from splashmx.storage.local import StorageError
 
@@ -48,16 +50,63 @@ def _reject_transient_identity(value: Any) -> None:
 class BrowserBridge:
     """Decode bounded JSON actions and delegate to production coordinators."""
 
-    def __init__(self, session: AuthoringSession | None = None, *, store_path: str | Path = ".splashmx/local-project.sqlite3", runtime: BrowserRuntimeSession | None = None):
+    def __init__(
+        self,
+        session: AuthoringSession | None = None,
+        *,
+        store_path: str | Path = ".splashmx/local-project.sqlite3",
+        runtime: BrowserRuntimeSession | None = None,
+        collaboration_store_path: str | Path | None = None,
+        principal_id: str = "local-author",
+    ):
         authoring = session or AuthoringSession.blank()
         self.runtime = runtime or BrowserRuntimeSession(authoring, store_path)
+        collaboration_path = Path(collaboration_store_path) if collaboration_store_path is not None else Path(str(store_path) + ".collaboration.sqlite3")
+        self.people = PeopleSession(self.runtime.authoring.project, collaboration_path, principal_id=principal_id)
+        # The collaboration store is local-first durable history. On process restart its
+        # validated head wins over a newly-created blank shell, never a remote cache.
+        if self.people.head_project() != self.runtime.authoring.project:
+            self._adopt_people_head()
 
     @property
     def session(self) -> AuthoringSession:
         return self.runtime.authoring
 
+    def close(self) -> None:
+        self.people.close()
+
+    def _adopt_people_head(self) -> None:
+        prior_editor = self.runtime.authoring.editor
+        candidate = AuthoringSession(self.people.head_project(), revision_counter=self.people.author_revision_counter())
+        candidate.editor = prior_editor
+        candidate.programs.update(rebuild_program_catalog(candidate))
+        self.runtime.authoring = candidate
+        self.runtime.world = None
+
+    def _record_people_local(self, before_project) -> None:
+        if self.session.project == before_project:
+            return
+        self.people.record_local(self.session.project)
+        if not self.people.snapshot()["unsynced_local_work"]:
+            self._adopt_people_head()
+
+    def receive_relay(self, packet: RelayPacket, authenticator: RelayAuthenticator) -> tuple[Any, ...]:
+        """Production relay ingress seam; HTTP authoring never accepts raw relay identity."""
+        self.people.enqueue_relay(packet, authenticator)
+        results = self.people.drain_relay()
+        if results:
+            self._adopt_people_head()
+        return results
+
     def state(self) -> dict[str, Any]:
-        return self.runtime.snapshot()
+        state = self.runtime.snapshot()
+        state["people"] = self.people.snapshot()
+        state["together"] = {
+            "plane": "runtime-networking",
+            "available": False,
+            "note": "Together runtime networking is separate from People collaboration.",
+        }
+        return state
 
     def apply(self, request: Any) -> dict[str, Any]:
         if not isinstance(request, dict) or not isinstance(request.get("action"), str):
@@ -67,14 +116,34 @@ class BrowserBridge:
         if not isinstance(data, dict):
             raise AuthoringError("authoring.invalid_request", "Authoring action data must be an object.")
         _reject_transient_identity(data)
+
+        if action == "peoplePresence":
+            selections = _string_list_optional(data, "selections")
+            self.people.set_presence(cursor=_optional_string(data, "cursor"), selections=selections)
+            return {"ok": True, "result": None, "state": self.state()}
+        if action == "peopleRetryLocal":
+            self.people.retry_local()
+            if not self.people.snapshot()["unsynced_local_work"]:
+                self._adopt_people_head()
+            return {"ok": True, "result": None, "state": self.state()}
+        if action == "peopleResolveConflict":
+            result = self.people.resolve_conflict(_string(data, "conflict_id"), _string(data, "choice"))
+            self._adopt_people_head()
+            return {"ok": True, "result": {"transaction_id": str(result.tx_id), "status": result.status}, "state": self.state()}
+
         if action == "play": result = self.runtime.play(); return {"ok": True, "result": result, "state": self.state()}
         if action == "stop": result = self.runtime.stop(); return {"ok": True, "result": result, "state": self.state()}
         if action == "save": result = self.runtime.save(); return {"ok": True, "result": result, "state": self.state()}
-        if action == "reload": result = self.runtime.reload(); return {"ok": True, "result": result, "state": self.state()}
+        if action == "reload":
+            before = self.session.project
+            result = self.runtime.reload()
+            self._record_people_local(before)
+            return {"ok": True, "result": result, "state": self.state()}
         if action == "clearDiagnostics": self.runtime.clear_diagnostics(); return {"ok": True, "result": None, "state": self.state()}
         if self.runtime.playing and action not in {"select", "inspect"}:
             raise BrowserRuntimeError("browser.edit_while_playing", "Stop Play before changing the authored project.")
 
+        before = self.session.project
         result: Any = None
         if action == "createThing": result = str(self.session.create_thing(label=_string(data, "label"), thing_id=_optional_string(data, "thing_id"), authored_state=_mapping(data.get("authored_state", {}), "authored_state")))
         elif action == "addPort": result = str(self.session.add_port(_string(data, "thing_id"), port_id=_string(data, "port_id"), name=_string(data, "name"), kind=_string(data, "kind"), direction=_string(data, "direction")))
@@ -100,6 +169,7 @@ class BrowserBridge:
             thing_id, asset_id = self.session.import_asset_thing(content=content, source_name=_string(data, "source_name"), media_type=_string(data, "media_type"), media_semantics=_mapping(data.get("media_semantics"), "media_semantics"), provenance=_mapping(data.get("provenance"), "provenance"), licence_attribution=_mapping(data.get("licence_attribution"), "licence_attribution"), derivation_lineage=_mapping_list(data.get("derivation_lineage"), "derivation_lineage"), asset_id=_optional_string(data, "asset_id"), thing_id=_optional_string(data, "thing_id"), label=_optional_string(data, "label"))
             result = {"thing_id": str(thing_id), "asset_id": str(asset_id)}
         else: raise AuthoringError("authoring.unknown_action", "Choose a supported authoring action.")
+        self._record_people_local(before)
         return {"ok": True, "result": result, "state": self.state()}
 
 
@@ -119,6 +189,11 @@ def _string_list(data: dict[str, Any], key: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value): raise AuthoringError("authoring.invalid_request", f"{key.replace('_', ' ')} must be a list of Things.")
     return value
 
+def _string_list_optional(data: dict[str, Any], key: str) -> list[str]:
+    value = data.get(key, [])
+    if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value): raise AuthoringError("authoring.invalid_request", f"{key.replace('_', ' ')} must be a list of text identities.")
+    return value
+
 def _mapping(value: Any, label: str) -> dict[str, Any]:
     if not isinstance(value, dict): raise AuthoringError("authoring.invalid_request", f"{label.replace('_', ' ')} must be an object.")
     return value
@@ -130,7 +205,7 @@ def _mapping_list(value: Any, label: str) -> list[dict[str, Any]]:
 
 def make_handler(bridge: BrowserBridge):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "SplashMXAuthoring/2"
+        server_version = "SplashMXAuthoring/3"
         def log_message(self, format: str, *args: Any) -> None: return
         def _json(self, status: int, payload: dict[str, Any]) -> None:
             body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -146,10 +221,9 @@ def make_handler(bridge: BrowserBridge):
             try: length = int(self.headers.get("Content-Length", "0"))
             except ValueError: length = -1
             if length < 0 or length > _MAX_REQUEST_BYTES: self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": {"code": "authoring.request_too_large", "message": "That authoring change is too large for one request."}}); return
-            try:
-                request = json.loads(self.rfile.read(length).decode("utf-8")); response = bridge.apply(request)
+            try: request = json.loads(self.rfile.read(length).decode("utf-8")); response = bridge.apply(request)
             except (UnicodeDecodeError, json.JSONDecodeError): self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": "That authoring request could not be read."}}); return
-            except (AuthoringError, BrowserRuntimeError, SemanticError, SerializationError, LifecycleError, StorageError) as exc: self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}, "state": bridge.state()}); return
+            except (AuthoringError, BrowserRuntimeError, PeopleError, CollaborationError, SemanticError, SerializationError, LifecycleError, StorageError) as exc: self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}, "state": bridge.state()}); return
             except (TypeError, ValueError) as exc: self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": str(exc)}}); return
             self._json(HTTPStatus.OK, response)
     return Handler
@@ -163,10 +237,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="SplashMX browser authoring shell"); parser.add_argument("--host", default="127.0.0.1"); parser.add_argument("--port", type=int, default=8765); parser.add_argument("--project-id", default="local-project"); parser.add_argument("--store-path", default=".splashmx/local-project.sqlite3"); args = parser.parse_args(argv)
     server = run_server(args.host, args.port, project_id=args.project_id, store_path=args.store_path)
     url = f"http://{args.host}:{server.server_address[1]}"
-    # Retain the SMX-032 readiness marker because its browser regression remains a
-    # non-droppable upstream gate while SMX-033 adds the expanded runtime marker.
     print(f"SMX032 READY {url}", flush=True)
     print(f"SMX033 READY {url}", flush=True)
+    print(f"SMX044 READY {url}", flush=True)
     try: server.serve_forever()
     except KeyboardInterrupt: pass
     finally: server.server_close()

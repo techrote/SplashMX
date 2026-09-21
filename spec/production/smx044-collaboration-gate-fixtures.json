@@ -1,0 +1,53 @@
+{
+  "schema": "splashmx.smx044-collaboration-gate/1",
+  "issue": "SMX-044/#69",
+  "status": "production-conformance",
+  "planes": {
+    "people": "collaboration",
+    "together": "runtime-networking",
+    "must_remain_distinct": true
+  },
+  "historical_source": "docs/research/SMX-018-COLLABORATION-HARNESS-FIXTURES.json",
+  "delivery_dimensions": ["opposite-order", "duplicate", "disconnect-reconnect", "crash-restart", "explicit-frontier-compaction"],
+  "source_classes": [
+    {"id":"CR-001","applicable":true,"production_evidence":"SMX-043 disjoint stable-ID merge + SMX-044 perturbation matrix"},
+    {"id":"CR-002","applicable":true,"production_evidence":"SMX-043 explicit same-record conflict + SMX-044 perturbation matrix"},
+    {"id":"CR-003","applicable":true,"production_evidence":"SMX-043 remove-wins tombstone + SMX-044 perturbation matrix"},
+    {"id":"CR-004","applicable":true,"production_evidence":"SMX-043 canonical whole-result validation + inherited CR corpus"},
+    {"id":"CR-005","applicable":true,"production_evidence":"SMX-043 DefinitionId merge boundary + inherited CR corpus"},
+    {"id":"CR-006","applicable":true,"production_evidence":"SMX-043 DefinitionId conflict boundary + inherited CR corpus"},
+    {"id":"CR-007","applicable":true,"production_evidence":"R-018-01 DefinitionId scoping + inherited CR corpus"},
+    {"id":"CR-008","applicable":true,"production_evidence":"stable Connection records + inherited CR corpus"},
+    {"id":"CR-009","applicable":true,"production_evidence":"canonical endpoint validation + held-invalid production path"},
+    {"id":"CR-010","applicable":true,"production_evidence":"R-018-02/R-018-04 production remove-wins"},
+    {"id":"CR-011","applicable":true,"production_evidence":"R-018-03 full canonical validation"},
+    {"id":"CR-012","applicable":true,"production_evidence":"stable Thing authored-state locus + inherited timeline CR corpus"},
+    {"id":"CR-013","applicable":true,"production_evidence":"explicit same-record conflict + inherited timeline CR corpus"},
+    {"id":"CR-014","applicable":true,"production_evidence":"whole-transaction canonical validation + inherited grouping CR corpus"},
+    {"id":"CR-015","applicable":true,"production_evidence":"Definition/instance stable-ID merge + inherited component CR corpus"},
+    {"id":"CR-016","applicable":true,"production_evidence":"held-invalid/conflict retention + inherited component CR corpus"},
+    {"id":"CR-017","applicable":true,"production_evidence":"stable ConnectionId/tombstone semantics + inherited CR corpus"},
+    {"id":"CR-018","applicable":true,"production_evidence":"production replay/collision plus relay authentication/backpressure"},
+    {"id":"CR-019","applicable":true,"production_evidence":"production pending ancestry and retry"},
+    {"id":"CR-020","applicable":true,"production_evidence":"production leaf selective undo + inherited redo semantics"},
+    {"id":"CR-021","applicable":true,"production_evidence":"production permission-epoch quarantine + People recovery"},
+    {"id":"CR-022","applicable":true,"production_evidence":"production transient presence + People browser projection"},
+    {"id":"CR-023","applicable":true,"production_evidence":"unsupported history quarantine preserves exact bytes"},
+    {"id":"CR-024","applicable":true,"production_evidence":"known-unloaded/tombstone canonical semantics + inherited CR corpus"},
+    {"id":"CR-025","applicable":true,"production_evidence":"production transactional conflict resolution + People UX"},
+    {"id":"CR-026","applicable":true,"production_evidence":"R-019-01 ingress rejection and collaboration semantic identity"},
+    {"id":"CR-027","applicable":true,"production_evidence":"complete protected Asset alternatives and atomic People resolution"},
+    {"id":"CR-028","applicable":true,"production_evidence":"whole-result validation and crash-transaction rollback"}
+  ],
+  "production_invariants": [
+    {"id":"PPL-001","statement":"People is collaboration; Together is runtime networking and their identities/actions are not interchangeable."},
+    {"id":"PPL-002","statement":"Collaboration relay/storage failure cannot replace or discard the current local authored project."},
+    {"id":"PPL-003","statement":"Authenticated relay input is bounded before materialization and permission epoch remains a separate semantic authorization check."},
+    {"id":"PPL-004","statement":"Presence/cursors/selections are transient and absent after collaboration-store reopen."},
+    {"id":"PPL-005","statement":"Conflict inspection exposes stable semantic loci and resolution publishes a later causal transaction."},
+    {"id":"PPL-006","statement":"Protected Asset resolution selects one complete immutable revision alternative; field-wise mixing is impossible."},
+    {"id":"PPL-007","statement":"Explicit causal-frontier compaction retains conflict/tombstone/quarantine/protected-alternative meaning."},
+    {"id":"PPL-008","statement":"Unsupported collaboration history remains recoverable quarantine until a deterministic migration exists."}
+  ],
+  "protected_asset_bundle": ["revision/content digest","source digest","source identity","source metadata","audio/media semantics","provenance","licence/attribution","derivation lineage"]
+}
