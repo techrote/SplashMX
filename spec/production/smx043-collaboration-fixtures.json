@@ -1,0 +1,40 @@
+{
+  "schema": "splashmx.smx043-production-collaboration-fixtures/1",
+  "authority": "Architecture v1 + SMX-042 selected semantic transaction DAG/checkpoint substrate",
+  "invariants": [
+    {"id":"PC-001","expected":"Exact TransactionId binds actor plus positive sequence; replay is idempotent and collision is fatal."},
+    {"id":"PC-002","expected":"Missing causal ancestors remain pending and cannot materialize authored state."},
+    {"id":"PC-003","expected":"Offline disjoint semantic edits reunite without silently discarding either edit."},
+    {"id":"PC-004","expected":"Concurrent same-locus edits remain explicit complete alternatives rather than last-write-wins guesses."},
+    {"id":"PC-005","expected":"Definition conflict loci are scoped by stable DefinitionId, preserving R-018-01."},
+    {"id":"PC-006","expected":"Thing tombstones remove-win over concurrent new incident Connections, preserving R-018-02."},
+    {"id":"PC-007","expected":"Whole-result canonical validation precedes publication after synchronization convergence, preserving R-018-03."},
+    {"id":"PC-008","expected":"Tombstoning a Thing tombstones incident Connections and Relationships, preserving R-018-04."},
+    {"id":"PC-009","expected":"Stale permission-epoch work is recoverable history but never authorized active state."},
+    {"id":"PC-010","expected":"Unsupported history schema is quarantined rather than guessed or partially migrated."},
+    {"id":"PC-011","expected":"A transaction base must be an exact locally-known canonical revision and causally bind its producing transaction."},
+    {"id":"PC-012","expected":"SQLite WAL plus synchronous FULL publishes receipt, payload, conflicts and head atomically."},
+    {"id":"PC-013","expected":"Compaction requires an explicit non-regressing causal-stability frontier."},
+    {"id":"PC-014","expected":"Stable ordinary/resolution payload may retire while exact receipts survive for replay/collision detection."},
+    {"id":"PC-015","expected":"Tombstone, conflict, quarantine and protected-alternative history remains retained through compaction."},
+    {"id":"PC-016","expected":"Selective undo is conservative: only retained current-leaf history can be inverted as a new semantic transaction."},
+    {"id":"PC-017","expected":"Conflict resolution is itself a validated semantic transaction and marks alternatives resolved only at commit."},
+    {"id":"PC-018","expected":"Relay authentication binds exact transaction bytes to principal; authentication is not semantic edit authority."},
+    {"id":"PC-019","expected":"Relay/store copies never directly replace the local canonical collaboration head."},
+    {"id":"PC-020","expected":"Presence, cursor and selection state is transient and absent after reopen."},
+    {"id":"PC-021","expected":"Stable AssetId conflicts retain complete protected revisions, never mixed fields."},
+    {"id":"PC-022","expected":"Protected source identity, exact metadata, audio/media semantics, provenance, licence/attribution and derivation lineage remain atomic."},
+    {"id":"PC-023","expected":"Transaction, parent, conflict and project snapshot dimensions are independently bounded."},
+    {"id":"PC-024","expected":"Runtime multiplayer/session/transport identities are not collaboration semantic identity."}
+  ],
+  "protected_asset_fields": [
+    "revision/content digest",
+    "source digest and logical source identity",
+    "exact source metadata",
+    "audio/media semantic metadata",
+    "provenance",
+    "licence/attribution",
+    "derivation lineage"
+  ],
+  "required_regressions": ["R-018-01","R-018-02","R-018-03","R-018-04","R-019-01"]
+}
