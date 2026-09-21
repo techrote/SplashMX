@@ -1,0 +1,54 @@
+{
+  "contract": "splashmx.smx041-untrusted-content-security-gate/1",
+  "architecture_gate": "GATE-03",
+  "historical_source": "docs/research/SMX-016-SECURITY-FIXTURES.json",
+  "coverage": [
+    {"id":"AT-001","attack_classes":["ADV-001","ADV-002"],"status":"pass","production_evidence":["security.physical:preflight_spb1","test_smx040:test_pathless_spb1_only"]},
+    {"id":"AT-002","attack_classes":["ADV-001"],"status":"pass","production_evidence":["security.physical:preflight_spb1","test_smx040:test_pathless_spb1_only"]},
+    {"id":"AT-003","attack_classes":["ADV-002"],"status":"pass","production_evidence":["security.physical:preflight_spb1","test_smx040:test_spb1_executable_kind_rejected"]},
+    {"id":"AT-004","attack_classes":["ADV-003"],"status":"pass","production_evidence":["security.physical:preflight_spb1","test_smx040:test_spb1_total_limit_is_independent"]},
+    {"id":"AT-005","attack_classes":["ADV-004","ADV-006"],"status":"pass","production_evidence":["canonical.serialization:deserialize_project","test_smx024"]},
+    {"id":"AT-006","attack_classes":["ADV-005"],"status":"pass","production_evidence":["canonical.serialization:decode_canonical_cbor","test_smx041:test_canonical_cbor_mutation_campaign_is_typed"]},
+    {"id":"AT-007","attack_classes":["ADV-006","ADV-020"],"status":"pass","production_evidence":["canonical.serialization","execution.ir","security.physical:reject_transient_authority"]},
+    {"id":"AT-008","attack_classes":["ADV-007"],"status":"pass","production_evidence":["packages.system","publishing.generic","test_smx036_adversarial"]},
+    {"id":"AT-009","attack_classes":["ADV-008"],"status":"pass","production_evidence":["runtime.streaming","packages.resolver","test_smx035_adversarial"]},
+    {"id":"AT-010","attack_classes":["ADV-009","ADV-024"],"status":"pass","production_evidence":["execution.ir:validate_program","security.physical","runtime.godot"]},
+    {"id":"AT-011","attack_classes":["ADV-010"],"status":"pass","production_evidence":["security.physical:trust_signature_grants_capability","test_smx040:test_signature_trust_never_grants_capability"]},
+    {"id":"AT-012","attack_classes":["ADV-011"],"status":"pass","production_evidence":["security.capabilities","test_smx027"]},
+    {"id":"AT-013","attack_classes":["ADV-012"],"status":"pass","production_evidence":["security.capabilities:CapabilityBroker.delegate","test_smx027"]},
+    {"id":"AT-014","attack_classes":["ADV-012","ADV-013"],"status":"pass","production_evidence":["security.capabilities:CapabilityBroker.from_trusted_grants","test_smx027"]},
+    {"id":"AT-015","attack_classes":["ADV-013","ADV-015"],"status":"pass","production_evidence":["security.capabilities:TrustedHostServiceBoundary.execute","test_smx040:test_r016_04_revocation_after_admission_stops_real_decoder_host_crossing"]},
+    {"id":"AT-016","attack_classes":["ADV-014"],"status":"pass","production_evidence":["security.capabilities","test_smx027"]},
+    {"id":"AT-017","attack_classes":["ADV-011","ADV-015"],"status":"pass","production_evidence":["security.capabilities","test_smx027"]},
+    {"id":"AT-018","attack_classes":["ADV-016","ADV-017"],"status":"pass","production_evidence":["execution.ir:BudgetLimits","test_smx026"]},
+    {"id":"AT-019","attack_classes":["ADV-016","ADV-018"],"status":"pass","production_evidence":["execution.ir:validate_program","test_smx026"]},
+    {"id":"AT-020","attack_classes":["ADV-007","ADV-019"],"status":"pass","production_evidence":["packages.system","test_smx035_adversarial"]},
+    {"id":"AT-021","attack_classes":["ADV-019"],"status":"pass","production_evidence":["packages.system","test_smx035_adversarial"]},
+    {"id":"AT-022","attack_classes":["ADV-020"],"status":"pass","production_evidence":["security.physical:reject_transient_authority","publishing.generic","test_smx041:test_media_authority_mutations_never_invoke_worker"]},
+    {"id":"AT-023","attack_classes":["ADV-021","ADV-022"],"status":"deferred-no-runtime-network-surface","production_evidence":["SMX-046","SMX-047"]},
+    {"id":"AT-024","attack_classes":["ADV-023"],"status":"deferred-no-runtime-network-surface","production_evidence":["SMX-046","SMX-047"]},
+    {"id":"AT-025","attack_classes":["ADV-024","ADV-025"],"status":"pass","production_evidence":["security.physical:BrowserIsolationProfile","security.physical:LinuxProcessDecoder","docs/implementation/SMX-041-UNTRUSTED-CONTENT-SECURITY-GATE.md"]},
+    {"id":"AT-026","attack_classes":["ADV-026"],"status":"pass","production_evidence":["security.physical:validate_protected_asset_candidate","publishing.generic","test_smx036_adversarial"]},
+    {"id":"AT-027","attack_classes":["ADV-027"],"status":"pass","production_evidence":["security.physical:preflight_media","test_smx040:test_media_limits_exact_and_max_plus_one"]},
+    {"id":"AT-028","attack_classes":["ADV-028"],"status":"pass","production_evidence":["docs/implementation/SMX-041-UNTRUSTED-CONTENT-SECURITY-GATE.md","spec/production/smx041-security-gate-fixtures.json"]}
+  ],
+  "malformed_campaigns": {
+    "canonical_cbor":{"status":"pass","test":"test_smx041:test_canonical_cbor_mutation_campaign_is_typed"},
+    "spb1":{"status":"pass","test":"test_smx041:test_spb1_mutation_campaign_never_escapes_typed_boundary"},
+    "behaviour_ir":{"status":"pass","test":"test_smx041:test_ir_host_opcode_and_authority_campaign_fails_closed"},
+    "media_request":{"status":"pass","test":"test_smx041:test_media_authority_mutations_never_invoke_worker"},
+    "publication_closure":{"status":"pass","test":"test_smx036_adversarial"}
+  },
+  "target_decisions": [
+    {"target":"web","decision":"release-blocked-public-untrusted-decode","reason":"Pinned production decoder module and custom Godot JavaScript-bridge-disabled attestation are not yet supplied; no weaker in-process fallback is permitted."},
+    {"target":"linux-native","decision":"conditionally-eligible","reason":"Eligible only when the runtime probe confirms fork, no_new_privs, seccomp, Landlock and all selected rlimits; otherwise release-blocked."},
+    {"target":"linux-headless","decision":"conditionally-eligible","reason":"Eligible only when the runtime probe confirms fork, no_new_privs, seccomp, Landlock and all selected rlimits; otherwise release-blocked."},
+    {"target":"windows-native","decision":"release-blocked-public-untrusted-decode","reason":"No equivalent selected production decoder-isolation boundary is implemented."},
+    {"target":"macos-native","decision":"release-blocked-public-untrusted-decode","reason":"No equivalent selected production decoder-isolation boundary is implemented."},
+    {"target":"mobile","decision":"release-blocked-public-untrusted-decode","reason":"No equivalent selected production decoder-isolation boundary is implemented."}
+  ],
+  "downstream_security_prerequisites": ["SMX-043","SMX-045","SMX-046","SMX-050"],
+  "protected_semantics": {
+    "rule":"AssetId selects one complete immutable revision; no parser, resolver, migration, IR, capability, decoder, runtime, future network or publication path may field-mix source/audio/provenance/licence/derivation fields."
+  }
+}
