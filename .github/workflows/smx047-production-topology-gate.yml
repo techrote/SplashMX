@@ -1,0 +1,78 @@
+name: SMX-047 production topology gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  production-topology-equivalence:
+    name: Production semantic equivalence and hostile network
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Validate inherited and SMX-047 contracts
+        run: |
+          python tools/validate_smx017.py
+          python tools/validate_smx041.py
+          python tools/validate_smx045.py
+          python tools/validate_smx046.py
+          python tools/validate_smx047.py
+
+      - name: Run retained topology semantic oracle
+        run: python -m unittest discover -s experiments/smx-017-network-harness -p 'test_model.py' -v
+
+      - name: Run retained SMX-046 production networking regressions
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx046.py' -v
+
+      - name: Run SMX-047 production topology and hostile-network gate
+        env:
+          PYTHONPATH: src
+        run: python -m unittest discover -s tests/production -p 'test_smx047.py' -v
+
+  real-browser-production-topologies:
+    name: Real Chromium peer + dedicated production adapters
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22.19.0'
+
+      - name: Install pinned browser/server harness dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0 ws@8.18.3
+          npx playwright@1.55.0 install --with-deps chromium
+
+      - name: Run real Chromium production topology gate
+        run: node tests/production/smx047_browser_harness.mjs "$GITHUB_WORKSPACE"
+
+      - name: Print topology evidence
+        if: always()
+        run: test ! -f artifacts/smx047-topology-evidence.json || cat artifacts/smx047-topology-evidence.json
+
+      - name: Upload topology evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smx047-topology-evidence
+          path: artifacts/smx047-topology-evidence.json
+          if-no-files-found: error
+          retention-days: 30

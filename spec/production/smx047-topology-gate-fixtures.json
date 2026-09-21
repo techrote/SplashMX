@@ -1,0 +1,132 @@
+{
+  "schema": "splashmx.smx047-production-topology-gate/1",
+  "issue": "SMX-047",
+  "gate": "GATE-05",
+  "depends_on": [
+    "SMX-046"
+  ],
+  "canonical_creation": {
+    "path": "experiments/smx-017-network-harness/creation.json",
+    "creation_revision_id": "smx017-topology-equivalence-v1",
+    "policy": "load the same retained canonical creation into every production topology projection without mutating its semantic identities or protected source/audio/provenance meaning"
+  },
+  "production_boundaries": [
+    "src/splashmx/runtime/network.py",
+    "src/splashmx/runtime/web/network_transport.mjs"
+  ],
+  "supported_profiles": [
+    {
+      "id": "offline",
+      "semantic_topology": "offline",
+      "physical_path": "local"
+    },
+    {
+      "id": "peer-browser",
+      "semantic_topology": "peer_hosted",
+      "physical_path": "webrtc_datachannel_direct",
+      "fallbacks": [
+        "webrtc_datachannel_turn",
+        "wss_peer_relay"
+      ]
+    },
+    {
+      "id": "dedicated",
+      "semantic_topology": "dedicated_authoritative",
+      "physical_path": "wss_dedicated_authority"
+    }
+  ],
+  "fault_campaign": [
+    {
+      "id": "NTG-001",
+      "case": "same canonical creation / same authoritative workload",
+      "expected": "normalized semantic equality across all supported topology profiles"
+    },
+    {
+      "id": "NTG-002",
+      "case": "packet loss plus delayed newer state",
+      "expected": "latest valid authority state converges without project rewrite"
+    },
+    {
+      "id": "NTG-003",
+      "case": "duplicate and reordered semantic ingress",
+      "expected": "typed replay/reordered rejection without rollback"
+    },
+    {
+      "id": "NTG-004",
+      "case": "stale authority epoch",
+      "expected": "network.stale_epoch before mutation"
+    },
+    {
+      "id": "NTG-005",
+      "case": "browser suspension and transport replacement",
+      "expected": "principal/session/Thing semantics survive while transient transport generation changes"
+    },
+    {
+      "id": "NTG-006",
+      "case": "confirmed versus unconfirmed peer-host loss",
+      "expected": "only confirmed checkpoint migrates; epoch increments"
+    },
+    {
+      "id": "NTG-007",
+      "case": "dedicated authority loss",
+      "expected": "network.authority_lost and no client self-promotion"
+    },
+    {
+      "id": "NTG-008",
+      "case": "TLS/signalling/ICE/TURN/server/auth failures",
+      "expected": "stable typed runtime outcomes"
+    },
+    {
+      "id": "NTG-009",
+      "case": "forged/oversized/authority-bearing ingress and rate exhaustion",
+      "expected": "fail closed before semantic mutation"
+    },
+    {
+      "id": "NTG-010",
+      "case": "known-unloaded delayed delivery and tombstone",
+      "expected": "state coalesces, reliable events stay bounded, tombstone remove-wins"
+    },
+    {
+      "id": "NTG-011",
+      "case": "real Chromium WebRTC disconnect/reconnect and malformed frames",
+      "expected": "adapter fails closed and can establish a fresh physical transport without semantic identity rewrite"
+    },
+    {
+      "id": "NTG-012",
+      "case": "real Chromium dedicated WSS round trip",
+      "expected": "runtime join then bidirectional bounded semantic envelopes over authenticated WSS path"
+    }
+  ],
+  "protected_asset_invariant": {
+    "fields": [
+      "revision_digest",
+      "source_digest",
+      "source_identity",
+      "source_metadata",
+      "media_semantics",
+      "provenance",
+      "licence_attribution",
+      "derivation_lineage"
+    ],
+    "rule": "the complete protected revision is byte-for-byte/deep-value stable across topology projection, delayed delivery, reconnect and host migration; transport state has no field-mixing authority"
+  },
+  "measurement_policy": {
+    "browser": "Playwright 1.55.0 pinned Chromium",
+    "node": "22.19.0",
+    "metrics": [
+      "peer_datachannel_establishment_ms",
+      "peer_semantic_roundtrip_ms",
+      "peer_reconnect_establishment_ms",
+      "dedicated_wss_establishment_ms",
+      "dedicated_wss_semantic_roundtrip_ms",
+      "burst_message_count",
+      "burst_payload_bytes"
+    ],
+    "claim_boundary": "CI-local measurements are mechanism evidence only; no Internet-wide latency, NAT success, throughput or SLO claim"
+  },
+  "residual_risk": [
+    "CI cannot represent the full public-Internet NAT/firewall/TURN population; deployment telemetry and later target qualification remain operational evidence.",
+    "The gate certifies the selected browser Chromium path plus topology-independent production semantics; other browser/mobile lifecycle breadth requires target-specific qualification.",
+    "Transport timing/interpolation/private connection identifiers may differ and are excluded from semantic equivalence."
+  ]
+}

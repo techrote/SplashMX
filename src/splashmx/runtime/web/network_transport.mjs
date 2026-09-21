@@ -120,8 +120,16 @@ export class BrowserRuntimeTransport {
   }
 
   sendSemantic(envelope) {
-    if (!this.#channel || this.#channel.readyState !== "open") throw new Error("network.reconnect_required");
-    this.#channel.send(encodeSemanticEnvelope(envelope, this.#maxBytes));
+    const encoded = encodeSemanticEnvelope(envelope, this.#maxBytes);
+    if (this.#channel?.readyState === "open") {
+      this.#channel.send(encoded);
+      return;
+    }
+    if (this.#socket?.readyState === 1) {
+      this.#socket.send(encoded);
+      return;
+    }
+    throw new Error("network.reconnect_required");
   }
 
   async connectDedicatedWss({ url, joinTicket, sessionId, transportId, WebSocketImpl = WebSocket } = {}) {
