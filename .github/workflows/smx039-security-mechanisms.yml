@@ -1,0 +1,40 @@
+name: SMX-039 security mechanisms
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  security-mechanisms:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate inherited security/package/runtime contracts
+        run: |
+          python tools/validate_smx016.py
+          python tools/validate_smx027.py
+          python tools/validate_smx034.py
+          python tools/validate_smx035.py
+          python tools/validate_smx038.py
+          python tools/validate_smx039.py
+      - name: Run retained production boundary regressions
+        env:
+          PYTHONPATH: src
+        run: |
+          python -m unittest tests.production.test_smx035 -v
+          python -m unittest tests.production.test_smx035_adversarial -v
+          python -m unittest tests.production.test_smx038 -v
+      - name: Check selected cryptographic primitive is available
+        run: openssl version
+      - name: Run SMX-039 physical-boundary adversarial spike
+        env:
+          PYTHONPATH: src:experiments/smx-039-security-mechanism-spike
+        run: python -m unittest discover -s experiments/smx-039-security-mechanism-spike -p 'test_*.py' -v
