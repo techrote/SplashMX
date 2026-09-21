@@ -50,6 +50,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+      - name: Set up Python in measurement container
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
       - name: Verify exact Godot baseline
         shell: bash
         run: |
@@ -62,7 +66,7 @@ jobs:
           PYTHONPATH: src:tests/production:tools
         run: |
           set -euo pipefail
-          python3 tools/measure_smx037.py --godot godot --samples 7 --output artifacts/smx037-godot-binding-evidence.json
+          python tools/measure_smx037.py --godot godot --samples 7 --output artifacts/smx037-godot-binding-evidence.json
           cat artifacts/smx037-godot-binding-evidence.json
       - name: Install exact export templates from image
         shell: bash
