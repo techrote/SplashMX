@@ -1,0 +1,50 @@
+{
+  "schema": "splashmx.smx050-distribution-programme/1",
+  "issue": "SMX-050/#75",
+  "authority": [
+    "docs/architecture/ARCHITECTURE-V1.md",
+    "docs/implementation/SMX-036-GENERIC-PUBLISHING.md",
+    "docs/implementation/SMX-049-COMPATIBILITY-RETENTION.md"
+  ],
+  "policy": {
+    "immutable_hosted_identity": "HostedReleaseId binds exact CreationRevisionId + creation manifest digest + runtime profile/digest + complete protected disclosure digest",
+    "alias_is_mutable_operational_state": true,
+    "cdn_location_is_operational_state": true,
+    "immutable_cache_keys_are_content_addressed": true,
+    "offline_bundle_is_exact_self_contained_closure": true,
+    "offline_launch_requires_no_cloud_lookup": true,
+    "historical_runtime_is_exact_profile_and_digest": true,
+    "security_revocation_precedence": true,
+    "native_packaging_reuses_exact_offline_semantics": true,
+    "platform_installer_breadth_deferred_without_product_evidence": true,
+    "backup_import_revalidates_production_boundaries": true,
+    "protected_asset_revision_atomic": true,
+    "operational_health_is_not_semantic_or_capability_state": true
+  },
+  "fixtures": [
+    {"id": "DST-001", "case": "publish immutable hosted release", "expected": "exact creation/runtime/disclosure identity"},
+    {"id": "DST-002", "case": "retarget friendly alias", "expected": "alias changes while old immutable release remains addressable"},
+    {"id": "DST-003", "case": "add or reorder CDN locations", "expected": "HostedReleaseId unchanged"},
+    {"id": "DST-004", "case": "immutable object cache policy", "expected": "content-addressed immutable cache headers"},
+    {"id": "DST-005", "case": "mutable alias cache policy", "expected": "revalidation epoch changes on retarget"},
+    {"id": "DST-006", "case": "hosting outage after exact offline install", "expected": "installed content remains independently verifiable"},
+    {"id": "DST-007", "case": "hosting outage with ordinary local authored project", "expected": "local canonical project bytes remain owned and readable"},
+    {"id": "DST-008", "case": "offline creation blob tamper", "expected": "fail before install"},
+    {"id": "DST-009", "case": "offline runtime tamper", "expected": "fail before install"},
+    {"id": "DST-010", "case": "newer runtime exists", "expected": "historical install remains pinned to exact old runtime digest"},
+    {"id": "DST-011", "case": "retained runtime revoked", "expected": "distribution.runtime_revoked"},
+    {"id": "DST-012", "case": "retained runtime ineligible or wrong profile", "expected": "typed fail with no fallback"},
+    {"id": "DST-013", "case": "complete protected source/audio/provenance disclosure", "expected": "round-trip one immutable Asset revision"},
+    {"id": "DST-014", "case": "protected disclosure field mixing", "expected": "reject revision mismatch"},
+    {"id": "DST-015", "case": "offline protected disclosure substitution", "expected": "reject even when outer disclosure digest is recomputed"},
+    {"id": "DST-016", "case": "project backup/export/import", "expected": "exact canonical bytes and semantic identity preserved"},
+    {"id": "DST-017", "case": "exact installed-content backup/export/import", "expected": "exact offline bundle bytes preserved"},
+    {"id": "DST-018", "case": "WorldSave backup/export/import", "expected": "exact WorldSave bytes and revision identity preserved"},
+    {"id": "DST-019", "case": "tampered recovery archive", "expected": "production parser/runtime boundary revalidation rejects it"},
+    {"id": "DST-020", "case": "native packaging plan", "expected": "physical wrapper references exact same creation/release/runtime/offline bundle"},
+    {"id": "DST-021", "case": "collaboration/network outage telemetry", "expected": "observable bounded operational state cannot mutate semantic identity"},
+    {"id": "DST-022", "case": "operational event flood", "expected": "bounded retention of newest events"},
+    {"id": "DST-023", "case": "invalid alias or non-HTTPS placement locator", "expected": "typed reject"},
+    {"id": "DST-024", "case": "retention/storage accounting", "expected": "explicit object/runtime bytes and counts without identity changes"}
+  ]
+}
