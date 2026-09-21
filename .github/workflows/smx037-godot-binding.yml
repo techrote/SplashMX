@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.13'
+      - name: Validate durable SMX-037 handoff
+        run: python tools/validate_smx037.py
       - name: Run SMX-037 projection tests
         env:
           PYTHONPATH: src:tests/production:tools
