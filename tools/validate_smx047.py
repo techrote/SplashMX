@@ -72,6 +72,7 @@ def main() -> int:
         require(anchor in tests, f"real production boundary usage {anchor}")
 
     browser_adapter = text("src/splashmx/runtime/web/network_transport.mjs")
+    require("RTCPeerConnection" in browser_adapter, "real browser WebRTC boundary")
     require('this.#channel?.readyState === "open"' in browser_adapter, "peer DataChannel send path")
     require('this.#socket?.readyState === 1' in browser_adapter, "dedicated WSS send path")
     require("encodeSemanticEnvelope(envelope, this.#maxBytes)" in browser_adapter, "shared bounded semantic encoding")
@@ -79,7 +80,7 @@ def main() -> int:
 
     browser_harness = text("tests/production/smx047_browser_harness.mjs")
     for anchor in (
-        "RTCPeerConnection",
+        "openPeer",
         "BrowserRuntimeTransport",
         "WebSocketServer",
         "restartIce",
