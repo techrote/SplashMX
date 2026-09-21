@@ -13,7 +13,9 @@ from splashmx.canonical.core import (
     RenameThing, ReplaceDefinition, SemanticTransaction, SetAuthoredState, SetContainment,
     ThingId, ThingRecord, TombstoneThing, apply_transaction, empty_document,
 )
-from splashmx.canonical.serialization import CanonicalProjectRevision, ProtectedAssetRevision
+from splashmx.canonical.serialization import (
+    CanonicalProjectRevision, ProtectedAssetRevision, decode_canonical_cbor, encode_canonical_cbor,
+)
 from splashmx.collaboration.core import (
     HISTORY_VERSION, MAX_PARENTS, CollaborationError, RelayAuthenticator,
     SQLiteCollaborationStore, create_transaction, encode_transaction, transaction_id,
@@ -195,9 +197,11 @@ class SMX043ProductionCollaborationTests(unittest.TestCase):
             with self.subTest(stage=stage), tempfile.TemporaryDirectory() as tmp:
                 path = Path(tmp) / "c.db"
                 store = SQLiteCollaborationStore(path, base)
+
                 def hook(value, target=stage):
                     if value == target:
                         raise RuntimeError("simulated crash")
+
                 with self.assertRaises(RuntimeError):
                     store.ingest(change, fault_hook=hook)
                 store.close()
@@ -263,7 +267,21 @@ class SMX043ProductionCollaborationTests(unittest.TestCase):
     def test_corrupt_protected_candidate_rejected_before_history(self):
         base = base_project(asset=True)
         one = tx("alice", 1, base, replace_asset(base, "next", "b"))
-        corrupt = replace(one, candidate_project=one.candidate_project[:-1] + bytes((one.candidate_project[-1] ^ 1,)))
+        envelope = decode_canonical_cbor(one.candidate_project)
+        mutated_asset_shard = False
+        for item in envelope["shards"]:
+            shard = decode_canonical_cbor(item["payload"])
+            asset_entry = next((entry for entry in shard["index"] if entry["semantic_key"] == "asset:music"), None)
+            if asset_entry is None:
+                continue
+            payload = bytearray(shard["payload"])
+            payload[asset_entry["offset"]] ^= 1
+            shard["payload"] = bytes(payload)
+            item["payload"] = encode_canonical_cbor(shard)
+            mutated_asset_shard = True
+            break
+        self.assertTrue(mutated_asset_shard, "fixture must contain the protected Asset shard")
+        corrupt = replace(one, candidate_project=encode_canonical_cbor(envelope))
         with tempfile.TemporaryDirectory() as tmp, SQLiteCollaborationStore(Path(tmp) / "c.db", base) as store:
             with self.assertRaises(CollaborationError) as caught:
                 store.ingest(encode_transaction(corrupt))
