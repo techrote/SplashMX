@@ -33,10 +33,10 @@ for anchor in (
     "field-wise merge",
 ):
     assert anchor.lower() in doc.lower(), f"missing SMX-044 contract anchor: {anchor}"
-for anchor in ("MAX_RELAY_QUEUE = 64", "people.relay_backpressure", "people.relay_offline", "resolve_conflict", "alternative-a", "alternative-b", "protected"):
+for anchor in ("MAX_RELAY_QUEUE = 64", "people.relay_backpressure", "people.relay_offline", "resolve_conflict", "alternative-a", "alternative-b", "protected", '"plane": "collaboration"'):
     assert anchor in people, f"missing People production anchor: {anchor}"
 assert 'state["people"]' in server and 'state["together"]' in server
-assert '"plane": "collaboration"' in server and '"plane": "runtime-networking"' in server
+assert '"plane": "runtime-networking"' in server
 assert "peopleIngest" not in server, "raw unauthenticated collaboration ingress must not be exposed as an authoring action"
 assert 'id="people-panel"' in html and 'data-plane="collaboration"' in html
 assert 'id="together-boundary"' in html and 'data-plane="runtime-networking"' in html
