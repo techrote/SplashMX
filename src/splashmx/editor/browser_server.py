@@ -9,11 +9,13 @@ from __future__ import annotations
 import argparse
 import base64
 import binascii
+from concurrent.futures import ThreadPoolExecutor
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
+from threading import RLock
 from typing import Any
 from urllib.parse import urlparse
 
@@ -61,23 +63,55 @@ class BrowserBridge:
     ):
         authoring = session or AuthoringSession.blank()
         self.runtime = runtime or BrowserRuntimeSession(authoring, store_path)
+        self._lock = RLock()
+        self._closed = False
+        self._people_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="splashmx-people")
         collaboration_path = Path(collaboration_store_path) if collaboration_store_path is not None else Path(str(store_path) + ".collaboration.sqlite3")
-        self.people = PeopleSession(self.runtime.authoring.project, collaboration_path, principal_id=principal_id)
+        try:
+            # SQLiteCollaborationStore deliberately keeps Python's default thread
+            # affinity. Construct and use it on one dedicated owner thread instead of
+            # weakening the store with a cross-thread connection.
+            self.people = self._people_executor.submit(
+                PeopleSession,
+                self.runtime.authoring.project,
+                collaboration_path,
+                principal_id=principal_id,
+            ).result()
+        except BaseException:
+            self._people_executor.shutdown(wait=True, cancel_futures=True)
+            raise
         # The collaboration store is local-first durable history. On process restart its
         # validated head wins over a newly-created blank shell, never a remote cache.
-        if self.people.head_project() != self.runtime.authoring.project:
+        if self._people_call("head_project") != self.runtime.authoring.project:
             self._adopt_people_head()
 
     @property
     def session(self) -> AuthoringSession:
         return self.runtime.authoring
 
+    def _people_call(self, method: str, *args: Any, **kwargs: Any) -> Any:
+        """Run one collaboration/store operation on its SQLite owner thread."""
+        if self._closed:
+            raise PeopleError("people.bridge_closed", "The collaboration bridge is closed.")
+        return self._people_executor.submit(
+            lambda: getattr(self.people, method)(*args, **kwargs)
+        ).result()
+
     def close(self) -> None:
-        self.people.close()
+        with self._lock:
+            if self._closed:
+                return
+            try:
+                self._people_call("close")
+            finally:
+                self._closed = True
+                self._people_executor.shutdown(wait=True, cancel_futures=True)
 
     def _adopt_people_head(self) -> None:
         prior_editor = self.runtime.authoring.editor
-        candidate = AuthoringSession(self.people.head_project(), revision_counter=self.people.author_revision_counter())
+        head = self._people_call("head_project")
+        counter = self._people_call("author_revision_counter")
+        candidate = AuthoringSession(head, revision_counter=counter)
         candidate.editor = prior_editor
         candidate.programs.update(rebuild_program_catalog(candidate))
         self.runtime.authoring = candidate
@@ -86,29 +120,38 @@ class BrowserBridge:
     def _record_people_local(self, before_project) -> None:
         if self.session.project == before_project:
             return
-        self.people.record_local(self.session.project)
-        if not self.people.snapshot()["unsynced_local_work"]:
+        self._people_call("record_local", self.session.project)
+        if not self._people_call("snapshot")["unsynced_local_work"]:
             self._adopt_people_head()
 
     def receive_relay(self, packet: RelayPacket, authenticator: RelayAuthenticator) -> tuple[Any, ...]:
         """Production relay ingress seam; HTTP authoring never accepts raw relay identity."""
-        self.people.enqueue_relay(packet, authenticator)
-        results = self.people.drain_relay()
-        if results:
-            self._adopt_people_head()
-        return results
+        with self._lock:
+            self._people_call("enqueue_relay", packet, authenticator)
+            results = self._people_call("drain_relay")
+            if results:
+                self._adopt_people_head()
+            return results
 
     def state(self) -> dict[str, Any]:
-        state = self.runtime.snapshot()
-        state["people"] = self.people.snapshot()
-        state["together"] = {
-            "plane": "runtime-networking",
-            "available": False,
-            "note": "Together runtime networking is separate from People collaboration.",
-        }
-        return state
+        with self._lock:
+            state = self.runtime.snapshot()
+            state["people"] = self._people_call("snapshot")
+            state["together"] = {
+                "plane": "runtime-networking",
+                "available": False,
+                "note": "Together runtime networking is separate from People collaboration.",
+            }
+            return state
 
     def apply(self, request: Any) -> dict[str, Any]:
+        # ThreadingHTTPServer may dispatch concurrent requests. Serialize semantic
+        # mutations/snapshots so project revisions, collaboration receipts and the
+        # People owner-thread handoff have one explicit browser-boundary order.
+        with self._lock:
+            return self._apply_locked(request)
+
+    def _apply_locked(self, request: Any) -> dict[str, Any]:
         if not isinstance(request, dict) or not isinstance(request.get("action"), str):
             raise AuthoringError("authoring.invalid_request", "Choose a supported authoring action.")
         action = request["action"]
@@ -119,15 +162,15 @@ class BrowserBridge:
 
         if action == "peoplePresence":
             selections = _string_list_optional(data, "selections")
-            self.people.set_presence(cursor=_optional_string(data, "cursor"), selections=selections)
+            self._people_call("set_presence", cursor=_optional_string(data, "cursor"), selections=selections)
             return {"ok": True, "result": None, "state": self.state()}
         if action == "peopleRetryLocal":
-            self.people.retry_local()
-            if not self.people.snapshot()["unsynced_local_work"]:
+            self._people_call("retry_local")
+            if not self._people_call("snapshot")["unsynced_local_work"]:
                 self._adopt_people_head()
             return {"ok": True, "result": None, "state": self.state()}
         if action == "peopleResolveConflict":
-            result = self.people.resolve_conflict(_string(data, "conflict_id"), _string(data, "choice"))
+            result = self._people_call("resolve_conflict", _string(data, "conflict_id"), _string(data, "choice"))
             self._adopt_people_head()
             return {"ok": True, "result": {"transaction_id": str(result.tx_id), "status": result.status}, "state": self.state()}
 
@@ -229,8 +272,28 @@ def make_handler(bridge: BrowserBridge):
     return Handler
 
 
-def run_server(host: str, port: int, *, project_id: str = "local-project", store_path: str | Path = ".splashmx/local-project.sqlite3") -> ThreadingHTTPServer:
-    return ThreadingHTTPServer((host, port), make_handler(BrowserBridge(AuthoringSession.blank(project_id), store_path=store_path)))
+class BrowserHTTPServer(ThreadingHTTPServer):
+    """Threaded static/API server with explicit bridge lifecycle ownership."""
+
+    daemon_threads = True
+
+    def __init__(self, server_address, bridge: BrowserBridge):
+        self.bridge = bridge
+        self._bridge_closed = False
+        super().__init__(server_address, make_handler(bridge))
+
+    def server_close(self) -> None:
+        try:
+            if not self._bridge_closed:
+                self.bridge.close()
+                self._bridge_closed = True
+        finally:
+            super().server_close()
+
+
+def run_server(host: str, port: int, *, project_id: str = "local-project", store_path: str | Path = ".splashmx/local-project.sqlite3") -> BrowserHTTPServer:
+    bridge = BrowserBridge(AuthoringSession.blank(project_id), store_path=store_path)
+    return BrowserHTTPServer((host, port), bridge)
 
 
 def main(argv: list[str] | None = None) -> int:
