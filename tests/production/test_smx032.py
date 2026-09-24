@@ -31,6 +31,39 @@ class AuthoringSessionTests(unittest.TestCase):
         self.assertNotEqual(self.session.document.project_revision_id, before)
         self.assertEqual(self.session.document.things[thing].authored_state["x"], 12)
 
+    def test_visual_projection_is_canonical_and_updates_without_losing_other_state(self) -> None:
+        thing = self.session.create_thing(
+            label="Box",
+            thing_id="box",
+            authored_state={
+                "custom": {"kept": True},
+                "visual": {"x": 10, "y": 20, "width": 120, "height": 80, "rotation": 0, "shape": "rectangle", "fill": "#ABCDEF"},
+            },
+        )
+        visual = self.session.document.things[thing].authored_state["visual"]
+        self.assertEqual(visual["fill"], "#abcdef")
+        before = self.session.document.project_revision_id
+        updated = self.session.update_visual_state(thing, visual={"x": 55, "rotation": 15})
+        self.assertNotEqual(self.session.document.project_revision_id, before)
+        self.assertEqual(updated["x"], 55)
+        self.assertEqual(updated["y"], 20)
+        self.assertEqual(updated["width"], 120)
+        self.assertEqual(updated["rotation"], 15)
+        self.assertEqual(self.session.document.things[thing].authored_state["custom"], {"kept": True})
+
+    def test_visual_projection_rejects_invalid_values_without_mutation(self) -> None:
+        thing = self.session.create_thing(
+            label="Box",
+            thing_id="box",
+            authored_state={"visual": {"shape": "ellipse", "fill": "#123456"}},
+        )
+        before_revision = self.session.document.project_revision_id
+        before_state = deepcopy(self.session.document.things[thing].authored_state)
+        with self.assertRaises(AuthoringError):
+            self.session.update_visual_state(thing, visual={"width": 0})
+        self.assertEqual(self.session.document.project_revision_id, before_revision)
+        self.assertEqual(self.session.document.things[thing].authored_state, before_state)
+
     def test_selection_is_transient_and_does_not_advance_project_revision(self) -> None:
         thing = self.session.create_thing(label="Button", thing_id="button")
         revision = self.session.document.project_revision_id

@@ -245,6 +245,8 @@ class BrowserBridge:
             keyframes = data.get("keyframes", [])
             if not isinstance(keyframes, list): raise AuthoringError("authoring.invalid_timeline", "Timeline keyframes must be a list.")
             result = self.session.add_timeline_track(_string(data, "thing_id"), property_name=_string(data, "property"), keyframes=keyframes, track_id=_optional_string(data, "track_id"))
+        elif action == "updateVisual":
+            result = self.session.update_visual_state(_string(data, "thing_id"), visual=_mapping(data.get("visual"), "visual"))
         elif action == "select": self.session.select(_string_list(data, "thing_ids"))
         elif action == "inspect": self.session.set_inspect_open(bool(data.get("open", False)))
         elif action == "importAsset":
