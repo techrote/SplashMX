@@ -36,6 +36,8 @@ from splashmx.canonical.core import (
     ProjectId,
     ProjectRevisionId,
     PromoteGroup,
+    RemoveBehaviourAttachment,
+    ReplaceBehaviourAttachment,
     RelationId,
     RelationshipKind,
     SemanticError,
@@ -67,6 +69,8 @@ _FORBIDDEN_AUTHOR_VOCABULARY = (
 _SAFE_TOKEN = re.compile(r"[^A-Za-z0-9._:-]+")
 _VISUAL_FILL = re.compile(r"#[0-9A-Fa-f]{6}")
 _VISUAL_SHAPES = {"rectangle", "ellipse"}
+POINTER_CLICK_EVENT = "pointer_click"
+VISUAL_FILL_RULE_KIND = "visual-fill"
 _VISUAL_DEFAULTS = {
     "x": 64.0,
     "y": 64.0,
@@ -306,6 +310,7 @@ class AuthoringSession:
         attachment_id: str | None,
         event: str,
         actions: Sequence[Mapping[str, Any]],
+        authored_metadata: Mapping[str, Any] | None = None,
     ) -> BehaviourAttachmentId:
         tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
         attachment = BehaviourAttachmentId(attachment_id or self.allocate_id("behaviour"))
@@ -320,14 +325,112 @@ class AuthoringSession:
             )
         except Exception as exc:
             raise AuthoringError("authoring.invalid_behaviour", "This Rule or Behaviour cannot be represented safely.") from exc
-        record = BehaviourAttachmentRecord(
-            attachment,
-            revision,
-            {"projection": projection, "event": str(event), "actions": plain_actions},
-        )
+        config: dict[str, Any] = {
+            "projection": projection,
+            "event": str(event),
+            "actions": plain_actions,
+        }
+        if authored_metadata:
+            config.update(dict(authored_metadata))
+        record = BehaviourAttachmentRecord(attachment, revision, config)
         self._commit(AddBehaviourAttachment(tid, record))
         self.programs[revision] = program
         return attachment
+
+    def attach_visual_rule(
+        self,
+        thing_id: str | ThingId,
+        *,
+        fill: str,
+        attachment_id: str | None = None,
+    ) -> BehaviourAttachmentId:
+        """Attach the first beginner visual Rule through the common constrained IR."""
+        tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
+        thing = self.document.things.get(tid)
+        if thing is None or thing.tombstoned:
+            raise AuthoringError("authoring.unknown_thing", "That Thing is no longer available to edit.")
+        if any(
+            behaviour.authored_config.get("projection") == "Rule"
+            and behaviour.authored_config.get("author_kind") == VISUAL_FILL_RULE_KIND
+            for behaviour in thing.behaviours.values()
+        ):
+            raise AuthoringError(
+                "authoring.rule_exists",
+                "This Thing already has a click colour Rule. Edit the existing Rule below.",
+            )
+        visual = thing.authored_state.get("visual")
+        if not isinstance(visual, Mapping):
+            raise AuthoringError("authoring.rule_requires_visual", "Choose a visible Thing for this Rule.")
+        target_visual = _normalise_visual_state({"fill": fill}, base=visual)
+        return self._attach_projection(
+            tid,
+            projection="Rule",
+            attachment_id=attachment_id,
+            event=POINTER_CLICK_EVENT,
+            actions=({"action": "set_public", "key": "visual", "value": target_visual},),
+            authored_metadata={"author_kind": VISUAL_FILL_RULE_KIND},
+        )
+
+    def update_visual_rule(
+        self,
+        thing_id: str | ThingId,
+        attachment_id: str | BehaviourAttachmentId,
+        *,
+        fill: str,
+    ) -> BehaviourAttachmentId:
+        """Edit a beginner visual Rule while retaining its stable attachment identity."""
+        tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
+        aid = attachment_id if isinstance(attachment_id, BehaviourAttachmentId) else BehaviourAttachmentId(attachment_id)
+        thing = self.document.things.get(tid)
+        if thing is None or thing.tombstoned:
+            raise AuthoringError("authoring.unknown_thing", "That Thing is no longer available to edit.")
+        prior = thing.behaviours.get(aid)
+        if prior is None:
+            raise AuthoringError("authoring.unknown_rule", "That Rule is no longer attached to this Thing.")
+        config = dict(prior.authored_config)
+        if config.get("projection") != "Rule" or config.get("author_kind") != VISUAL_FILL_RULE_KIND:
+            raise AuthoringError("authoring.unsupported_rule_edit", "This advanced Behaviour cannot be edited with the beginner Rule controls.")
+        visual = thing.authored_state.get("visual")
+        if not isinstance(visual, Mapping):
+            raise AuthoringError("authoring.rule_requires_visual", "Choose a visible Thing for this Rule.")
+        target_visual = _normalise_visual_state({"fill": fill}, base=visual)
+        actions = [{"action": "set_public", "key": "visual", "value": target_visual}]
+        revision = self.allocate_id("ir") + ":1"
+        try:
+            program = compile_rule("author-rule", POINTER_CLICK_EVENT, actions, behaviour_revision=revision)
+        except Exception as exc:
+            raise AuthoringError("authoring.invalid_behaviour", "This Rule cannot be represented safely.") from exc
+        replacement = BehaviourAttachmentRecord(
+            aid,
+            revision,
+            {
+                "projection": "Rule",
+                "event": POINTER_CLICK_EVENT,
+                "actions": actions,
+                "author_kind": VISUAL_FILL_RULE_KIND,
+            },
+        )
+        self._commit(ReplaceBehaviourAttachment(tid, replacement))
+        self.programs.pop(prior.behaviour_revision, None)
+        self.programs[revision] = program
+        return aid
+
+    def remove_rule(
+        self,
+        thing_id: str | ThingId,
+        attachment_id: str | BehaviourAttachmentId,
+    ) -> None:
+        """Remove a Rule through a canonical semantic transaction."""
+        tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
+        aid = attachment_id if isinstance(attachment_id, BehaviourAttachmentId) else BehaviourAttachmentId(attachment_id)
+        thing = self.document.things.get(tid)
+        if thing is None or thing.tombstoned:
+            raise AuthoringError("authoring.unknown_thing", "That Thing is no longer available to edit.")
+        prior = thing.behaviours.get(aid)
+        if prior is None or prior.authored_config.get("projection") != "Rule":
+            raise AuthoringError("authoring.unknown_rule", "That Rule is no longer attached to this Thing.")
+        self._commit(RemoveBehaviourAttachment(tid, aid))
+        self.programs.pop(prior.behaviour_revision, None)
 
     def connect(
         self,
