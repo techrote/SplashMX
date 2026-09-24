@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import mimetypes
 from pathlib import Path
 import re
 from threading import RLock
@@ -23,6 +24,7 @@ from splashmx.canonical.core import SemanticError
 from splashmx.canonical.serialization import SerializationError
 from splashmx.collaboration.core import CollaborationError, RelayAuthenticator, RelayPacket
 from splashmx.editor.authoring import AuthoringError, AuthoringSession
+from splashmx.editor.godot_play import EditorGodotPlayError, build_editor_godot_play_projection
 from splashmx.editor.browser_runtime import BrowserRuntimeError, BrowserRuntimeSession, rebuild_program_catalog
 from splashmx.editor.people import PeopleError, PeopleSession
 from splashmx.runtime.lifecycle import LifecycleError
@@ -85,11 +87,18 @@ class BrowserBridge:
         runtime: BrowserRuntimeSession | None = None,
         collaboration_store_path: str | Path | None = None,
         principal_id: str = "local-author",
+        godot_web_root: str | Path | None = None,
     ):
         authoring = session or AuthoringSession.blank()
         self.runtime = runtime or BrowserRuntimeSession(authoring, store_path)
         self._lock = RLock()
         self._closed = False
+        self.godot_web_root: Path | None = None
+        if godot_web_root is not None:
+            candidate = Path(godot_web_root).resolve()
+            if not candidate.is_dir() or not (candidate / "index.html").is_file():
+                raise ValueError("Godot Web runtime directory must contain index.html")
+            self.godot_web_root = candidate
         self._people_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="splashmx-people")
         collaboration_path = Path(collaboration_store_path) if collaboration_store_path is not None else Path(str(store_path) + ".collaboration.sqlite3")
         try:
@@ -179,7 +188,21 @@ class BrowserBridge:
                 "available": False,
                 "note": "Together runtime networking is separate from People collaboration.",
             }
+            state["godot_player"] = {
+                "available": self.godot_web_root is not None,
+                "url": "/godot/index.html?editor_live=1",
+                "runtime": "Godot 4.7.2",
+            }
             return state
+
+    def godot_play_projection(self) -> dict[str, Any]:
+        with self._lock:
+            if not self.runtime.playing:
+                raise BrowserRuntimeError(
+                    "browser.play_not_active",
+                    "Start Play before requesting the Godot runtime projection.",
+                )
+            return build_editor_godot_play_projection(self.session.project)
 
     def apply(self, request: Any) -> dict[str, Any]:
         # ThreadingHTTPServer may dispatch concurrent requests. Serialize semantic
@@ -297,12 +320,48 @@ def make_handler(bridge: BrowserBridge):
         def _json(self, status: int, payload: dict[str, Any]) -> None:
             body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
             self.send_response(status); self.send_header("Content-Type", "application/json; charset=utf-8"); self.send_header("Content-Length", str(len(body))); self.send_header("Cache-Control", "no-store"); self.send_header("X-Content-Type-Options", "nosniff"); self.end_headers(); self.wfile.write(body)
+        def _bytes(self, status: int, body: bytes, mime: str, *, editor_csp: bool = False) -> None:
+            self.send_response(status)
+            self.send_header("Content-Type", mime)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            if editor_csp:
+                self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'")
+            self.end_headers()
+            self.wfile.write(body)
         def do_GET(self) -> None:
             path = urlparse(self.path).path
             if path == "/api/state": self._json(HTTPStatus.OK, {"ok": True, "state": bridge.state()}); return
+            if path == "/api/godot-play-projection":
+                try:
+                    projection = bridge.godot_play_projection()
+                except (BrowserRuntimeError, EditorGodotPlayError) as exc:
+                    self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "godot_play.invalid_projection"), "message": str(exc)}})
+                    return
+                self._json(HTTPStatus.OK, {"ok": True, "projection": projection})
+                return
+            if path.startswith("/godot/"):
+                root = bridge.godot_web_root
+                if root is None:
+                    self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "godot_play.runtime_unavailable", "message": "The Godot Play runtime is not installed for this editor."}})
+                    return
+                relative = path[len("/godot/"):] or "index.html"
+                candidate = (root / relative).resolve()
+                try:
+                    candidate.relative_to(root)
+                except ValueError:
+                    self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That runtime resource was not found."}})
+                    return
+                if not candidate.is_file():
+                    self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That runtime resource was not found."}})
+                    return
+                mime = mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
+                self._bytes(HTTPStatus.OK, candidate.read_bytes(), mime)
+                return
             static = _STATIC.get(path)
             if static is None: self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That editor resource was not found."}}); return
-            filename, mime = static; body = (WEB_ROOT / filename).read_bytes(); self.send_response(HTTPStatus.OK); self.send_header("Content-Type", mime); self.send_header("Content-Length", str(len(body))); self.send_header("Cache-Control", "no-store"); self.send_header("X-Content-Type-Options", "nosniff"); self.send_header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'"); self.end_headers(); self.wfile.write(body)
+            filename, mime = static; self._bytes(HTTPStatus.OK, (WEB_ROOT / filename).read_bytes(), mime, editor_csp=True)
         def do_POST(self) -> None:
             if urlparse(self.path).path != "/api/action": self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That editor action was not found."}}); return
             try: length = int(self.headers.get("Content-Length", "0"))
@@ -336,14 +395,14 @@ class BrowserHTTPServer(ThreadingHTTPServer):
             self._bridge_closed = True
 
 
-def run_server(host: str, port: int, *, project_id: str = "local-project", store_path: str | Path = ".splashmx/local-project.sqlite3") -> BrowserHTTPServer:
-    bridge = BrowserBridge(AuthoringSession.blank(project_id), store_path=store_path)
+def run_server(host: str, port: int, *, project_id: str = "local-project", store_path: str | Path = ".splashmx/local-project.sqlite3", godot_web_root: str | Path | None = None) -> BrowserHTTPServer:
+    bridge = BrowserBridge(AuthoringSession.blank(project_id), store_path=store_path, godot_web_root=godot_web_root)
     return BrowserHTTPServer((host, port), bridge)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="SplashMX browser authoring shell"); parser.add_argument("--host", default="127.0.0.1"); parser.add_argument("--port", type=int, default=8765); parser.add_argument("--project-id", default="local-project"); parser.add_argument("--store-path", default=".splashmx/local-project.sqlite3"); args = parser.parse_args(argv)
-    server = run_server(args.host, args.port, project_id=args.project_id, store_path=args.store_path)
+    parser = argparse.ArgumentParser(description="SplashMX browser authoring shell"); parser.add_argument("--host", default="127.0.0.1"); parser.add_argument("--port", type=int, default=8765); parser.add_argument("--project-id", default="local-project"); parser.add_argument("--store-path", default=".splashmx/local-project.sqlite3"); parser.add_argument("--godot-web-root", default=None); args = parser.parse_args(argv)
+    server = run_server(args.host, args.port, project_id=args.project_id, store_path=args.store_path, godot_web_root=args.godot_web_root)
     url = f"http://{args.host}:{server.server_address[1]}"
     print(f"SMX032 READY {url}", flush=True)
     print(f"SMX033 READY {url}", flush=True)
