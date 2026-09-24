@@ -194,6 +194,25 @@ class AuthoringSessionTests(unittest.TestCase):
         self.assertEqual(self.session.document.project_revision_id, before)
         self.assertNotIn(ConnectionId("broken"), self.session.document.connections)
 
+    def test_visual_timeline_targets_existing_visual_projection_without_mutating_base(self) -> None:
+        thing = self.session.create_thing(
+            label="Sprite",
+            thing_id="visual-sprite",
+            authored_state={"visual": {"x": 25, "y": 30, "width": 120, "height": 80, "rotation": 0, "shape": "rectangle", "fill": "#123456"}},
+        )
+        base_visual = deepcopy(self.session.document.things[thing].authored_state["visual"])
+        track = self.session.add_timeline_track(
+            thing,
+            property_name="visual.x",
+            keyframes=[{"tick": 0, "value": 25}, {"tick": 60, "value": 225}],
+            track_id="visual-move-x",
+        )
+        self.assertEqual(track, "visual-move-x")
+        authored = self.session.document.things[thing].authored_state
+        self.assertEqual(authored["visual"], base_visual)
+        self.assertEqual(authored["timeline_tracks"][0]["property"], "visual.x")
+        self.assertEqual(authored["timeline_tracks"][0]["keyframes"][-1], {"tick": 60, "value": 225})
+
     def test_timeline_is_optional_and_targets_stable_thing_identity(self) -> None:
         thing = self.session.create_thing(label="Sprite", thing_id="sprite", authored_state={"x": 0})
         self.assertNotIn("timeline_tracks", self.session.document.things[thing].authored_state)
