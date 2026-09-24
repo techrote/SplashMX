@@ -190,14 +190,13 @@ class SMX051DInteractiveRuleTests(unittest.TestCase):
                     })
                 self.assertEqual(unsupported.exception.code, "godot_play.unsupported_event")
 
-                plain = bridge.session.create_thing if False else None
                 with self.assertRaises(EditorGodotPlayError) as unmatched:
                     bridge.godot_runtime_event({
                         "thing_id": "missing",
                         "trigger": "pointer_click",
                         "payload": {},
                     })
-                self.assertIn(unmatched.exception.code, {"lifecycle.not_active", "execution.unknown_thing", "godot_play.no_matching_rule"})
+                self.assertEqual(unmatched.exception.code, "godot_play.unknown_thing")
             finally:
                 bridge.close()
 
