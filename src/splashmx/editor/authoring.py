@@ -367,7 +367,7 @@ class AuthoringSession:
             projection="Rule",
             attachment_id=attachment_id,
             event=POINTER_CLICK_EVENT,
-            actions=({"action": "set_public", "key": "visual", "value": target_visual},),
+            actions=({"action": "set_public", "key": "visual.fill", "value": target_visual["fill"]},),
             authored_metadata={"author_kind": VISUAL_FILL_RULE_KIND},
         )
 
@@ -394,7 +394,7 @@ class AuthoringSession:
         if not isinstance(visual, Mapping):
             raise AuthoringError("authoring.rule_requires_visual", "Choose a visible Thing for this Rule.")
         target_visual = _normalise_visual_state({"fill": fill}, base=visual)
-        actions = [{"action": "set_public", "key": "visual", "value": target_visual}]
+        actions = [{"action": "set_public", "key": "visual.fill", "value": target_visual["fill"]}]
         revision = self.allocate_id("ir") + ":1"
         try:
             program = compile_rule("author-rule", POINTER_CLICK_EVENT, actions, behaviour_revision=revision)
