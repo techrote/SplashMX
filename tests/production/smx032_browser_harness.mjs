@@ -261,7 +261,21 @@ try {
   await page.locator('#port-form select[name="kind"]').selectOption("command");
   await page.locator('#port-form select[name="direction"]').selectOption("in");
   await page.getByTestId("add-port").click();
-  await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === lamp)?.ports.some((port) => port.port_id === "toggle"), "target port");
+  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === lamp)?.ports.some((port) => port.port_id === "toggle"), "target port");
+  assert(state.canonical.things.some((thing) => thing.thing_id === button));
+  assert(state.canonical.things.some((thing) => thing.thing_id === lamp));
+
+  // Port mutations are canonical server state; exercise the Connection form from
+  // a freshly projected browser view rather than relying on event-time DOM state.
+  await page.reload({ waitUntil: "networkidle" });
+  await waitFor(page, (value) => value.canonical.things.some((thing) => thing.thing_id === button) && value.canonical.things.some((thing) => thing.thing_id === lamp), "connection Thing state");
+  await page.waitForFunction(({ button, lamp }) => {
+    const selects = Array.from(document.querySelectorAll('#connection-form select[data-role="thing-select"]'));
+    return selects.length === 2 && selects.every((select) => {
+      const values = Array.from(select.options, (option) => option.value);
+      return values.includes(button) && values.includes(lamp);
+    });
+  }, { button, lamp });
 
   await page.locator('#connection-form select[name="source_thing_id"]').selectOption(button);
   await page.locator('#connection-form input[name="source_port_id"]').fill("clicked");
