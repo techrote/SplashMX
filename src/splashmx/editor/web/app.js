@@ -45,8 +45,8 @@ function rulesFor(thing) {
 }
 function beginnerRuleFill(rule) {
   const actions = Array.isArray(rule?.authored_config?.actions) ? rule.authored_config.actions : [];
-  const action = actions.find((row) => row?.action === "set_public" && row?.key === "visual");
-  const fill = action?.value?.fill;
+  const action = actions.find((row) => row?.action === "set_public" && row?.key === "visual.fill");
+  const fill = action?.value;
   return typeof fill === "string" && /^#[0-9a-fA-F]{6}$/.test(fill) ? fill.toLowerCase() : DEFAULT_RULE_FILL;
 }
 function timelineValueAt(track, tick) {
