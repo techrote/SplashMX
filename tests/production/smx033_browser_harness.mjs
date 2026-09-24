@@ -90,14 +90,29 @@ try {
   assert.equal(rejected.status, 409); assert.equal(rejected.payload.error.code, "authoring.forbidden_transient_identity");
   evidence.checks.r019_01_semantic_connection = true;
 
-  // Raw boundary probes intentionally bypass app.js state publication. Use the
-  // successful production response as the exact authored basis for Play.
+  // Product Play now requires the qualified Godot Web runtime. This retained
+  // SMX-033 harness intentionally launches without that artifact, so ordinary UI
+  // must fail explicitly rather than silently pretending the DOM is Play.
   const authoredBeforePlay = connected.payload.state.canonical.project_revision_id;
-  t = performance.now(); await page.keyboard.press("Control+Enter");
-  s = await waitFor(page, (x) => x.runtime.mode === "play", "Play mode"); evidence.metrics_ms.play_start = performance.now() - t;
+  assert.equal(s.godot_player.available, false);
+  await page.keyboard.press("Control+Enter");
+  await page.waitForTimeout(50);
+  s = await state(page);
+  assert.equal(s.runtime.mode, "edit");
+  assert((await page.locator("#status").innerText()).includes("Godot Play runtime is not available"));
+  evidence.checks.product_play_requires_godot = true;
+
+  // Retain the SMX-033 semantic runtime/authoring separation check through the
+  // explicit diagnostic API surface. SMX-051C separately exercises ordinary UI
+  // Play with the real exported Godot runtime.
+  t = performance.now();
+  await page.evaluate(() => window.splashmxAct("play"));
+  s = await waitFor(page, (x) => x.runtime.mode === "play", "semantic Play mode");
+  evidence.metrics_ms.play_start = performance.now() - t;
   assert.equal(s.canonical.project_revision_id, authoredBeforePlay);
   const editDuringPlay = await raw(page, "createThing", { label: "Must not publish" }); assert.equal(editDuringPlay.status, 409);
-  await page.keyboard.press("Escape"); s = await waitFor(page, (x) => x.runtime.mode === "edit", "Stop");
+  await page.evaluate(() => window.splashmxAct("stop"));
+  s = await waitFor(page, (x) => x.runtime.mode === "edit", "semantic Stop");
   assert.equal(s.canonical.project_revision_id, authoredBeforePlay); assert.equal(s.canonical.things.some((x) => x.label === "Must not publish"), false);
   evidence.checks.play_stop_transient = true;
 
