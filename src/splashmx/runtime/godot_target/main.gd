@@ -319,7 +319,7 @@ func _apply_binding_visual(binding, visual):
     node.position = Vector2(x + width / 2.0, y + height / 2.0)
     node.rotation_degrees = float(visual.get("rotation", 0))
     polygon.polygon = _shape_polygon(visual.get("shape", "rectangle"), width, height)
-    polygon.color = Color.from_string(str(visual.get("fill", "#5b7cfa")), Color("#5b7cfa"))
+    polygon.color = Color.from_string(str(visual.get("fill", "#5b7cfa")), Color.WHITE)
     binding["sample_visual"] = visual.duplicate(true)
 
 
