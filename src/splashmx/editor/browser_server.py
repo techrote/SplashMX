@@ -310,12 +310,17 @@ class BrowserBridge:
         elif action == "makeReusable": result = str(self.session.make_reusable(_string(data, "root_id"), definition_id=_optional_string(data, "definition_id")))
         elif action == "instantiateReusable": result = str(self.session.instantiate_reusable(_string(data, "definition_id")))
         elif action in {"attachRule", "attachBehaviour"}:
-            method = self.session.attach_rule if action == "attachRule" else self.session.attach_behaviour
-            actions = data.get("actions")
-            if actions is not None and not isinstance(actions, list): raise AuthoringError("authoring.invalid_behaviour", "Actions must be a list.")
-            result = str(method(_string(data, "thing_id"), attachment_id=_optional_string(data, "attachment_id"), event=str(data.get("event", "activate")), actions=actions))
-        elif action == "attachVisualRule":
-            result = str(self.session.attach_visual_rule(_string(data, "thing_id"), attachment_id=_optional_string(data, "attachment_id"), fill=_string(data, "fill")))
+            if action == "attachRule" and data.get("author_kind") == "visual-fill":
+                result = str(self.session.attach_visual_rule(
+                    _string(data, "thing_id"),
+                    attachment_id=_optional_string(data, "attachment_id"),
+                    fill=_string(data, "fill"),
+                ))
+            else:
+                method = self.session.attach_rule if action == "attachRule" else self.session.attach_behaviour
+                actions = data.get("actions")
+                if actions is not None and not isinstance(actions, list): raise AuthoringError("authoring.invalid_behaviour", "Actions must be a list.")
+                result = str(method(_string(data, "thing_id"), attachment_id=_optional_string(data, "attachment_id"), event=str(data.get("event", "activate")), actions=actions))
         elif action == "updateVisualRule":
             result = str(self.session.update_visual_rule(_string(data, "thing_id"), _string(data, "attachment_id"), fill=_string(data, "fill")))
         elif action == "removeRule":

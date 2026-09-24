@@ -560,7 +560,7 @@ $("#create-form").addEventListener("submit", async (event) => { event.preventDef
 $("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#group-selected").addEventListener("click", async () => { if (!selectedIds().length) return say("Select one or more Things to group.", true); await act("group", { members: selectedIds(), label: "Group" }); });
 $("#make-reusable").addEventListener("click", async () => { try { await act("makeReusable", { root_id: selectedOne() }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
-$("#add-rule").addEventListener("click", async () => { try { await act("attachVisualRule", { thing_id: selectedOne(), fill: DEFAULT_RULE_FILL }, "Rule added: when this Thing is clicked, change its colour."); } catch (error) { if (!error.message.includes("Select exactly") && error.code !== "authoring.rule_exists") throw error; say(error.message, true); } });
+$("#add-rule").addEventListener("click", async () => { try { await act("attachRule", { thing_id: selectedOne(), author_kind: "visual-fill", fill: DEFAULT_RULE_FILL }, "Rule added: when this Thing is clicked, change its colour."); } catch (error) { if (!error.message.includes("Select exactly") && error.code !== "authoring.rule_exists") throw error; say(error.message, true); } });
 $("#add-behaviour").addEventListener("click", async () => { try { await act("attachBehaviour", { thing_id: selectedOne(), event: "activate", actions: [{ action: "emit", event: "activated", payload: true }] }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#rule-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -571,12 +571,12 @@ $("#rule-form").addEventListener("submit", async (event) => {
       return say("Choose a supported Rule event and action.", true);
     }
     const attachmentId = String(form.get("attachment_id") || "");
-    const data = { thing_id: thingId, fill: String(form.get("fill") || DEFAULT_RULE_FILL) };
+    const data = { thing_id: thingId, author_kind: "visual-fill", fill: String(form.get("fill") || DEFAULT_RULE_FILL) };
     if (attachmentId) {
       data.attachment_id = attachmentId;
       await act("updateVisualRule", data, "Rule updated.");
     } else {
-      await act("attachVisualRule", data, "Rule added.");
+      await act("attachRule", data, "Rule added.");
     }
     event.currentTarget.elements.attachment_id.value = "";
   } catch (error) {
