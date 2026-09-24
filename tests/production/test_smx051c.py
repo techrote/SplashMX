@@ -74,17 +74,14 @@ class SMX051CGodotPlayTests(unittest.TestCase):
     def test_transient_engine_identity_in_track_is_rejected(self) -> None:
         session = self._session()
         thing = next(iter(session.document.things))
-        authored = dict(session.document.things[thing].authored_state)
-        tracks = [dict(row) for row in authored["timeline_tracks"]]
-        tracks[0]["NodePath"] = "/root/Leak"
-        authored["timeline_tracks"] = tracks
-        session.document.things[thing] = session.document.things[thing].__class__(
-            session.document.things[thing].thing_id,
-            session.document.things[thing].label,
-            authored,
-            session.document.things[thing].ports,
-            session.document.things[thing].behaviours,
-            session.document.things[thing].tombstoned,
+        session.add_timeline_track(
+            thing,
+            property_name="visual.y",
+            keyframes=[
+                {"tick": 0, "value": 50, "nested": {"NodePath": "/root/Leak"}},
+                {"tick": 60, "value": 100},
+            ],
+            track_id="poisoned-y",
         )
         with self.assertRaises(EditorGodotPlayError) as caught:
             build_editor_godot_play_projection(session.project)
