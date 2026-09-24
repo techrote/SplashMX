@@ -158,6 +158,43 @@ try {
   }, "visual properties application");
   evidence.checks.visual_properties = true;
 
+  const visualBeforeTimeline = { ...state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual };
+  await page.locator('#timeline-form select[name="property"]').selectOption("visual.x");
+  await page.locator('#timeline-form input[name="start"]').fill(String(visualBeforeTimeline.x));
+  await page.locator('#timeline-form input[name="end"]').fill(String(visualBeforeTimeline.x + 120));
+  await page.locator('#timeline-form input[name="duration"]').fill("60");
+  await page.getByTestId("add-timeline").click();
+  state = await waitFor(page, (value) => {
+    const tracks = value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.timeline_tracks;
+    return Array.isArray(tracks) && tracks.some((track) => track.property === "visual.x");
+  }, "visible Timeline track");
+  const visualTrack = state.canonical.things.find((thing) => thing.thing_id === button).authored_state.timeline_tracks.find((track) => track.property === "visual.x");
+  assert.deepEqual(visualTrack.keyframes, [{ tick: 0, value: visualBeforeTimeline.x }, { tick: 60, value: visualBeforeTimeline.x + 120 }]);
+  assert.equal(await page.getByTestId("timeline-track").count() >= 1, true);
+  const revisionBeforeScrub = state.canonical.project_revision_id;
+  const canonicalVisualBeforeScrub = structuredClone(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual);
+
+  await page.getByTestId("timeline-scrubber").fill("30");
+  await page.waitForFunction(({ id, expected }) => {
+    const node = document.querySelector(`[data-testid="stage-thing-${id}"]`);
+    return node && Math.abs(parseFloat(node.style.left) - expected) < 0.01;
+  }, { id: button, expected: visualBeforeTimeline.x + 60 });
+  state = await waitFor(page, () => true, "Timeline scrub state");
+  assert.equal(state.canonical.project_revision_id, revisionBeforeScrub);
+  assert.deepEqual(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual, canonicalVisualBeforeScrub);
+  evidence.checks.timeline_scrub_is_transient = true;
+
+  await page.getByTestId("timeline-preview").click();
+  await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("Timeline preview finished"));
+  await page.waitForFunction(({ id, expected }) => {
+    const node = document.querySelector(`[data-testid="stage-thing-${id}"]`);
+    return node && Math.abs(parseFloat(node.style.left) - expected) < 0.01;
+  }, { id: button, expected: visualBeforeTimeline.x });
+  state = await waitFor(page, () => true, "Timeline preview reset state");
+  assert.equal(state.canonical.project_revision_id, revisionBeforeScrub);
+  assert.deepEqual(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual, canonicalVisualBeforeScrub);
+  evidence.checks.timeline_visible_preview = true;
+
   await page.getByTestId("save").click();
   state = await waitFor(page, (value) => value.storage?.saved_revision_id === value.canonical.project_revision_id, "visual save");
   const savedVisual = { ...state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual };
@@ -176,7 +213,10 @@ try {
     return visual && visual.x === savedVisual.x && visual.width === savedVisual.width && visual.fill === savedVisual.fill;
   }, "visual state after server restart");
   assert.deepEqual(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual, savedVisual);
+  const restartedTracks = state.canonical.things.find((thing) => thing.thing_id === button).authored_state.timeline_tracks;
+  assert(Array.isArray(restartedTracks) && restartedTracks.some((track) => track.property === "visual.x"));
   evidence.checks.visual_process_restart = true;
+  evidence.checks.timeline_save_restart = true;
 
   await page.locator("#new-label").fill("Lamp");
   await page.getByTestId("create-thing").click();
