@@ -14,15 +14,6 @@ on:
       - 'tests/production/smx051c_editor_godot_harness.mjs'
       - 'tools/validate_smx051c.py'
       - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
-      - 'src/splashmx/editor/godot_play.py'
-      - 'src/splashmx/editor/browser_server.py'
-      - 'src/splashmx/editor/web/app.js'
-      - 'src/splashmx/editor/web/index.html'
-      - 'src/splashmx/editor/web/styles.css'
-      - 'tests/production/test_smx051c.py'
-      - 'tests/production/smx051c_editor_godot_harness.mjs'
-      - 'tools/validate_smx051c.py'
-      - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
       - 'src/MODULES.json'
       - 'spec/production/conformance-registry.json'
       - 'spec/production/smx038-godot-runtime-fixtures.json'
@@ -40,6 +31,15 @@ on:
     paths:
       - 'src/splashmx/runtime/godot.py'
       - 'src/splashmx/runtime/godot_target/**'
+      - 'src/splashmx/editor/godot_play.py'
+      - 'src/splashmx/editor/browser_server.py'
+      - 'src/splashmx/editor/web/app.js'
+      - 'src/splashmx/editor/web/index.html'
+      - 'src/splashmx/editor/web/styles.css'
+      - 'tests/production/test_smx051c.py'
+      - 'tests/production/smx051c_editor_godot_harness.mjs'
+      - 'tools/validate_smx051c.py'
+      - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
       - 'src/MODULES.json'
       - 'spec/production/conformance-registry.json'
       - 'spec/production/smx038-godot-runtime-fixtures.json'
@@ -254,7 +254,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          PYTHONPATH=src python -m splashmx.editor.browser_server             --host 127.0.0.1             --port 8130             --project-id smx051c-browser             --store-path artifacts/smx051c-editor.sqlite3             --godot-web-root build/web > /tmp/smx051c-editor.log 2>&1 &
+          PYTHONPATH=src python -m splashmx.editor.browser_server \
+            --host 127.0.0.1 \
+            --port 8130 \
+            --project-id smx051c-browser \
+            --store-path artifacts/smx051c-editor.sqlite3 \
+            --godot-web-root build/web > /tmp/smx051c-editor.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8130/ >/dev/null; then exit 0; fi
             sleep 1
