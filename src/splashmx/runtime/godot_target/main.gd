@@ -214,6 +214,10 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
     if not _canonical_shape_is_clean(projection):
         _fatal("editor-live projection leaked engine/runtime identity")
         return
+    var required_features = projection.get("required_features", [])
+    if typeof(required_features) != TYPE_ARRAY or not required_features.has("render_2d"):
+        _fatal("editor-live projection requires an invalid target feature set")
+        return
 
     _live_project_revision_id = str(projection.get("project_revision_id", ""))
     _live_ticks_per_second = float(projection.get("ticks_per_second", 60))
