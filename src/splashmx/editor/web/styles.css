@@ -91,6 +91,19 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
   margin: 0;
   cursor: pointer;
 }
+.rule-badge {
+  position: absolute;
+  right: 0.35rem;
+  top: 0.35rem;
+  padding: 0.12rem 0.32rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  pointer-events: none;
+}
 .resize-handle {
   position: absolute;
   right: -0.45rem;
@@ -108,6 +121,20 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 .stack-form { margin: 0 0 0.85rem; }
 .stack-form fieldset { display: grid; gap: 0.55rem; border: 1px solid currentColor; border-radius: 0.35rem; }
 .stack-form label { display: grid; gap: 0.25rem; }
+.rules-panel { grid-column: 2; }
+.rules-list { display: grid; gap: 0.45rem; }
+.rule-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid color-mix(in srgb, CanvasText 35%, transparent);
+  border-radius: 0.35rem;
+}
+.rule-card > div:first-child { display: grid; gap: 0.2rem; min-width: 0; }
+.rule-detail { font-size: 0.82rem; opacity: 0.8; }
+.rule-card .toolbar { margin: 0; }
 .timeline-panel { grid-column: 1 / -1; }
 .timeline-panel fieldset {
   display: flex;
@@ -164,7 +191,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
-  .stage-panel, .runtime-panel, .properties-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
+  .stage-panel, .runtime-panel, .properties-panel, .rules-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
 }
 @media (max-width: 760px) {
   .panel-heading { display: block; }
