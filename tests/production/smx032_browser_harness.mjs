@@ -146,7 +146,7 @@ try {
   evidence.checks.visual_properties = true;
 
   await page.getByTestId("save").click();
-  state = await waitFor(page, (value) => value.last_saved_revision_id === value.canonical.project_revision_id, "visual save");
+  state = await waitFor(page, (value) => value.storage?.saved_revision_id === value.canonical.project_revision_id, "visual save");
   const savedVisual = { ...state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual };
   await postRaw(page, "updateVisual", { thing_id: button, visual: { ...savedVisual, x: savedVisual.x + 100 } });
   await page.reload({ waitUntil: "networkidle" });
