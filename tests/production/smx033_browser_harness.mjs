@@ -64,7 +64,8 @@ try {
 
   assert.equal(await page.locator('main').count(), 1);
   assert.equal(await page.locator('nav[aria-label="Project actions"]').count(), 1);
-  assert.equal(await page.locator('[role="status"][aria-live="polite"]').count(), 1);
+  assert.equal(await page.locator('#status[role="status"][aria-live="polite"]').count(), 1);
+  assert.equal(await page.locator('#godot-player-status[role="status"][aria-live="polite"]').count(), 1);
   assert.equal(await page.locator('#diagnostics[role="log"]').count(), 1);
   assert.equal(await page.locator('.skip-link').getAttribute('href'), '#stage');
   for (const id of ["play", "stop", "save", "reload", "inspect-toggle"]) assert.equal(await page.locator(`#${id}`).count(), 1);
