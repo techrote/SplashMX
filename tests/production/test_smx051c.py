@@ -4,7 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from splashmx.editor.authoring import AuthoringSession
+from splashmx.editor.authoring import AuthoringError, AuthoringSession
 from splashmx.editor.browser_runtime import BrowserRuntimeError
 from splashmx.editor.browser_server import BrowserBridge
 from splashmx.editor.godot_play import (
@@ -71,21 +71,24 @@ class SMX051CGodotPlayTests(unittest.TestCase):
         tracks = projection["things"][0]["timeline_tracks"]
         self.assertEqual([row["property"] for row in tracks], ["visual.x"])
 
-    def test_transient_engine_identity_in_track_is_rejected(self) -> None:
+    def test_transient_engine_identity_is_rejected_before_projection(self) -> None:
         session = self._session()
         thing = next(iter(session.document.things))
-        session.add_timeline_track(
-            thing,
-            property_name="visual.y",
-            keyframes=[
-                {"tick": 0, "value": 50, "nested": {"NodePath": "/root/Leak"}},
-                {"tick": 60, "value": 100},
-            ],
-            track_id="poisoned-y",
-        )
-        with self.assertRaises(EditorGodotPlayError) as caught:
-            build_editor_godot_play_projection(session.project)
-        self.assertEqual(caught.exception.code, "godot.forbidden_transient_identity")
+        before = session.document.project_revision_id
+        with self.assertRaises(AuthoringError) as caught:
+            session.add_timeline_track(
+                thing,
+                property_name="visual.y",
+                keyframes=[
+                    {"tick": 0, "value": 50, "nested": {"NodePath": "/root/Leak"}},
+                    {"tick": 60, "value": 100},
+                ],
+                track_id="poisoned-y",
+            )
+        self.assertEqual(caught.exception.code, "canonical.forbidden_transient_identity")
+        self.assertEqual(session.document.project_revision_id, before)
+        projection = build_editor_godot_play_projection(session.project)
+        self.assertEqual([row["property"] for row in projection["things"][0]["timeline_tracks"]], ["visual.x"])
 
     def test_bridge_reports_runtime_availability_and_requires_active_play(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
