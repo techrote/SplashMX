@@ -87,6 +87,10 @@ def _tracks(value: Any, thing_id: str) -> list[dict[str, Any]]:
     for track in value:
         if not isinstance(track, Mapping):
             _fail("godot_play.invalid_timeline", "Timeline track must be an object")
+        try:
+            validate_target_value(track, where="editor Godot Play Timeline track")
+        except ValueError as exc:
+            _fail(getattr(exc, "code", "godot_play.invalid_timeline"), str(exc))
         if str(track.get("target_thing_id", "")) != thing_id:
             _fail("godot_play.invalid_timeline", "Timeline target differs from containing Thing")
         prop = track.get("property")
