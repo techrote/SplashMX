@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from hashlib import sha256
+import math
 import re
 from typing import Any, Mapping, Sequence
 
@@ -64,6 +65,54 @@ _FORBIDDEN_AUTHOR_VOCABULARY = (
     "export preset",
 )
 _SAFE_TOKEN = re.compile(r"[^A-Za-z0-9._:-]+")
+_VISUAL_FILL = re.compile(r"#[0-9A-Fa-f]{6}")
+_VISUAL_SHAPES = {"rectangle", "ellipse"}
+_VISUAL_DEFAULTS = {
+    "x": 64.0,
+    "y": 64.0,
+    "width": 160.0,
+    "height": 100.0,
+    "rotation": 0.0,
+    "shape": "rectangle",
+    "fill": "#5b7cfa",
+}
+
+
+def _visual_number(value: Any, label: str, *, minimum: float, maximum: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+        raise AuthoringError("authoring.invalid_visual", f"{label} must be a finite number.")
+    result = float(value)
+    if result < minimum or result > maximum:
+        raise AuthoringError("authoring.invalid_visual", f"{label} is outside the supported Stage range.")
+    return result
+
+
+def _normalise_visual_state(value: Mapping[str, Any], *, base: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise AuthoringError("authoring.invalid_visual", "Visual properties must be an object.")
+    allowed = set(_VISUAL_DEFAULTS)
+    unknown = sorted(set(map(str, value)) - allowed)
+    if unknown:
+        raise AuthoringError("authoring.invalid_visual", "Unsupported visual properties: " + ", ".join(unknown))
+    merged = dict(_VISUAL_DEFAULTS)
+    if isinstance(base, Mapping):
+        merged.update({key: base[key] for key in allowed if key in base})
+    merged.update(dict(value))
+    shape = merged["shape"]
+    fill = merged["fill"]
+    if shape not in _VISUAL_SHAPES:
+        raise AuthoringError("authoring.invalid_visual", "Choose rectangle or ellipse.")
+    if not isinstance(fill, str) or _VISUAL_FILL.fullmatch(fill) is None:
+        raise AuthoringError("authoring.invalid_visual", "Fill must be a six-digit colour such as #5b7cfa.")
+    return {
+        "x": _visual_number(merged["x"], "X position", minimum=-10000, maximum=10000),
+        "y": _visual_number(merged["y"], "Y position", minimum=-10000, maximum=10000),
+        "width": _visual_number(merged["width"], "Width", minimum=12, maximum=4096),
+        "height": _visual_number(merged["height"], "Height", minimum=12, maximum=4096),
+        "rotation": _visual_number(merged["rotation"], "Rotation", minimum=-3600, maximum=3600),
+        "shape": shape,
+        "fill": fill.lower(),
+    }
 
 
 class AuthoringError(ValueError):
@@ -132,7 +181,10 @@ class AuthoringSession:
         authored_state: Mapping[str, Any] | None = None,
     ) -> ThingId:
         identifier = ThingId(thing_id or self.allocate_id("thing"))
-        self._commit(AddThing(ThingRecord(identifier, str(label), dict(authored_state or {}))))
+        state = dict(authored_state or {})
+        if "visual" in state:
+            state["visual"] = _normalise_visual_state(state["visual"])
+        self._commit(AddThing(ThingRecord(identifier, str(label), state)))
         return identifier
 
     def add_port(
@@ -333,6 +385,26 @@ class AuthoringSession:
         state["timeline_tracks"] = tracks
         self._commit(SetAuthoredState(tid, state))
         return identifier
+
+    def update_visual_state(
+        self,
+        thing_id: str | ThingId,
+        *,
+        visual: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Transactionally update the author-facing visual projection of one Thing."""
+        tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
+        thing = self.document.things.get(tid)
+        if thing is None or thing.tombstoned:
+            raise AuthoringError("authoring.unknown_thing", "That Thing is no longer available to edit.")
+        state = dict(thing.authored_state)
+        previous = state.get("visual")
+        state["visual"] = _normalise_visual_state(
+            visual,
+            base=previous if isinstance(previous, Mapping) else None,
+        )
+        self._commit(SetAuthoredState(tid, state))
+        return dict(state["visual"])
 
     def import_asset_thing(
         self,
