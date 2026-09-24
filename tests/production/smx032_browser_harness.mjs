@@ -92,6 +92,68 @@ try {
   await page.getByTestId("create-thing").click();
   state = await waitFor(page, (value) => value.canonical.things.length === 1, "Button creation");
   const button = state.canonical.things[0].thing_id;
+  await waitFor(page, (value) => value.editor.selection.includes(button), "new visual Thing selection");
+  let buttonThing = state.canonical.things.find((thing) => thing.thing_id === button);
+  assert(buttonThing.authored_state.visual, "new Thing did not receive canonical visual state");
+  const stageThing = page.getByTestId(`stage-thing-${button}`);
+  assert.equal(await stageThing.isVisible(), true);
+  evidence.checks.visual_stage_creation = true;
+
+  const startVisual = { ...buttonThing.authored_state.visual };
+  let box = await stageThing.boundingBox();
+  assert(box, "visual Thing did not have a Stage bounding box");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 36, box.y + box.height / 2 + 24);
+  await page.mouse.up();
+  state = await waitFor(page, (value) => {
+    const visual = value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual;
+    return visual && visual.x === startVisual.x + 36 && visual.y === startVisual.y + 24;
+  }, "pointer drag canonical visual position");
+  evidence.checks.pointer_move_updates_canonical = true;
+
+  await page.getByTestId(`stage-thing-${button}`).focus();
+  const beforeKeyboardX = state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual.x;
+  await page.keyboard.press("ArrowRight");
+  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual.x === beforeKeyboardX + 5, "keyboard movement");
+  const beforeKeyboardHeight = state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual.height;
+  await page.getByTestId(`stage-thing-${button}`).focus();
+  await page.keyboard.press("Shift+ArrowDown");
+  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual.height === beforeKeyboardHeight + 5, "keyboard resize");
+  evidence.checks.keyboard_visual_editing = true;
+
+  const resizeHandle = page.getByTestId(`resize-${button}`);
+  box = await resizeHandle.boundingBox();
+  assert(box, "resize handle did not have a bounding box");
+  const beforeResize = { ...state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual };
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 25, box.y + box.height / 2 + 15);
+  await page.mouse.up();
+  state = await waitFor(page, (value) => {
+    const visual = value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual;
+    return visual && visual.width === beforeResize.width + 25 && visual.height === beforeResize.height + 15;
+  }, "pointer resize canonical visual size");
+  evidence.checks.pointer_resize_updates_canonical = true;
+
+  await page.locator('#visual-properties input[name="rotation"]').fill("15");
+  await page.locator('#visual-properties input[name="fill"]').evaluate((input) => { input.value = "#336699"; input.dispatchEvent(new Event("input", { bubbles: true })); });
+  await page.getByTestId("apply-visual-properties").click();
+  state = await waitFor(page, (value) => {
+    const visual = value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual;
+    return visual && visual.rotation === 15 && visual.fill === "#336699";
+  }, "visual properties application");
+  evidence.checks.visual_properties = true;
+
+  await page.getByTestId("save").click();
+  state = await waitFor(page, (value) => value.last_saved_revision_id === value.canonical.project_revision_id, "visual save");
+  const savedVisual = { ...state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual };
+  await postRaw(page, "updateVisual", { thing_id: button, visual: { ...savedVisual, x: savedVisual.x + 100 } });
+  await page.reload({ waitUntil: "networkidle" });
+  await page.getByTestId("reload").click();
+  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual.x === savedVisual.x, "visual reload");
+  assert.deepEqual(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual, savedVisual);
+  evidence.checks.visual_save_reload = true;
 
   await page.locator("#new-label").fill("Lamp");
   await page.getByTestId("create-thing").click();
