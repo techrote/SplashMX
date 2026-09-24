@@ -74,7 +74,7 @@ try {
   await page.locator('#rule-form select[name="action"]').selectOption("change_colour");
   await page.locator('#rule-form input[name="fill"]').fill("#22cc88");
   await page.getByTestId("save-rule").click();
-  state = await waitForState(page, (value) => value.canonical.things[0]?.behaviours?.[0]?.authored_config?.actions?.[0]?.value?.fill === "#22cc88", "Rule edit");
+  state = await waitForState(page, (value) => value.canonical.things[0]?.behaviours?.[0]?.authored_config?.actions?.[0]?.value === "#22cc88", "Rule edit");
   rule = state.canonical.things[0].behaviours[0];
   const attachmentId = rule.attachment_id;
   assert.equal(rule.authored_config.event, "pointer_click");
@@ -85,7 +85,7 @@ try {
   assert(savedRevision);
   await page.getByTestId("reload").click();
   state = await waitForState(page, (value) => value.canonical.things[0]?.behaviours?.[0]?.attachment_id === attachmentId, "Rule Save Reload");
-  assert.equal(state.canonical.things[0].behaviours[0].authored_config.actions[0].value.fill, "#22cc88");
+  assert.equal(state.canonical.things[0].behaviours[0].authored_config.actions[0].value, "#22cc88");
   evidence.checks.rule_survives_save_reload = true;
 
   await page.getByTestId(`stage-thing-${thingId}`).click();
