@@ -45,7 +45,7 @@ class SMX051CGodotPlayTests(unittest.TestCase):
         projection = build_editor_godot_play_projection(session.project)
         self.assertEqual(projection["contract"], EDITOR_GODOT_PLAY_CONTRACT)
         self.assertEqual(projection["project_revision_id"], str(session.document.project_revision_id))
-        self.assertEqual(projection["required_features"], ["render_2d"])
+        self.assertEqual(projection["required_features"], ["input", "render_2d"])
         self.assertEqual(len(projection["things"]), 1)
         thing = projection["things"][0]
         self.assertEqual(thing["thing_id"], "sprite")
