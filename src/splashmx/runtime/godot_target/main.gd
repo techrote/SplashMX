@@ -40,6 +40,7 @@ var _live_elapsed_tick = 0.0
 var _live_mid_emitted = false
 var _live_end_emitted = false
 var _live_project_revision_id = ""
+var _live_event_pending = false
 
 
 func _ready():
@@ -230,6 +231,7 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
     add_child(_live_root)
     _live_bindings.clear()
     _live_max_tick = 0.0
+    _live_event_pending = false
 
     var things = projection.get("things", [])
     if typeof(things) != TYPE_ARRAY or things.size() > MAX_BINDINGS:
@@ -382,6 +384,9 @@ func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
 
 
 func _dispatch_editor_live_event(thing_id, trigger, payload):
+    if _live_event_pending:
+        return
+    _live_event_pending = true
     var request = HTTPRequest.new()
     add_child(request)
     request.request_completed.connect(
@@ -389,6 +394,7 @@ func _dispatch_editor_live_event(thing_id, trigger, payload):
     )
     var origin = str(JavaScriptBridge.eval("window.location.origin", true))
     if origin == "":
+        _live_event_pending = false
         request.queue_free()
         _fatal("editor-live browser origin is unavailable for interaction")
         return
@@ -405,6 +411,7 @@ func _dispatch_editor_live_event(thing_id, trigger, payload):
         body
     )
     if error != OK:
+        _live_event_pending = false
         request.queue_free()
         _fatal("editor-live interaction request could not start")
 
@@ -412,6 +419,7 @@ func _dispatch_editor_live_event(thing_id, trigger, payload):
 func _on_editor_live_event_completed(
     _result, response_code, _headers, body, request, thing_id, trigger
 ):
+    _live_event_pending = false
     request.queue_free()
     if int(response_code) != 200:
         _fatal("editor-live interaction request failed with status " + str(response_code))
