@@ -10,6 +10,17 @@ function selectedIds() { return state ? state.editor.selection : []; }
 function selectedOne() { const selected = selectedIds(); if (selected.length !== 1) throw new Error("Select exactly one Thing for this action."); return selected[0]; }
 
 const VISUAL_DEFAULTS = { x: 64, y: 64, width: 160, height: 100, rotation: 0, shape: "rectangle", fill: "#5b7cfa" };
+const TIMELINE_LABELS = {
+  "visual.x": "Horizontal position",
+  "visual.y": "Vertical position",
+  "visual.rotation": "Rotation",
+  "visual.width": "Width",
+  "visual.height": "Height",
+};
+let timelinePreviewTick = null;
+let timelinePreviewFrame = null;
+const TIMELINE_PREVIEW_MS = 1200;
+
 function thingById(thingId) { return state?.canonical.things.find((thing) => thing.thing_id === thingId) || null; }
 function visualFor(thing, index = 0) {
   const fallback = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130 };
@@ -21,6 +32,88 @@ async function commitVisual(thingId, patch, success = "Visual properties updated
   const index = state.canonical.things.findIndex((row) => row.thing_id === thingId);
   const visual = { ...visualFor(thing, Math.max(0, index)), ...patch };
   return act("updateVisual", { thing_id: thingId, visual }, success);
+}
+
+function timelineTracksFor(thing) {
+  const rows = thing?.authored_state?.timeline_tracks;
+  return Array.isArray(rows) ? rows : [];
+}
+function timelineValueAt(track, tick) {
+  const keyframes = Array.isArray(track?.keyframes)
+    ? track.keyframes.filter((row) => Number.isFinite(Number(row.tick)) && Number.isFinite(Number(row.value))).map((row) => ({ tick: Number(row.tick), value: Number(row.value) })).sort((a, b) => a.tick - b.tick)
+    : [];
+  if (!keyframes.length) return null;
+  if (tick <= keyframes[0].tick) return keyframes[0].value;
+  if (tick >= keyframes[keyframes.length - 1].tick) return keyframes[keyframes.length - 1].value;
+  for (let index = 1; index < keyframes.length; index += 1) {
+    const right = keyframes[index];
+    const left = keyframes[index - 1];
+    if (tick <= right.tick) {
+      if (right.tick === left.tick) return right.value;
+      const ratio = (tick - left.tick) / (right.tick - left.tick);
+      return left.value + (right.value - left.value) * ratio;
+    }
+  }
+  return keyframes[keyframes.length - 1].value;
+}
+function displayVisualFor(thing, index = 0) {
+  const visual = { ...visualFor(thing, index) };
+  if (timelinePreviewTick === null) return visual;
+  for (const track of timelineTracksFor(thing)) {
+    const property = String(track.property || "");
+    if (!property.startsWith("visual.")) continue;
+    const key = property.slice("visual.".length);
+    if (!(key in visual) || typeof visual[key] !== "number") continue;
+    const value = timelineValueAt(track, timelinePreviewTick);
+    if (value !== null) visual[key] = value;
+  }
+  return visual;
+}
+function timelineMaxTick() {
+  let maximum = 60;
+  for (const thing of state?.canonical?.things || []) {
+    for (const track of timelineTracksFor(thing)) {
+      for (const keyframe of track.keyframes || []) {
+        const tick = Number(keyframe.tick);
+        if (Number.isFinite(tick)) maximum = Math.max(maximum, tick);
+      }
+    }
+  }
+  return maximum;
+}
+function cancelTimelinePreview({ restore = true } = {}) {
+  if (timelinePreviewFrame !== null) cancelAnimationFrame(timelinePreviewFrame);
+  timelinePreviewFrame = null;
+  if (restore) timelinePreviewTick = null;
+}
+function applyTimelinePlayhead(tick) {
+  timelinePreviewTick = Number(tick);
+  renderStage();
+  const scrubber = $("#timeline-scrubber");
+  const output = $("#timeline-tick");
+  if (scrubber) scrubber.value = String(Math.round(timelinePreviewTick));
+  if (output) output.textContent = `Tick ${Math.round(timelinePreviewTick)}`;
+}
+function startTimelinePreview() {
+  cancelTimelinePreview({ restore: false });
+  const maximum = timelineMaxTick();
+  const started = performance.now();
+  const frame = (now) => {
+    const progress = Math.min(1, (now - started) / TIMELINE_PREVIEW_MS);
+    applyTimelinePlayhead(maximum * progress);
+    if (progress < 1) {
+      timelinePreviewFrame = requestAnimationFrame(frame);
+      return;
+    }
+    timelinePreviewFrame = null;
+    timelinePreviewTick = null;
+    renderStage();
+    $("#timeline-scrubber").value = "0";
+    $("#timeline-tick").textContent = "Base";
+    say("Timeline preview finished. Back to authored state.");
+  };
+  timelinePreviewFrame = requestAnimationFrame(frame);
+  say("Previewing authored Timeline keyframes.");
 }
 
 function renderStage() {
@@ -98,7 +191,7 @@ function renderStage() {
   }
 
   state.canonical.things.forEach((thing, index) => {
-    const visual = visualFor(thing, index);
+    const visual = displayVisualFor(thing, index);
     const node = document.createElement("div");
     node.className = "visual-thing" + (selected.has(thing.thing_id) ? " is-selected" : "");
     node.dataset.thingId = thing.thing_id;
@@ -196,6 +289,88 @@ function renderProperties() {
   for (const key of ["x", "y", "width", "height", "rotation", "shape", "fill"]) form.elements[key].value = visual[key];
 }
 
+function renderTimeline() {
+  const tracksRoot = $("#timeline-tracks");
+  const fields = $("#timeline-fields");
+  const scrubber = $("#timeline-scrubber");
+  const output = $("#timeline-tick");
+  const maximum = timelineMaxTick();
+  scrubber.max = String(maximum);
+  if (timelinePreviewTick === null) {
+    scrubber.value = "0";
+    output.textContent = "Base";
+  } else {
+    const clamped = Math.max(0, Math.min(maximum, timelinePreviewTick));
+    timelinePreviewTick = clamped;
+    scrubber.value = String(Math.round(clamped));
+    output.textContent = `Tick ${Math.round(clamped)}`;
+  }
+
+  tracksRoot.replaceChildren();
+  fields.disabled = selectedIds().length !== 1;
+  if (selectedIds().length !== 1) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = selectedIds().length ? "Select exactly one Thing to author an animation." : "Select a Thing to author an animation.";
+    tracksRoot.append(empty);
+    return;
+  }
+
+  const thing = thingById(selectedIds()[0]);
+  const tracks = timelineTracksFor(thing);
+  const form = $("#timeline-form");
+  if (thing && !form.contains(document.activeElement)) {
+    const property = String(form.elements.property.value || "visual.x");
+    const key = property.replace(/^visual\./, "");
+    const index = state.canonical.things.findIndex((row) => row.thing_id === thing.thing_id);
+    const base = visualFor(thing, Math.max(index, 0));
+    if (typeof base[key] === "number") {
+      form.elements.start.value = String(Math.round(base[key] * 100) / 100);
+      form.elements.end.value = String(Math.round((base[key] + (key === "rotation" ? 90 : 100)) * 100) / 100);
+    }
+  }
+
+  if (!tracks.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = `${thing.label} has no animation tracks yet.`;
+    tracksRoot.append(empty);
+    return;
+  }
+
+  for (const track of tracks) {
+    const row = document.createElement("article");
+    row.className = "timeline-track";
+    row.dataset.testid = "timeline-track";
+    const info = document.createElement("div");
+    const property = String(track.property || "");
+    const keyframes = Array.isArray(track.keyframes) ? track.keyframes : [];
+    const first = keyframes[0];
+    const last = keyframes[keyframes.length - 1];
+    const title = document.createElement("strong");
+    title.textContent = TIMELINE_LABELS[property] || "Animation";
+    const values = document.createElement("div");
+    values.className = "timeline-track-values";
+    values.textContent = first && last ? `${first.value} → ${last.value} · ${last.tick} ticks` : "No keyframes";
+    info.append(title, values);
+
+    const line = document.createElement("div");
+    line.className = "timeline-track-line";
+    line.setAttribute("aria-label", `${title.textContent} keyframes`);
+    for (const keyframe of keyframes) {
+      const tick = Number(keyframe.tick);
+      if (!Number.isFinite(tick)) continue;
+      const marker = document.createElement("span");
+      marker.className = "timeline-keyframe";
+      marker.style.left = `${maximum ? Math.max(0, Math.min(100, tick / maximum * 100)) : 0}%`;
+      marker.title = `Tick ${tick}: ${keyframe.value}`;
+      line.append(marker);
+    }
+    row.append(info, line);
+    tracksRoot.append(row);
+  }
+}
+
 function renderThingSelects() { for (const select of $$('[data-role="thing-select"]')) { const previous = select.value; select.replaceChildren(); for (const thing of state.canonical.things) { const option = document.createElement("option"); option.value = thing.thing_id; option.textContent = thing.label; select.append(option); } if (state.canonical.things.some((thing) => thing.thing_id === previous)) select.value = previous; } }
 function renderInspect() { const panel = $("#inspect"); panel.hidden = !state.editor.inspect_open; if (panel.hidden) return; const chosen = new Set(selectedIds()); $("#inspect-data").textContent = JSON.stringify({ selection: state.canonical.things.filter((thing) => chosen.has(thing.thing_id)), definitions: state.canonical.definitions, connections: state.canonical.connections, assets: state.canonical.assets }, null, 2); const log = $("#diagnostics"); log.replaceChildren(); for (const diagnostic of state.diagnostics || []) { const article = document.createElement("article"); article.className = "diagnostic"; article.dataset.code = diagnostic.code; const heading = document.createElement("strong"); heading.textContent = diagnostic.title; const message = document.createElement("p"); message.textContent = diagnostic.message; article.append(heading, message); log.append(article); } if (!(state.diagnostics || []).length) log.textContent = "No diagnostics."; }
 function renderPeople() {
@@ -219,7 +394,7 @@ function renderPeople() {
   }
   if (!(people.conflicts || []).length) conflicts.textContent = "No unresolved semantic conflicts.";
 }
-function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderThingSelects(); renderInspect(); renderPeople(); }
+function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderTimeline(); renderThingSelects(); renderInspect(); renderPeople(); }
 
 $("#create-form").addEventListener("submit", async (event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const index = state?.canonical.things.length || 0; const visual = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130, shape: String(data.get("shape") || "rectangle") }; const payload = await act("createThing", { label: data.get("label") || "Thing", authored_state: { visual } }, "Added a visible Thing to the Stage."); if (payload.result) await act("select", { thing_ids: [payload.result] }, "Thing created and selected."); });
 $("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
@@ -229,7 +404,11 @@ $("#add-rule").addEventListener("click", async () => { try { await act("attachRu
 $("#add-behaviour").addEventListener("click", async () => { try { await act("attachBehaviour", { thing_id: selectedOne(), event: "activate", actions: [{ action: "emit", event: "activated", payload: true }] }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#port-form").addEventListener("submit", async (event) => { event.preventDefault(); try { const form = new FormData(event.currentTarget); await act("addPort", { thing_id: selectedOne(), port_id: form.get("port_id"), name: form.get("name"), kind: form.get("kind"), direction: form.get("direction") }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#connection-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("connect", { source_thing_id: form.get("source_thing_id"), source_port_id: form.get("source_port_id"), target_thing_id: form.get("target_thing_id"), target_port_id: form.get("target_port_id"), connection_id: form.get("connection_id") || undefined }); });
-$("#timeline-form").addEventListener("submit", async (event) => { event.preventDefault(); try { const form = new FormData(event.currentTarget); await act("timeline", { thing_id: selectedOne(), property: form.get("property"), keyframes: [{ tick: 0, value: Number(form.get("start")) }, { tick: 60, value: Number(form.get("end")) }] }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
+$("#timeline-form").addEventListener("submit", async (event) => { event.preventDefault(); try { cancelTimelinePreview(); const form = new FormData(event.currentTarget); const duration = Math.max(1, Math.min(3600, Number(form.get("duration")) || 60)); await act("timeline", { thing_id: selectedOne(), property: String(form.get("property")), keyframes: [{ tick: 0, value: Number(form.get("start")) }, { tick: duration, value: Number(form.get("end")) }] }, "Animation track added to the Timeline."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
+$("#timeline-form select[name=\"property\"]").addEventListener("change", () => renderTimeline());
+$("#timeline-scrubber").addEventListener("input", (event) => { cancelTimelinePreview({ restore: false }); applyTimelinePlayhead(Number(event.currentTarget.value)); });
+$("#timeline-preview").addEventListener("click", () => { if (!(state?.canonical?.things || []).some((thing) => timelineTracksFor(thing).length)) return say("Add an animation track before previewing.", true); startTimelinePreview(); });
+$("#timeline-reset").addEventListener("click", () => { cancelTimelinePreview(); renderStage(); $("#timeline-scrubber").value = "0"; $("#timeline-tick").textContent = "Base"; say("Timeline preview reset to authored state."); });
 $("#inspect-toggle").addEventListener("click", async () => { await act("inspect", { open: !state.editor.inspect_open }, state.editor.inspect_open ? "Inspect closed." : "Inspect opened."); });
 $("#clear-diagnostics").addEventListener("click", async () => { await act("clearDiagnostics", {}, "Diagnostics cleared."); });
 $("#play").addEventListener("click", async () => { await act("play", {}, "Playing transient runtime state."); });
