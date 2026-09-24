@@ -46,8 +46,8 @@ class SMX051DInteractiveRuleTests(unittest.TestCase):
             record.authored_config["actions"],
             [{
                 "action": "set_public",
-                "key": "visual",
-                "value": {**BASE_VISUAL, "fill": "#ff5a5f"},
+                "key": "visual.fill",
+                "value": "#ff5a5f",
             }],
         )
         program = session.programs[record.behaviour_revision]
@@ -63,7 +63,7 @@ class SMX051DInteractiveRuleTests(unittest.TestCase):
         second = session.document.things[thing].behaviours[attachment]
         self.assertEqual(second.attachment_id, first.attachment_id)
         self.assertNotEqual(second.behaviour_revision, first.behaviour_revision)
-        self.assertEqual(second.authored_config["actions"][0]["value"]["fill"], "#22cc88")
+        self.assertEqual(second.authored_config["actions"][0]["value"], "#22cc88")
         self.assertNotIn(first.behaviour_revision, session.programs)
         self.assertIn(second.behaviour_revision, session.programs)
 
@@ -106,8 +106,12 @@ class SMX051DInteractiveRuleTests(unittest.TestCase):
             runtime.world.dispatch(thing, "pointer_click", {"pointer": "primary"})
             runtime.world.runtime.run_current_tick()
             self.assertEqual(
-                runtime.world.runtime.states[thing].public_state["visual"]["fill"],
+                runtime.world.runtime.states[thing].public_state["visual.fill"],
                 "#ff5a5f",
+            )
+            self.assertEqual(
+                runtime.world.runtime.states[thing].public_state["visual"]["fill"],
+                BASE_VISUAL["fill"],
             )
             self.assertEqual(session.document.project_revision_id, authored_revision)
             self.assertEqual(
