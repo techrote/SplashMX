@@ -285,7 +285,7 @@ try {
   evidence.checks.rule_behaviour_projection = true;
 
   await setSelection(page, [button]);
-  await page.locator('#timeline-form input[name="property"]').fill("x");
+  await page.locator('#timeline-form select[name="property"]').selectOption("visual.y");
   await page.getByTestId("add-timeline").click();
   state = await waitFor(page, (value) => Array.isArray(value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.timeline_tracks), "Timeline track");
   const timeline = state.canonical.things.find((thing) => thing.thing_id === button).authored_state.timeline_tracks[0];
