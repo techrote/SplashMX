@@ -215,11 +215,7 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
         _fatal("editor-live projection leaked engine/runtime identity")
         return
     var required_features = projection.get("required_features", [])
-    if (
-        typeof(required_features) != TYPE_ARRAY
-        or not required_features.has("render_2d")
-        or not required_features.has("input")
-    ):
+    if typeof(required_features) != TYPE_ARRAY or not required_features.has("render_2d"):
         _fatal("editor-live projection requires an invalid target feature set")
         return
 
@@ -262,6 +258,9 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
             if str(event_name) != "pointer_click":
                 _fatal("editor-live interaction event is unsupported")
                 return
+        if not interactive_events.is_empty() and not required_features.has("input"):
+            _fatal("editor-live interaction projection did not declare input")
+            return
         var node = Node2D.new()
         node.set_meta("smx_thing_id", thing_id)
         node.z_index = z_order
