@@ -228,6 +228,13 @@ class BrowserBridge:
             tid = ThingId(thing_id)
             if tid not in world.runtime.states:
                 raise EditorGodotPlayError("godot_play.unknown_thing", "That interactive Thing is not active in Play.")
+            projection = build_editor_godot_play_projection(self.session.project)
+            projected = next((row for row in projection["things"] if row["thing_id"] == thing_id), None)
+            if projected is None or trigger not in projected.get("interactive_events", []):
+                raise EditorGodotPlayError(
+                    "godot_play.no_matching_rule",
+                    "That Thing has no matching interactive Rule.",
+                )
             before_faults = len(world.runtime.faults)
             matches = world.dispatch(tid, trigger, request.get("payload"))
             if matches <= 0:
