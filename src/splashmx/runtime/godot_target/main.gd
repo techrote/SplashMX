@@ -27,8 +27,26 @@ var _frames_left = FRAME_SAMPLES
 var _output_path = ""
 var _startup_usec = 0
 
+# SMX-051C editor-live state. This is a second physical input mode for the same
+# generic Godot target, not a second canonical model.
+var _editor_live = false
+var _live_request = null
+var _live_root = null
+var _live_bindings = {}
+var _live_ready = false
+var _live_ticks_per_second = 60.0
+var _live_max_tick = 0.0
+var _live_elapsed_tick = 0.0
+var _live_mid_emitted = false
+var _live_end_emitted = false
+var _live_project_revision_id = ""
+
 
 func _ready():
+    if _editor_live_requested():
+        _editor_live = true
+        _ready_editor_live()
+        return
     var startup_started = Time.get_ticks_usec()
     _args = _parse_args(OS.get_cmdline_user_args())
     _profile = str(_args.get("profile", "browser" if OS.has_feature("web") else "native"))
@@ -140,6 +158,9 @@ func _ready():
 
 
 func _process(delta):
+    if _editor_live:
+        _process_editor_live(delta)
+        return
     if _frames_left <= 0:
         return
     _frame_usec.append(float(delta) * 1000000.0)
@@ -153,6 +174,228 @@ func _process(delta):
             Performance.get_monitor(Performance.MEMORY_STATIC)
         )
         _finish()
+
+
+func _editor_live_requested():
+    if not OS.has_feature("web"):
+        return false
+    var search = str(JavaScriptBridge.eval("window.location.search", true))
+    return search.contains("editor_live=1")
+
+
+func _ready_editor_live():
+    _live_request = HTTPRequest.new()
+    add_child(_live_request)
+    _live_request.request_completed.connect(_on_editor_live_projection)
+    var origin = str(JavaScriptBridge.eval("window.location.origin", true))
+    if origin == "":
+        _fatal("editor-live browser origin is unavailable")
+        return
+    var error = _live_request.request(origin + "/api/godot-play-projection")
+    if error != OK:
+        _fatal("editor-live projection request could not start")
+
+
+func _on_editor_live_projection(_result, response_code, _headers, body):
+    if int(response_code) != 200:
+        _fatal("editor-live projection request failed with status " + str(response_code))
+        return
+    var envelope = JSON.parse_string(body.get_string_from_utf8())
+    if typeof(envelope) != TYPE_DICTIONARY or envelope.get("ok", false) != true:
+        _fatal("editor-live projection response is invalid")
+        return
+    var projection = envelope.get("projection", {})
+    if typeof(projection) != TYPE_DICTIONARY:
+        _fatal("editor-live projection is not an object")
+        return
+    if str(projection.get("contract", "")) != "splashmx.editor-godot-play/1":
+        _fatal("editor-live projection contract mismatch")
+        return
+    if not _canonical_shape_is_clean(projection):
+        _fatal("editor-live projection leaked engine/runtime identity")
+        return
+    var required_features = projection.get("required_features", [])
+    if typeof(required_features) != TYPE_ARRAY or not required_features.has("render_2d"):
+        _fatal("editor-live projection requires an invalid target feature set")
+        return
+
+    _live_project_revision_id = str(projection.get("project_revision_id", ""))
+    _live_ticks_per_second = float(projection.get("ticks_per_second", 60))
+    if _live_project_revision_id == "" or _live_ticks_per_second <= 0.0:
+        _fatal("editor-live projection metadata is invalid")
+        return
+
+    _live_root = Node2D.new()
+    _live_root.name = "SplashMXEditorPlay"
+    add_child(_live_root)
+    _live_bindings.clear()
+    _live_max_tick = 0.0
+
+    var things = projection.get("things", [])
+    if typeof(things) != TYPE_ARRAY or things.size() > MAX_BINDINGS:
+        _fatal("editor-live Thing collection is invalid or too large")
+        return
+    var z_order = 0
+    for thing in things:
+        if typeof(thing) != TYPE_DICTIONARY:
+            _fatal("editor-live Thing is invalid")
+            return
+        var thing_id = str(thing.get("thing_id", ""))
+        var visual = thing.get("visual", {})
+        var tracks = thing.get("timeline_tracks", [])
+        if thing_id == "" or _live_bindings.has(thing_id):
+            _fatal("editor-live Thing identity is empty or duplicated")
+            return
+        if typeof(visual) != TYPE_DICTIONARY or typeof(tracks) != TYPE_ARRAY:
+            _fatal("editor-live visual/Timeline projection is invalid")
+            return
+        var node = Node2D.new()
+        node.set_meta("smx_thing_id", thing_id)
+        node.z_index = z_order
+        z_order += 1
+        var polygon = Polygon2D.new()
+        node.add_child(polygon)
+        _live_root.add_child(node)
+        var binding = {
+            "thing_id": thing_id,
+            "node": node,
+            "polygon": polygon,
+            "base_visual": visual.duplicate(true),
+            "timeline_tracks": tracks.duplicate(true),
+            "sample_visual": visual.duplicate(true),
+        }
+        _live_bindings[thing_id] = binding
+        for track in tracks:
+            for keyframe in track.get("keyframes", []):
+                _live_max_tick = max(_live_max_tick, float(keyframe.get("tick", 0)))
+
+    _apply_editor_live_tick(0.0)
+    _emit_editor_live_ready()
+    _emit_editor_live_sample(0.0)
+    _live_ready = true
+    set_process(true)
+
+
+func _shape_polygon(shape, width, height):
+    var points = PackedVector2Array()
+    var half_w = width / 2.0
+    var half_h = height / 2.0
+    if str(shape) == "ellipse":
+        for index in range(32):
+            var angle = TAU * float(index) / 32.0
+            points.append(Vector2(cos(angle) * half_w, sin(angle) * half_h))
+        return points
+    points.append(Vector2(-half_w, -half_h))
+    points.append(Vector2(half_w, -half_h))
+    points.append(Vector2(half_w, half_h))
+    points.append(Vector2(-half_w, half_h))
+    return points
+
+
+func _timeline_value(track, tick):
+    var keyframes = track.get("keyframes", [])
+    if keyframes.is_empty():
+        return null
+    if tick <= float(keyframes[0].get("tick", 0)):
+        return float(keyframes[0].get("value", 0))
+    if tick >= float(keyframes[keyframes.size() - 1].get("tick", 0)):
+        return float(keyframes[keyframes.size() - 1].get("value", 0))
+    for index in range(1, keyframes.size()):
+        var right = keyframes[index]
+        var left = keyframes[index - 1]
+        var right_tick = float(right.get("tick", 0))
+        var left_tick = float(left.get("tick", 0))
+        if tick <= right_tick:
+            if is_equal_approx(right_tick, left_tick):
+                return float(right.get("value", 0))
+            var ratio = (tick - left_tick) / (right_tick - left_tick)
+            return lerp(float(left.get("value", 0)), float(right.get("value", 0)), ratio)
+    return float(keyframes[keyframes.size() - 1].get("value", 0))
+
+
+func _apply_binding_visual(binding, visual):
+    var width = max(12.0, float(visual.get("width", 12)))
+    var height = max(12.0, float(visual.get("height", 12)))
+    var x = float(visual.get("x", 0))
+    var y = float(visual.get("y", 0))
+    var node = binding["node"]
+    var polygon = binding["polygon"]
+    node.position = Vector2(x + width / 2.0, y + height / 2.0)
+    node.rotation_degrees = float(visual.get("rotation", 0))
+    polygon.polygon = _shape_polygon(visual.get("shape", "rectangle"), width, height)
+    polygon.color = Color.from_string(str(visual.get("fill", "#5b7cfa")), Color.WHITE)
+    binding["sample_visual"] = visual.duplicate(true)
+
+
+func _apply_editor_live_tick(tick):
+    for thing_id in _live_bindings:
+        var binding = _live_bindings[thing_id]
+        var visual = binding["base_visual"].duplicate(true)
+        for track in binding["timeline_tracks"]:
+            var property = str(track.get("property", ""))
+            if not property.begins_with("visual."):
+                continue
+            var key = property.substr("visual.".length())
+            if not visual.has(key):
+                continue
+            var value = _timeline_value(track, tick)
+            if value != null:
+                visual[key] = value
+        _apply_binding_visual(binding, visual)
+
+
+func _semantic_live_sample(tick):
+    var ids = _live_bindings.keys()
+    ids.sort()
+    var things = []
+    for thing_id in ids:
+        var visual = _live_bindings[thing_id]["sample_visual"]
+        things.append({
+            "thing_id": thing_id,
+            "x": float(visual.get("x", 0)),
+            "y": float(visual.get("y", 0)),
+            "width": float(visual.get("width", 0)),
+            "height": float(visual.get("height", 0)),
+            "rotation": float(visual.get("rotation", 0)),
+        })
+    return {
+        "contract": "splashmx.editor-godot-play-sample/1",
+        "project_revision_id": _live_project_revision_id,
+        "tick": tick,
+        "things": things,
+    }
+
+
+func _emit_editor_live_ready():
+    var ids = _live_bindings.keys()
+    ids.sort()
+    print("SMX051C_PLAY_READY=" + JSON.stringify({
+        "contract": "splashmx.editor-godot-play-ready/1",
+        "project_revision_id": _live_project_revision_id,
+        "thing_ids": ids,
+        "max_tick": _live_max_tick,
+    }))
+
+
+func _emit_editor_live_sample(tick):
+    print("SMX051C_SAMPLE=" + JSON.stringify(_semantic_live_sample(tick)))
+
+
+func _process_editor_live(delta):
+    if not _live_ready or _live_end_emitted or _live_max_tick <= 0.0:
+        return
+    var prior = _live_elapsed_tick
+    _live_elapsed_tick = min(_live_max_tick, _live_elapsed_tick + float(delta) * _live_ticks_per_second)
+    var midpoint = _live_max_tick / 2.0
+    if not _live_mid_emitted and prior < midpoint and _live_elapsed_tick >= midpoint:
+        _apply_editor_live_tick(midpoint)
+        _emit_editor_live_sample(midpoint)
+        _live_mid_emitted = true
+    _apply_editor_live_tick(_live_elapsed_tick)
+    if _live_elapsed_tick >= _live_max_tick:
+        _apply_editor_live_tick(_live_max_tick)
+        _emit_editor_live_sample(_live_max_tick)
+        _live_end_emitted = true
 
 
 func _parse_args(args):

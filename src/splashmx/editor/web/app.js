@@ -371,6 +371,56 @@ function renderTimeline() {
   }
 }
 
+function renderGodotPlayer(playing) {
+  const stagePanel = $("#stage-panel");
+  const runtimePanel = $("#runtime-panel");
+  const frame = $("#godot-player");
+  const playerStatus = $("#godot-player-status");
+  const available = Boolean(state?.godot_player?.available);
+
+  if (!playing) {
+    stagePanel.hidden = false;
+    runtimePanel.hidden = true;
+    frame.hidden = true;
+    if (frame.dataset.revision) {
+      frame.src = "about:blank";
+      delete frame.dataset.revision;
+    }
+    playerStatus.textContent = available ? "Godot runtime ready." : "Godot Play runtime is not installed for this editor.";
+    return;
+  }
+
+  stagePanel.hidden = true;
+  runtimePanel.hidden = false;
+  if (!available) {
+    frame.hidden = true;
+    playerStatus.textContent = "Godot Play runtime unavailable. Stop Play and install a qualified runtime.";
+    return;
+  }
+
+  const revision = String(state.canonical.project_revision_id);
+  const desired = `${state.godot_player.url}&revision=${encodeURIComponent(revision)}`;
+  frame.hidden = false;
+  if (frame.dataset.revision !== revision) {
+    frame.dataset.revision = revision;
+    frame.src = desired;
+    playerStatus.textContent = `Starting ${state.godot_player.runtime} for revision ${revision}…`;
+  }
+}
+
+async function startPlay() {
+  cancelTimelinePreview();
+  if (!state?.godot_player?.available) {
+    say("Godot Play runtime is not available. Supply the qualified Godot Web runtime before Play.", true);
+    return false;
+  }
+  await act("play", {}, "Playing through the Godot runtime.");
+  return true;
+}
+async function stopPlay() {
+  await act("stop", {}, "Stopped. Authored project is unchanged.");
+}
+
 function renderThingSelects() { for (const select of $$('[data-role="thing-select"]')) { const previous = select.value; select.replaceChildren(); for (const thing of state.canonical.things) { const option = document.createElement("option"); option.value = thing.thing_id; option.textContent = thing.label; select.append(option); } if (state.canonical.things.some((thing) => thing.thing_id === previous)) select.value = previous; } }
 function renderInspect() { const panel = $("#inspect"); panel.hidden = !state.editor.inspect_open; if (panel.hidden) return; const chosen = new Set(selectedIds()); $("#inspect-data").textContent = JSON.stringify({ selection: state.canonical.things.filter((thing) => chosen.has(thing.thing_id)), definitions: state.canonical.definitions, connections: state.canonical.connections, assets: state.canonical.assets }, null, 2); const log = $("#diagnostics"); log.replaceChildren(); for (const diagnostic of state.diagnostics || []) { const article = document.createElement("article"); article.className = "diagnostic"; article.dataset.code = diagnostic.code; const heading = document.createElement("strong"); heading.textContent = diagnostic.title; const message = document.createElement("p"); message.textContent = diagnostic.message; article.append(heading, message); log.append(article); } if (!(state.diagnostics || []).length) log.textContent = "No diagnostics."; }
 function renderPeople() {
@@ -394,7 +444,7 @@ function renderPeople() {
   }
   if (!(people.conflicts || []).length) conflicts.textContent = "No unresolved semantic conflicts.";
 }
-function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderTimeline(); renderThingSelects(); renderInspect(); renderPeople(); }
+function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderTimeline(); renderGodotPlayer(playing); renderThingSelects(); renderInspect(); renderPeople(); }
 
 $("#create-form").addEventListener("submit", async (event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const index = state?.canonical.things.length || 0; const visual = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130, shape: String(data.get("shape") || "rectangle") }; const payload = await act("createThing", { label: data.get("label") || "Thing", authored_state: { visual } }, "Added a visible Thing to the Stage."); if (payload.result) await act("select", { thing_ids: [payload.result] }, "Thing created and selected."); });
 $("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
@@ -411,12 +461,13 @@ $("#timeline-preview").addEventListener("click", () => { if (!(state?.canonical?
 $("#timeline-reset").addEventListener("click", () => { cancelTimelinePreview(); renderStage(); $("#timeline-scrubber").value = "0"; $("#timeline-tick").textContent = "Base"; say("Timeline preview reset to authored state."); });
 $("#inspect-toggle").addEventListener("click", async () => { await act("inspect", { open: !state.editor.inspect_open }, state.editor.inspect_open ? "Inspect closed." : "Inspect opened."); });
 $("#clear-diagnostics").addEventListener("click", async () => { await act("clearDiagnostics", {}, "Diagnostics cleared."); });
-$("#play").addEventListener("click", async () => { await act("play", {}, "Playing transient runtime state."); });
-$("#stop").addEventListener("click", async () => { await act("stop", {}, "Stopped. Authored project is unchanged."); });
+$("#play").addEventListener("click", startPlay);
+$("#stop").addEventListener("click", stopPlay);
+$("#godot-player").addEventListener("load", () => { if (state?.runtime?.mode === "play" && state?.godot_player?.available) $("#godot-player-status").textContent = "Godot runtime loaded. Running the active canonical revision."; });
 $("#save").addEventListener("click", async () => { await act("save", {}, "Saved locally."); });
 $("#reload").addEventListener("click", async () => { await act("reload", {}, "Reloaded the verified local project."); });
 $("#presence-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("peoplePresence", { cursor: String(form.get("cursor") || ""), selections: selectedIds() }, "Presence updated without changing authored state."); });
 $("#people-retry-local").addEventListener("click", async () => { await act("peopleRetryLocal", {}, "Local collaboration history retry completed."); });
 $("#import-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const file = form.get("file"); if (!(file instanceof File) || !file.size) return say("Choose a non-empty source file to import.", true); const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte); await act("importAsset", { content_base64: btoa(binary), source_name: file.name, media_type: file.type || String(form.get("media_kind")), media_semantics: { kind: String(form.get("media_kind")) }, provenance: { origin: String(form.get("provenance")) }, licence_attribution: { licence: String(form.get("licence")), attribution: "author supplied" }, derivation_lineage: [{ operation: "source", parent: null }], label: file.name }); });
-document.addEventListener("keydown", async (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); if (!state.runtime || state.runtime.mode !== "play") await act("play", {}, "Playing transient runtime state."); } else if (event.key === "Escape" && state.runtime && state.runtime.mode === "play") { event.preventDefault(); await act("stop", {}, "Stopped. Authored project is unchanged."); } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); await act("save", {}, "Saved locally."); } else if (event.altKey && event.key.toLowerCase() === "i") { event.preventDefault(); await act("inspect", { open: !state.editor.inspect_open }, "Inspect toggled."); } });
+document.addEventListener("keydown", async (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); if (!state.runtime || state.runtime.mode !== "play") await startPlay(); } else if (event.key === "Escape" && state.runtime && state.runtime.mode === "play") { event.preventDefault(); await stopPlay(); } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); await act("save", {}, "Saved locally."); } else if (event.altKey && event.key.toLowerCase() === "i") { event.preventDefault(); await act("inspect", { open: !state.editor.inspect_open }, "Inspect toggled."); } });
 window.splashmxState = () => structuredClone(state); window.splashmxAct = (action, data = {}) => act(action, data); refresh().catch((error) => say(error.message, true));

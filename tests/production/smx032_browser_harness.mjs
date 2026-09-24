@@ -93,6 +93,8 @@ let browser;
 try {
   browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(String(error?.stack || error)));
   await page.goto(server.baseURL, { waitUntil: "networkidle" });
   let state = await waitFor(page, () => true, "initial state");
   assert.equal(state.canonical.things.length, 0);
@@ -261,7 +263,32 @@ try {
   await page.locator('#port-form select[name="kind"]').selectOption("command");
   await page.locator('#port-form select[name="direction"]').selectOption("in");
   await page.getByTestId("add-port").click();
-  await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === lamp)?.ports.some((port) => port.port_id === "toggle"), "target port");
+  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === lamp)?.ports.some((port) => port.port_id === "toggle"), "target port");
+  assert(state.canonical.things.some((thing) => thing.thing_id === button));
+  assert(state.canonical.things.some((thing) => thing.thing_id === lamp));
+
+  // Port mutations are canonical server state; exercise the Connection form from
+  // a freshly projected browser view rather than relying on event-time DOM state.
+  await page.reload({ waitUntil: "networkidle" });
+  await waitFor(page, (value) => value.canonical.things.some((thing) => thing.thing_id === button) && value.canonical.things.some((thing) => thing.thing_id === lamp), "connection Thing state");
+  await page.waitForTimeout(150);
+  const connectionDom = await page.evaluate(() => ({
+    selections: window.splashmxState?.().editor.selection || [],
+    things: (window.splashmxState?.().canonical.things || []).map((thing) => thing.thing_id),
+    selects: Array.from(document.querySelectorAll('#connection-form select[data-role="thing-select"]')).map((select) => ({
+      name: select.name,
+      values: Array.from(select.options, (option) => option.value),
+    })),
+  }));
+  const connectionOptionsReady =
+    connectionDom.selects.length === 2 &&
+    connectionDom.selects.every((select) => select.values.includes(button) && select.values.includes(lamp));
+  if (!connectionOptionsReady) {
+    throw new Error(
+      `Connection form projection incomplete: ${JSON.stringify(connectionDom)}; pageErrors=${JSON.stringify(pageErrors)}`
+    );
+  }
+  assert.deepEqual(pageErrors, [], "browser page errors occurred before Connection authoring");
 
   await page.locator('#connection-form select[name="source_thing_id"]').selectOption(button);
   await page.locator('#connection-form input[name="source_port_id"]').fill("clicked");
