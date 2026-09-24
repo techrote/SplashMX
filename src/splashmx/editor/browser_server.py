@@ -225,8 +225,11 @@ class BrowserBridge:
                     "That runtime interaction is not supported by this editor Play target.",
                 )
             world = self.runtime.world
+            tid = ThingId(thing_id)
+            if tid not in world.runtime.states:
+                raise EditorGodotPlayError("godot_play.unknown_thing", "That interactive Thing is not active in Play.")
             before_faults = len(world.runtime.faults)
-            matches = world.dispatch(ThingId(thing_id), trigger, request.get("payload"))
+            matches = world.dispatch(tid, trigger, request.get("payload"))
             if matches <= 0:
                 raise EditorGodotPlayError(
                     "godot_play.no_matching_rule",
