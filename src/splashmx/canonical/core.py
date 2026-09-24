@@ -346,6 +346,35 @@ class AddBehaviourAttachment:
 
 
 @dataclass(frozen=True)
+class ReplaceBehaviourAttachment:
+    thing_id: ThingId
+    attachment: BehaviourAttachmentRecord
+
+    def apply(self, draft: CanonicalDocument) -> None:
+        thing = _live_thing(draft, self.thing_id)
+        if self.attachment.attachment_id not in thing.behaviours:
+            raise SemanticError("canonical.unknown_behaviour", f"Unknown BehaviourAttachmentId {self.attachment.attachment_id}")
+        _validate_authored_value(self.attachment.authored_config, f"Behaviour {self.attachment.attachment_id} authored_config")
+        behaviours = dict(thing.behaviours)
+        behaviours[self.attachment.attachment_id] = deepcopy(self.attachment)
+        draft.things[self.thing_id] = replace(thing, behaviours=behaviours)
+
+
+@dataclass(frozen=True)
+class RemoveBehaviourAttachment:
+    thing_id: ThingId
+    attachment_id: BehaviourAttachmentId
+
+    def apply(self, draft: CanonicalDocument) -> None:
+        thing = _live_thing(draft, self.thing_id)
+        if self.attachment_id not in thing.behaviours:
+            raise SemanticError("canonical.unknown_behaviour", f"Unknown BehaviourAttachmentId {self.attachment_id}")
+        behaviours = dict(thing.behaviours)
+        del behaviours[self.attachment_id]
+        draft.things[self.thing_id] = replace(thing, behaviours=behaviours)
+
+
+@dataclass(frozen=True)
 class AddRelationship:
     relationship: RelationshipRecord
 
