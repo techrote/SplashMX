@@ -81,7 +81,8 @@ try {
   evidence.checks.rule_reopened_and_edited = true;
 
   await page.getByTestId("save").click();
-  const savedRevision = (await editorState(page)).storage.saved_revision_id;
+  state = await waitForState(page, (value) => Boolean(value.storage?.saved_revision_id), "Rule Save");
+  const savedRevision = state.storage.saved_revision_id;
   assert(savedRevision);
   await page.getByTestId("reload").click();
   state = await waitForState(page, (value) => value.canonical.things[0]?.behaviours?.[0]?.attachment_id === attachmentId, "Rule Save Reload");
