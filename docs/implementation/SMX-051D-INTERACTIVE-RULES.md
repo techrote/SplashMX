@@ -24,7 +24,7 @@ A beginner visual Rule is a normal canonical `BehaviourAttachmentRecord` with:
 - projection: `Rule`;
 - event: `pointer_click`;
 - author kind: `visual-fill`;
-- action: the existing constrained-IR `set_public` operation targeting the Thing's transient runtime `visual` state.
+- action: the existing constrained-IR `set_public` operation targeting the Thing's transient runtime `visual.fill` semantic locus.
 
 `compile_rule()` remains the compiler and the SMX-026 IR remains the execution authority. There is no JavaScript, GDScript, eval, host-call or privileged fallback path for authored behaviour.
 
@@ -78,7 +78,7 @@ Input triggers such as `pointer_click` remain dormant until the corresponding ta
 
 The constrained runtime begins from the canonical authored Thing state, but `set_public` modifies only transient Play state.
 
-For the SMX-051D workflow:
+For the SMX-051D workflow, the runtime adapter composes `visual.fill` onto the current validated visual state so later Stage position/size edits and Timeline tracks are not reset by a click.
 
 - clicking may change the Godot presentation;
 - ProjectRevisionId does not advance;
