@@ -174,7 +174,7 @@ try {
   const revisionBeforeScrub = state.canonical.project_revision_id;
   const canonicalVisualBeforeScrub = structuredClone(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual);
 
-  await page.getByTestId("timeline-scrubber").fill("30");
+  await page.getByTestId("timeline-scrubber").evaluate((input) => { input.value = "30"; input.dispatchEvent(new Event("input", { bubbles: true })); });
   await page.waitForFunction(({ id, expected }) => {
     const node = document.querySelector(`[data-testid="stage-thing-${id}"]`);
     return node && Math.abs(parseFloat(node.style.left) - expected) < 0.01;
