@@ -165,18 +165,18 @@ class BrowserRuntimeSession:
                 budgets=self.budgets,
                 seed=self.seed,
             )
-            # Trigger each authored activation event once at Play start. Multiple
-            # attachments with the same trigger share the runtime's deterministic
-            # author-visible attachment ordering rather than browser iteration order.
+            # Only the semantic activation trigger fires at Play start. Input Rules
+            # such as pointer_click are dispatched by the target input adapter when
+            # the event actually occurs; pre-firing them here would create a second,
+            # incorrect browser interpretation of authored interaction.
             for thing_id, thing in sorted(self.authoring.document.things.items(), key=lambda row: str(row[0])):
                 if thing.tombstoned:
                     continue
-                triggers = {
-                    str(attachment.authored_config.get("event", "activate"))
+                if any(
+                    str(attachment.authored_config.get("event", "activate")) == "activate"
                     for attachment in thing.behaviours.values()
-                }
-                for trigger in sorted(triggers):
-                    candidate.dispatch(thing_id, trigger)
+                ):
+                    candidate.dispatch(thing_id, "activate")
             candidate.runtime.run_current_tick()
             self.world = candidate
             return {
