@@ -152,12 +152,15 @@ def build_editor_godot_play_projection(project: CanonicalProjectRevision) -> dic
         if len(things) > _MAX_THINGS:
             _fail("godot_play.resource_limit", "Godot Play visual Thing limit exceeded")
 
+    required_features = ["render_2d"]
+    if any(thing["interactive_events"] for thing in things):
+        required_features.insert(0, "input")
     projection = {
         "contract": EDITOR_GODOT_PLAY_CONTRACT,
         "project_id": str(project.document.project_id),
         "project_revision_id": str(project.document.project_revision_id),
         "ticks_per_second": 60,
-        "required_features": ["input", "render_2d"],
+        "required_features": required_features,
         "things": things,
     }
     # Reuse the production target-value guard so forbidden target/runtime identity
@@ -186,6 +189,10 @@ def build_editor_godot_runtime_update(
     visual = _visual(state.public_state.get("visual"))
     if visual is None:
         _fail("godot_play.missing_visual", "That interactive Thing has no visible runtime state.")
+    if "visual.fill" in state.public_state:
+        visual = _visual({**visual, "fill": state.public_state["visual.fill"]})
+        if visual is None:
+            _fail("godot_play.invalid_visual", "The interactive Rule produced invalid visible state.")
     update = {
         "contract": EDITOR_GODOT_RUNTIME_UPDATE_CONTRACT,
         "project_revision_id": str(project_revision_id),
