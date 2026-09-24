@@ -22,6 +22,15 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.8rem 0; }
 
 .stage-panel { grid-column: 1; }
+.runtime-panel { grid-column: 1; }
+#godot-player {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid currentColor;
+  border-radius: 0.4rem;
+  background: #000;
+}
 .properties-panel { grid-column: 2; }
 .stage {
   position: relative;
@@ -155,7 +164,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
-  .stage-panel, .properties-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
+  .stage-panel, .runtime-panel, .properties-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
 }
 @media (max-width: 760px) {
   .panel-heading { display: block; }
