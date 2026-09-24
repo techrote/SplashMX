@@ -8,11 +8,12 @@ import { chromium } from "playwright";
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, "artifacts", "smx032-browser-results.json");
+const STORE = path.join(ROOT, "artifacts", "smx051a-browser.sqlite3");
 const FORBIDDEN = ["nodepath", "scenetree", "resourceuid", "godot rpc", "package manager", "build pipeline", "export preset"];
 
 async function startServer() {
   const env = { ...process.env, PYTHONPATH: [path.join(ROOT, "src"), process.env.PYTHONPATH].filter(Boolean).join(path.delimiter) };
-  const child = spawn(process.env.PYTHON || "python", ["-m", "splashmx.editor.browser_server", "--port", "0", "--project-id", "smx032-browser"], {
+  const child = spawn(process.env.PYTHON || "python", ["-m", "splashmx.editor.browser_server", "--port", "0", "--project-id", "smx032-browser", "--store-path", STORE], {
     cwd: ROOT,
     env,
     stdio: ["ignore", "pipe", "pipe"],
@@ -38,6 +39,15 @@ async function startServer() {
     });
   });
   return { child, baseURL, stderr: () => stderr };
+}
+
+async function stopServer(child) {
+  if (!child || child.exitCode !== null) return;
+  await new Promise((resolve) => {
+    child.once("exit", resolve);
+    child.kill("SIGTERM");
+    setTimeout(resolve, 2000);
+  });
 }
 
 async function waitFor(page, predicate, label, timeoutMs = 8000) {
@@ -74,8 +84,11 @@ async function postRaw(page, action, data) {
   }, { action, data });
 }
 
-const evidence = { issue: "SMX-032", checks: {}, environment: { node: process.version } };
-const server = await startServer();
+const evidence = { issue: "SMX-032+SMX-051A", checks: {}, environment: { node: process.version } };
+await fs.mkdir(path.dirname(OUT), { recursive: true });
+await fs.rm(STORE, { force: true });
+await fs.rm(`${STORE}.collaboration.sqlite3`, { force: true });
+let server = await startServer();
 let browser;
 try {
   browser = await chromium.launch({ headless: true });
@@ -154,6 +167,16 @@ try {
   state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual.x === savedVisual.x, "visual reload");
   assert.deepEqual(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual, savedVisual);
   evidence.checks.visual_save_reload = true;
+
+  await stopServer(server.child);
+  server = await startServer();
+  await page.goto(server.baseURL, { waitUntil: "networkidle" });
+  state = await waitFor(page, (value) => {
+    const visual = value.canonical.things.find((thing) => thing.thing_id === button)?.authored_state.visual;
+    return visual && visual.x === savedVisual.x && visual.width === savedVisual.width && visual.fill === savedVisual.fill;
+  }, "visual state after server restart");
+  assert.deepEqual(state.canonical.things.find((thing) => thing.thing_id === button).authored_state.visual, savedVisual);
+  evidence.checks.visual_process_restart = true;
 
   await page.locator("#new-label").fill("Lamp");
   await page.getByTestId("create-thing").click();
@@ -294,5 +317,5 @@ try {
   await fs.mkdir(path.dirname(OUT), { recursive: true });
   await fs.writeFile(OUT, JSON.stringify(evidence, null, 2) + "\n", "utf8");
   if (browser) await browser.close();
-  server.child.kill("SIGTERM");
+  await stopServer(server?.child);
 }
