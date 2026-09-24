@@ -29,7 +29,7 @@ const evidence = {
   issue: "SMX-051D",
   source_url: URL,
   checks: {},
-  godot: { interaction: null },
+  godot: { ready: null, interaction: null },
 };
 const consoleLines = [];
 
@@ -39,7 +39,9 @@ try {
   page.on("console", (message) => {
     const text = message.text();
     consoleLines.push(text);
-    if (text.startsWith("SMX051D_INTERACTION=")) {
+    if (text.startsWith("SMX051C_PLAY_READY=")) {
+      evidence.godot.ready = JSON.parse(text.slice("SMX051C_PLAY_READY=".length));
+    } else if (text.startsWith("SMX051D_INTERACTION=")) {
       evidence.godot.interaction = JSON.parse(text.slice("SMX051D_INTERACTION=".length));
     } else if (text.startsWith("SMX038_ERROR=")) {
       evidence.godot.error = text;
@@ -103,6 +105,18 @@ try {
   const runtimeFrame = page.frameLocator("#godot-player");
   const canvas = runtimeFrame.locator("canvas");
   await canvas.waitFor({ state: "visible", timeout: 60_000 });
+
+  const readyDeadline = Date.now() + 60_000;
+  while (!evidence.godot.ready && Date.now() < readyDeadline) {
+    if (evidence.godot.error) throw new Error(evidence.godot.error);
+    await page.waitForTimeout(50);
+  }
+  assert(evidence.godot.ready, `Godot ready evidence missing; console=${consoleLines.join("\n")}`);
+  assert.equal(evidence.godot.ready.contract, "splashmx.editor-godot-play-ready/1");
+  assert.equal(evidence.godot.ready.project_revision_id, playRevision);
+  assert.deepEqual(evidence.godot.ready.thing_ids, [thingId]);
+  evidence.checks.godot_interactive_thing_ready = true;
+
   const metrics = await canvas.evaluate((element) => ({
     clientWidth: element.clientWidth,
     clientHeight: element.clientHeight,
