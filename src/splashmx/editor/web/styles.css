@@ -99,6 +99,51 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 .stack-form { margin: 0 0 0.85rem; }
 .stack-form fieldset { display: grid; gap: 0.55rem; border: 1px solid currentColor; border-radius: 0.35rem; }
 .stack-form label { display: grid; gap: 0.25rem; }
+.timeline-panel { grid-column: 1 / -1; }
+.timeline-panel fieldset {
+  display: flex;
+  gap: 0.55rem;
+  align-items: end;
+  flex-wrap: wrap;
+  border: 1px solid currentColor;
+  border-radius: 0.35rem;
+  padding: 0.65rem;
+}
+.timeline-panel fieldset label { display: grid; gap: 0.25rem; }
+.timeline-playhead {
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.8rem 0;
+}
+.timeline-playhead input[type="range"] { width: 100%; }
+.timeline-tracks { display: grid; gap: 0.45rem; min-height: 3rem; }
+.timeline-track {
+  display: grid;
+  grid-template-columns: minmax(10rem, 0.35fr) 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid color-mix(in srgb, CanvasText 35%, transparent);
+  border-radius: 0.35rem;
+}
+.timeline-track-line {
+  position: relative;
+  height: 1.2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, CanvasText 10%, transparent);
+}
+.timeline-keyframe {
+  position: absolute;
+  top: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1px solid Canvas;
+  background: var(--selection);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.timeline-track-values { font-size: 0.82rem; opacity: 0.8; }
 .tools-panel { grid-column: 2; }
 #people-panel, #together-boundary { grid-column: 1 / -1; }
 .inspect-panel { grid-column: 1 / -1; }
@@ -110,7 +155,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
-  .stage-panel, .properties-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
+  .stage-panel, .properties-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
 }
 @media (max-width: 760px) {
   .panel-heading { display: block; }
