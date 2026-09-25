@@ -32,11 +32,12 @@ from splashmx.editor.godot_play import (
 )
 from splashmx.editor.browser_runtime import BrowserRuntimeError, BrowserRuntimeSession, rebuild_program_catalog
 from splashmx.editor.people import PeopleError, PeopleSession
+from splashmx.distribution.runtime import DistributionError
 from splashmx.runtime.lifecycle import LifecycleError
 from splashmx.storage.local import StorageError
 
 WEB_ROOT = Path(__file__).with_name("web")
-_STATIC = {"/": ("index.html", "text/html; charset=utf-8"), "/index.html": ("index.html", "text/html; charset=utf-8"), "/app.js": ("app.js", "text/javascript; charset=utf-8"), "/styles.css": ("styles.css", "text/css; charset=utf-8")}
+_STATIC = {"/": ("index.html", "text/html; charset=utf-8"), "/index.html": ("index.html", "text/html; charset=utf-8"), "/app.js": ("app.js", "text/javascript; charset=utf-8"), "/i18n.js": ("i18n.js", "text/javascript; charset=utf-8"), "/styles.css": ("styles.css", "text/css; charset=utf-8")}
 _MAX_REQUEST_BYTES = 8 * 1024 * 1024
 _FORBIDDEN_TRANSIENT_FIELDS = {"transportpeerid", "connectionhandle", "socketid", "sessionid", "processhandle", "domnodeidentity"}
 _GENERATED_ID_SUFFIX = re.compile(r"-(\d{6})(?::\d+)?$")
@@ -123,6 +124,7 @@ class BrowserBridge:
         # validated head wins over a newly-created blank shell, never a remote cache.
         if self._people_call("head_project") != self.runtime.authoring.project:
             self._adopt_people_head()
+        self.runtime.refresh_saved_revision_marker()
 
     @property
     def session(self) -> AuthoringSession:
@@ -296,6 +298,18 @@ class BrowserBridge:
             )
             self._record_people_local(before)
             return {"ok": True, "result": result, "state": self.state()}
+        if action == "restoreBackup":
+            if self.runtime.playing:
+                raise BrowserRuntimeError("browser.edit_while_playing", "Stop Play before restoring a backup.")
+            encoded = _string(data, "content_base64")
+            try:
+                archive = base64.b64decode(encoded, validate=True)
+            except (binascii.Error, ValueError) as exc:
+                raise AuthoringError("authoring.invalid_backup", "The selected backup could not be read.") from exc
+            before = self.session.project
+            result = self.runtime.import_recovery(archive)
+            self._record_people_local(before)
+            return {"ok": True, "result": result, "state": self.state()}
         if action == "clearDiagnostics": self.runtime.clear_diagnostics(); return {"ok": True, "result": None, "state": self.state()}
         if self.runtime.playing and action not in {"select", "inspect"}:
             raise BrowserRuntimeError("browser.edit_while_playing", "Stop Play before changing the authored project.")
@@ -405,6 +419,14 @@ def make_handler(bridge: BrowserBridge):
         def do_GET(self) -> None:
             path = urlparse(self.path).path
             if path == "/api/state": self._json(HTTPStatus.OK, {"ok": True, "state": bridge.state()}); return
+            if path == "/api/recovery-export":
+                try:
+                    archive = bridge.runtime.export_recovery()
+                except (BrowserRuntimeError, DistributionError, SerializationError) as exc:
+                    self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "distribution.invalid_archive"), "message": str(exc)}, "state": bridge.state()})
+                    return
+                self._bytes(HTTPStatus.OK, archive, "application/vnd.splashmx.recovery")
+                return
             if path == "/api/godot-play-projection":
                 try:
                     projection = bridge.godot_play_projection()
@@ -450,7 +472,7 @@ def make_handler(bridge: BrowserBridge):
             except (UnicodeDecodeError, json.JSONDecodeError):
                 self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": "That authoring request could not be read."}})
                 return
-            except (AuthoringError, BrowserRuntimeError, EditorGodotPlayError, PeopleError, CollaborationError, SemanticError, SerializationError, LifecycleError, StorageError) as exc:
+            except (AuthoringError, BrowserRuntimeError, EditorGodotPlayError, PeopleError, CollaborationError, SemanticError, SerializationError, LifecycleError, StorageError, DistributionError) as exc:
                 self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}, "state": bridge.state()})
                 return
             except (TypeError, ValueError) as exc:
