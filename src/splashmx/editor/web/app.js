@@ -30,6 +30,56 @@ function visualFor(thing, index = 0) {
   const fallback = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130 };
   return { ...fallback, ...(thing?.authored_state?.visual || {}) };
 }
+function directChildrenOf(thingId) {
+  return (state?.canonical?.things || []).filter((thing) => thing.parent_thing_id === thingId);
+}
+function isGroupId(thingId) { return directChildrenOf(thingId).length > 0; }
+function descendantThings(rootId) {
+  const result = [];
+  const pending = [...directChildrenOf(rootId)];
+  const seen = new Set();
+  while (pending.length) {
+    const current = pending.pop();
+    if (!current || seen.has(current.thing_id)) continue;
+    seen.add(current.thing_id);
+    result.push(current);
+    pending.push(...directChildrenOf(current.thing_id));
+  }
+  return result;
+}
+function definitionForRoot(rootId) {
+  return (state?.canonical?.definitions || []).find((row) => row.root_thing_id === rootId) || null;
+}
+function libraryEntries() {
+  const entries = new Map();
+  for (const row of state?.canonical?.definitions || []) {
+    let entry = entries.get(row.definition_id);
+    if (!entry) {
+      const firstRoot = thingById(row.root_thing_id);
+      entry = {
+        definition_id: row.definition_id,
+        label: firstRoot?.label || "Reusable group",
+        element_count: Number(row.element_count || 0),
+        root_ids: [],
+      };
+      entries.set(row.definition_id, entry);
+    }
+    entry.root_ids.push(row.root_thing_id);
+  }
+  for (const entry of entries.values()) entry.root_ids.sort();
+  return Array.from(entries.values());
+}
+function groupBounds(rootId) {
+  const visible = descendantThings(rootId).filter((thing) => thing?.authored_state?.visual);
+  if (!visible.length) return null;
+  const rows = visible.map((thing) => visualFor(thing, Math.max(0, state.canonical.things.findIndex((row) => row.thing_id === thing.thing_id))));
+  return {
+    left: Math.min(...rows.map((visual) => Number(visual.x))),
+    top: Math.min(...rows.map((visual) => Number(visual.y))),
+    right: Math.max(...rows.map((visual) => Number(visual.x) + Number(visual.width))),
+    bottom: Math.max(...rows.map((visual) => Number(visual.y) + Number(visual.height))),
+  };
+}
 async function commitVisual(thingId, patch, success = "Visual properties updated.") {
   const thing = thingById(thingId);
   if (!thing) throw new Error("That Thing is no longer available.");
@@ -205,6 +255,7 @@ function renderStage() {
   }
 
   state.canonical.things.forEach((thing, index) => {
+    if (isGroupId(thing.thing_id)) return;
     const visual = displayVisualFor(thing, index);
     const node = document.createElement("div");
     node.className = "visual-thing" + (selected.has(thing.thing_id) ? " is-selected" : "");
@@ -285,11 +336,116 @@ function renderStage() {
     stage.append(node);
   });
 
+  renderGroupOverlays(stage, selected);
+
   if (!state.canonical.things.length) {
     const empty = document.createElement("p");
     empty.className = "empty";
     empty.textContent = "Your Stage is empty. Name a Thing and add it to start creating.";
     stage.append(empty);
+  }
+}
+
+function renderGroupOverlays(stage, selected) {
+  for (const group of state.canonical.things.filter((thing) => isGroupId(thing.thing_id))) {
+    const bounds = groupBounds(group.thing_id);
+    if (!bounds) continue;
+    const padding = 10;
+    const outline = document.createElement("div");
+    outline.className = "group-outline" + (selected.has(group.thing_id) ? " is-selected" : "");
+    outline.dataset.testid = `group-outline-${group.thing_id}`;
+    outline.style.left = `${bounds.left - padding}px`;
+    outline.style.top = `${bounds.top - padding}px`;
+    outline.style.width = `${Math.max(24, bounds.right - bounds.left + padding * 2)}px`;
+    outline.style.height = `${Math.max(24, bounds.bottom - bounds.top + padding * 2)}px`;
+
+    const caption = document.createElement("div");
+    caption.className = "group-caption";
+    caption.dataset.testid = `group-caption-${group.thing_id}`;
+    caption.tabIndex = 0;
+    caption.setAttribute("role", "button");
+    caption.setAttribute("aria-keyshortcuts", "ArrowLeft ArrowRight ArrowUp ArrowDown");
+    const definition = definitionForRoot(group.thing_id);
+    let captionText = group.label;
+    if (definition) {
+      const peers = (state.canonical.definitions || [])
+        .filter((row) => row.definition_id === definition.definition_id)
+        .map((row) => row.root_thing_id)
+        .sort();
+      captionText += ` · instance ${peers.indexOf(group.thing_id) + 1}`;
+      outline.dataset.reusable = "true";
+    }
+    caption.textContent = captionText;
+    caption.setAttribute("aria-label", definition
+      ? `${group.label}, reusable instance. Drag or use arrow keys to move the group.`
+      : `${group.label}. Drag or use arrow keys to move the group.`);
+
+    let dragged = false;
+    caption.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      const pointerId = event.pointerId;
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const originalLeft = bounds.left - padding;
+      const originalTop = bounds.top - padding;
+      let dx = 0;
+      let dy = 0;
+      dragged = false;
+      caption.setPointerCapture(pointerId);
+      const move = (moveEvent) => {
+        if (moveEvent.pointerId !== pointerId) return;
+        dx = Math.round(moveEvent.clientX - startX);
+        dy = Math.round(moveEvent.clientY - startY);
+        dragged = dragged || dx !== 0 || dy !== 0;
+        outline.style.left = `${originalLeft + dx}px`;
+        outline.style.top = `${originalTop + dy}px`;
+      };
+      const finish = async (upEvent) => {
+        if (upEvent.pointerId !== pointerId) return;
+        caption.removeEventListener("pointermove", move);
+        caption.removeEventListener("pointerup", finish);
+        caption.removeEventListener("pointercancel", finish);
+        if (caption.hasPointerCapture(pointerId)) caption.releasePointerCapture(pointerId);
+        try {
+          if (dx || dy) await act("moveGroup", { root_id: group.thing_id, dx, dy }, `Moved ${group.label} as a group.`);
+          else await act("select", { thing_ids: [group.thing_id] }, `Selected ${group.label}.`);
+        } catch (error) {
+          render();
+          say(error.message, true);
+        }
+      };
+      caption.addEventListener("pointermove", move);
+      caption.addEventListener("pointerup", finish);
+      caption.addEventListener("pointercancel", finish);
+    });
+    caption.addEventListener("click", async () => {
+      if (dragged) { dragged = false; return; }
+      if (!selectedIds().includes(group.thing_id)) await act("select", { thing_ids: [group.thing_id] }, `Selected ${group.label}.`);
+    });
+    caption.addEventListener("keydown", async (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        await act("select", { thing_ids: [group.thing_id] }, `Selected ${group.label}.`);
+        return;
+      }
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+      event.preventDefault();
+      const delta = event.altKey ? 1 : 5;
+      const dx = event.key === "ArrowLeft" ? -delta : event.key === "ArrowRight" ? delta : 0;
+      const dy = event.key === "ArrowUp" ? -delta : event.key === "ArrowDown" ? delta : 0;
+      await act("moveGroup", { root_id: group.thing_id, dx, dy }, `Moved ${group.label} as a group.`);
+      requestAnimationFrame(() => document.querySelector(`[data-testid="group-caption-${group.thing_id}"]`)?.focus());
+    });
+
+    if (definition) {
+      const badge = document.createElement("span");
+      badge.className = "instance-badge";
+      badge.textContent = "Reusable";
+      caption.append(badge);
+    }
+    outline.append(caption);
+    stage.append(outline);
   }
 }
 
@@ -304,12 +460,69 @@ function renderProperties() {
   }
   const thing = thingById(selectedIds()[0]);
   if (!thing) { form.hidden = true; empty.hidden = false; return; }
+  if (isGroupId(thing.thing_id)) {
+    form.hidden = true;
+    empty.hidden = false;
+    empty.textContent = definitionForRoot(thing.thing_id)
+      ? "This is a reusable instance. Move it on the Stage, or edit its concrete Things individually."
+      : "Move this group on the Stage, or select a contained Thing to edit its visual properties.";
+    return;
+  }
   const index = state.canonical.things.findIndex((row) => row.thing_id === thing.thing_id);
   const visual = visualFor(thing, Math.max(0, index));
   form.hidden = false;
   empty.hidden = true;
   $("#properties-selection").textContent = thing.label;
   for (const key of ["x", "y", "width", "height", "rotation", "shape", "fill"]) form.elements[key].value = visual[key];
+}
+
+function renderLibrary() {
+  const root = $("#library-list");
+  const empty = $("#library-empty");
+  root.replaceChildren();
+  const entries = libraryEntries();
+  empty.hidden = entries.length > 0;
+  for (const entry of entries) {
+    const card = document.createElement("article");
+    card.className = "library-card";
+    card.dataset.testid = "library-item";
+
+    const preview = document.createElement("div");
+    preview.className = "library-preview";
+    preview.setAttribute("aria-hidden", "true");
+    const firstRoot = entry.root_ids[0];
+    const fills = descendantThings(firstRoot)
+      .map((thing) => thing?.authored_state?.visual?.fill)
+      .filter((fill) => typeof fill === "string")
+      .slice(0, 4);
+    for (const fill of fills.length ? fills : ["#5b7cfa"]) {
+      const swatch = document.createElement("span");
+      swatch.style.background = fill;
+      preview.append(swatch);
+    }
+
+    const copy = document.createElement("div");
+    copy.className = "library-copy";
+    const title = document.createElement("strong");
+    title.textContent = entry.label;
+    const detail = document.createElement("span");
+    detail.className = "muted";
+    const visibleCount = descendantThings(firstRoot).filter((thing) => thing?.authored_state?.visual).length;
+    detail.textContent = `${visibleCount || Math.max(1, entry.element_count - 1)} visible Thing${visibleCount === 1 ? "" : "s"} · ${entry.root_ids.length} instance${entry.root_ids.length === 1 ? "" : "s"}`;
+    copy.append(title, detail);
+
+    const add = document.createElement("button");
+    add.type = "button";
+    add.dataset.testid = "library-add-instance";
+    add.textContent = "Add instance";
+    add.setAttribute("aria-label", `Add another ${entry.label} instance to the Stage`);
+    add.addEventListener("click", async () => {
+      await act("instantiateReusable", { definition_id: entry.definition_id }, `Added another ${entry.label} instance to the Stage.`);
+    });
+
+    card.append(preview, copy, add);
+    root.append(card);
+  }
 }
 
 function renderRules() {
@@ -668,12 +881,36 @@ function renderPeople() {
   }
   if (!(people.conflicts || []).length) conflicts.textContent = "No unresolved semantic conflicts.";
 }
-function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderRules(); renderConnections(); renderTimeline(); renderGodotPlayer(playing); renderThingSelects(); renderInspect(); renderPeople(); }
+function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderLibrary(); renderRules(); renderConnections(); renderTimeline(); renderGodotPlayer(playing); renderThingSelects(); renderInspect(); renderPeople(); }
 
 $("#create-form").addEventListener("submit", async (event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const index = state?.canonical.things.length || 0; const visual = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130, shape: String(data.get("shape") || "rectangle") }; const payload = await act("createThing", { label: data.get("label") || "Thing", authored_state: { visual } }, "Added a visible Thing to the Stage."); if (payload.result) await act("select", { thing_ids: [payload.result] }, "Thing created and selected."); });
 $("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
-$("#group-selected").addEventListener("click", async () => { if (!selectedIds().length) return say("Select one or more Things to group.", true); await act("group", { members: selectedIds(), label: "Group" }); });
-$("#make-reusable").addEventListener("click", async () => { try { await act("makeReusable", { root_id: selectedOne() }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
+async function groupSelected() {
+  if (selectedIds().length < 2) return say("Select at least two Things to group.", true);
+  await act("group", { members: selectedIds(), label: "Group" }, "Grouped the selected Things.");
+}
+async function ungroupSelected() {
+  try {
+    const rootId = selectedOne();
+    await act("ungroup", { root_id: rootId }, "Ungrouped. The contained Things kept their identities.");
+  } catch (error) {
+    if (!error.message.includes("Select exactly") && !error.code?.startsWith("authoring.")) throw error;
+    say(error.message, true);
+  }
+}
+$("#group-selected").addEventListener("click", groupSelected);
+$("#ungroup-selected").addEventListener("click", ungroupSelected);
+$("#make-reusable").addEventListener("click", async () => {
+  try {
+    const rootId = selectedOne();
+    if (!isGroupId(rootId)) return say("Select a group to make reusable.", true);
+    const group = thingById(rootId);
+    await act("makeReusable", { root_id: rootId }, `${group?.label || "Group"} is now reusable and appears in the Library.`);
+  } catch (error) {
+    if (!error.message.includes("Select exactly") && !error.code?.startsWith("authoring.")) throw error;
+    say(error.message, true);
+  }
+});
 $("#add-rule").addEventListener("click", async () => { try { await act("attachRule", { thing_id: selectedOne(), author_kind: "visual-fill", fill: DEFAULT_RULE_FILL }, "Rule added: when this Thing is clicked, change its colour."); } catch (error) { if (!error.message.includes("Select exactly") && error.code !== "authoring.rule_exists") throw error; say(error.message, true); } });
 $("#add-behaviour").addEventListener("click", async () => { try { await act("attachBehaviour", { thing_id: selectedOne(), event: "activate", actions: [{ action: "emit", event: "activated", payload: true }] }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#rule-form").addEventListener("submit", async (event) => {
@@ -706,7 +943,7 @@ $("#cancel-rule-edit").addEventListener("click", () => {
   renderRules();
 });
 $("#port-form").addEventListener("submit", async (event) => { event.preventDefault(); try { const form = new FormData(event.currentTarget); await act("addPort", { thing_id: selectedOne(), port_id: form.get("port_id"), name: form.get("name"), kind: form.get("kind"), direction: form.get("direction") }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
-$("#connection-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("connect", { source_thing_id: form.get("source_thing_id"), source_port_id: form.get("source_port_id"), target_thing_id: form.get("target_thing_id"), target_port_id: form.get("target_port_id"), connection_id: form.get("connection_id") || undefined }, "Advanced canonical Connection created."); });
+$("#connection-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("connect", { source_thing_id: form.get("source_thing_id"), source_port_id: form.get("source_port_id"), target_thing_id: form.get("target_thing_id"), target_port_id: form.get("target_port_id"), connection_id: form.get("connection_id") || undefined }); });
 $("#visual-connection-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
@@ -756,5 +993,25 @@ $("#reload").addEventListener("click", async () => { await act("reload", {}, "Re
 $("#presence-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("peoplePresence", { cursor: String(form.get("cursor") || ""), selections: selectedIds() }, "Presence updated without changing authored state."); });
 $("#people-retry-local").addEventListener("click", async () => { await act("peopleRetryLocal", {}, "Local collaboration history retry completed."); });
 $("#import-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const file = form.get("file"); if (!(file instanceof File) || !file.size) return say("Choose a non-empty source file to import.", true); const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte); await act("importAsset", { content_base64: btoa(binary), source_name: file.name, media_type: file.type || String(form.get("media_kind")), media_semantics: { kind: String(form.get("media_kind")) }, provenance: { origin: String(form.get("provenance")) }, licence_attribution: { licence: String(form.get("licence")), attribution: "author supplied" }, derivation_lineage: [{ operation: "source", parent: null }], label: file.name }); });
-document.addEventListener("keydown", async (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); if (!state.runtime || state.runtime.mode !== "play") await startPlay(); } else if (event.key === "Escape" && state.runtime && state.runtime.mode === "play") { event.preventDefault(); await stopPlay(); } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") { event.preventDefault(); await act("save", {}, "Saved locally."); } else if (event.altKey && event.key.toLowerCase() === "i") { event.preventDefault(); await act("inspect", { open: !state.editor.inspect_open }, "Inspect toggled."); } });
+document.addEventListener("keydown", async (event) => {
+  const typing = event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement || event.target instanceof HTMLTextAreaElement;
+  const command = event.ctrlKey || event.metaKey;
+  if (!typing && command && event.key.toLowerCase() === "g") {
+    event.preventDefault();
+    if (event.shiftKey) await ungroupSelected();
+    else await groupSelected();
+  } else if (command && event.key === "Enter") {
+    event.preventDefault();
+    if (!state.runtime || state.runtime.mode !== "play") await startPlay();
+  } else if (event.key === "Escape" && state.runtime && state.runtime.mode === "play") {
+    event.preventDefault();
+    await stopPlay();
+  } else if (command && event.key.toLowerCase() === "s") {
+    event.preventDefault();
+    await act("save", {}, "Saved locally.");
+  } else if (event.altKey && event.key.toLowerCase() === "i") {
+    event.preventDefault();
+    await act("inspect", { open: !state.editor.inspect_open }, "Inspect toggled.");
+  }
+});
 window.splashmxState = () => structuredClone(state); window.splashmxAct = (action, data = {}) => act(action, data); refresh().catch((error) => say(error.message, true));
