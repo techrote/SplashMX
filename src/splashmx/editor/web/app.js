@@ -23,6 +23,9 @@ let timelinePreviewFrame = null;
 const TIMELINE_PREVIEW_MS = 1200;
 
 function thingById(thingId) { return state?.canonical.things.find((thing) => thing.thing_id === thingId) || null; }
+function connectionProjection() {
+  return state?.authoring?.connections || { sources: [], targets: [], connections: [] };
+}
 function visualFor(thing, index = 0) {
   const fallback = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130 };
   return { ...fallback, ...(thing?.authored_state?.visual || {}) };
@@ -481,6 +484,117 @@ function renderTimeline() {
   }
 }
 
+function replaceSelectOptions(select, rows, valueKey, labelKey, preferred = "") {
+  const chosen = preferred || select.value;
+  select.replaceChildren();
+  for (const row of rows) {
+    const option = document.createElement("option");
+    option.value = String(row[valueKey]);
+    option.textContent = String(row[labelKey]);
+    select.append(option);
+  }
+  if (rows.some((row) => String(row[valueKey]) === chosen)) select.value = chosen;
+  select.disabled = rows.length === 0;
+}
+
+function renderConnectionEndpointChoices() {
+  const projection = connectionProjection();
+  const form = $("#connection-form");
+  const sourceThing = form.elements.source_thing_id;
+  const sourcePort = form.elements.source_port_id;
+  const targetThing = form.elements.target_thing_id;
+  const targetPort = form.elements.target_port_id;
+  const editing = projection.connections.find((row) => row.connection_id === String(form.elements.connection_id.value || ""));
+
+  const preferredSource = editing?.source_thing_id || sourceThing.value;
+  replaceSelectOptions(sourceThing, projection.sources, "thing_id", "thing_label", preferredSource);
+  const source = projection.sources.find((row) => row.thing_id === sourceThing.value);
+  replaceSelectOptions(sourcePort, source?.events || [], "port_id", "label", editing?.source_port_id || sourcePort.value);
+
+  const preferredTarget = editing?.target_thing_id || targetThing.value;
+  replaceSelectOptions(targetThing, projection.targets, "thing_id", "thing_label", preferredTarget);
+  const target = projection.targets.find((row) => row.thing_id === targetThing.value);
+  replaceSelectOptions(targetPort, target?.actions || [], "port_id", "label", editing?.target_port_id || targetPort.value);
+
+  const usable = Boolean(source?.events?.length && target?.actions?.length);
+  form.querySelector('button[type="submit"]').disabled = !usable;
+  const help = $("#connections-help");
+  if (!projection.sources.length) {
+    help.textContent = "Add a visible Thing to get a Clicked source event.";
+  } else if (!projection.targets.length) {
+    help.textContent = "No compatible target action yet. Select the target Thing and add a Change colour Rule first.";
+  } else {
+    help.textContent = "Only compatible named event/action endpoints are offered here. Canonical validation runs again when you create the Connection.";
+  }
+}
+
+function renderConnections() {
+  const projection = connectionProjection();
+  const form = $("#connection-form");
+  const editingId = String(form.elements.connection_id.value || "");
+  renderConnectionEndpointChoices();
+
+  const list = $("#connections-list");
+  list.replaceChildren();
+  if (!projection.connections.length) {
+    const empty = document.createElement("p");
+    empty.className = "muted";
+    empty.textContent = "No Connections yet.";
+    list.append(empty);
+  }
+  for (const connection of projection.connections) {
+    const card = document.createElement("article");
+    card.className = "connection-card";
+    card.dataset.testid = "connection-card";
+    const copy = document.createElement("div");
+    const title = document.createElement("strong");
+    title.textContent = `${connection.source_thing_label} — ${connection.source_event_label} → ${connection.target_thing_label} — ${connection.target_action_label}`;
+    copy.append(title);
+    if (connection.recovery) {
+      const recovery = document.createElement("p");
+      recovery.className = "connection-recovery";
+      recovery.textContent = connection.recovery;
+      copy.append(recovery);
+    } else {
+      const ready = document.createElement("span");
+      ready.className = "connection-ready";
+      ready.textContent = "Ready for Play";
+      copy.append(ready);
+    }
+    const controls = document.createElement("div");
+    controls.className = "toolbar";
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.dataset.testid = `edit-connection-${connection.connection_id}`;
+    edit.textContent = "Edit";
+    edit.addEventListener("click", () => {
+      form.elements.connection_id.value = connection.connection_id;
+      form.querySelector("legend").textContent = "Edit Connection";
+      form.querySelector('button[type="submit"]').textContent = "Update Connection";
+      $("#cancel-connection-edit").hidden = false;
+      renderConnectionEndpointChoices();
+      form.scrollIntoView({ block: "nearest" });
+    });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.dataset.testid = `delete-connection-${connection.connection_id}`;
+    remove.textContent = "Delete";
+    remove.addEventListener("click", async () => {
+      await act("removeConnection", { connection_id: connection.connection_id }, "Connection deleted.");
+      if (String(form.elements.connection_id.value || "") === connection.connection_id) form.elements.connection_id.value = "";
+    });
+    controls.append(edit, remove);
+    card.append(copy, controls);
+    list.append(card);
+  }
+  if (editingId && !projection.connections.some((row) => row.connection_id === editingId)) {
+    form.elements.connection_id.value = "";
+    form.querySelector("legend").textContent = "Create a Connection";
+    form.querySelector('button[type="submit"]').textContent = "Create Connection";
+    $("#cancel-connection-edit").hidden = true;
+  }
+}
+
 function renderGodotPlayer(playing) {
   const stagePanel = $("#stage-panel");
   const runtimePanel = $("#runtime-panel");
@@ -554,7 +668,7 @@ function renderPeople() {
   }
   if (!(people.conflicts || []).length) conflicts.textContent = "No unresolved semantic conflicts.";
 }
-function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderRules(); renderTimeline(); renderGodotPlayer(playing); renderThingSelects(); renderInspect(); renderPeople(); }
+function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderRules(); renderConnections(); renderTimeline(); renderGodotPlayer(playing); renderThingSelects(); renderInspect(); renderPeople(); }
 
 $("#create-form").addEventListener("submit", async (event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const index = state?.canonical.things.length || 0; const visual = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130, shape: String(data.get("shape") || "rectangle") }; const payload = await act("createThing", { label: data.get("label") || "Thing", authored_state: { visual } }, "Added a visible Thing to the Stage."); if (payload.result) await act("select", { thing_ids: [payload.result] }, "Thing created and selected."); });
 $("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
@@ -592,7 +706,40 @@ $("#cancel-rule-edit").addEventListener("click", () => {
   renderRules();
 });
 $("#port-form").addEventListener("submit", async (event) => { event.preventDefault(); try { const form = new FormData(event.currentTarget); await act("addPort", { thing_id: selectedOne(), port_id: form.get("port_id"), name: form.get("name"), kind: form.get("kind"), direction: form.get("direction") }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
-$("#connection-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("connect", { source_thing_id: form.get("source_thing_id"), source_port_id: form.get("source_port_id"), target_thing_id: form.get("target_thing_id"), target_port_id: form.get("target_port_id"), connection_id: form.get("connection_id") || undefined }); });
+$("#connection-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  if (!data.get("source_thing_id") || !data.get("source_port_id") || !data.get("target_thing_id") || !data.get("target_port_id")) return say("Choose a source event and compatible target action first.", true);
+  const connectionId = String(data.get("connection_id") || "");
+  const payload = {
+    source_thing_id: data.get("source_thing_id"),
+    source_port_id: data.get("source_port_id"),
+    target_thing_id: data.get("target_thing_id"),
+    target_port_id: data.get("target_port_id"),
+  };
+  if (connectionId) {
+    payload.connection_id = connectionId;
+    await act("updateConnection", payload, "Connection updated.");
+  } else {
+    await act("connectNamed", payload, "Connection created.");
+  }
+  form.elements.connection_id.value = "";
+  form.querySelector("legend").textContent = "Create a Connection";
+  form.querySelector('button[type="submit"]').textContent = "Create Connection";
+  $("#cancel-connection-edit").hidden = true;
+});
+$("#connection-form select[name="source_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
+$("#connection-form select[name="target_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
+$("#cancel-connection-edit").addEventListener("click", () => {
+  const form = $("#connection-form");
+  form.elements.connection_id.value = "";
+  form.querySelector("legend").textContent = "Create a Connection";
+  form.querySelector('button[type="submit"]').textContent = "Create Connection";
+  $("#cancel-connection-edit").hidden = true;
+  renderConnectionEndpointChoices();
+  say("Connection edit cancelled.");
+});
 $("#timeline-form").addEventListener("submit", async (event) => { event.preventDefault(); try { cancelTimelinePreview(); const form = new FormData(event.currentTarget); const duration = Math.max(1, Math.min(3600, Number(form.get("duration")) || 60)); await act("timeline", { thing_id: selectedOne(), property: String(form.get("property")), keyframes: [{ tick: 0, value: Number(form.get("start")) }, { tick: duration, value: Number(form.get("end")) }] }, "Animation track added to the Timeline."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#timeline-form select[name=\"property\"]").addEventListener("change", () => renderTimeline());
 $("#timeline-scrubber").addEventListener("input", (event) => { cancelTimelinePreview({ restore: false }); applyTimelinePlayhead(Number(event.currentTarget.value)); });
