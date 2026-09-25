@@ -175,6 +175,9 @@ class SMX051FVisualConnectionTests(unittest.TestCase):
             projection = runtime.authoring.connection_authoring_projection()
             self.assertTrue(projection["connections"][0]["play_supported"])
             self.assertEqual(projection["targets"][0]["actions"][0]["label"], "Change colour")
+            godot_projection = build_editor_godot_play_projection(runtime.authoring.project)
+            source_row = next(row for row in godot_projection["things"] if row["thing_id"] == str(source))
+            self.assertEqual(source_row["interactive_events"], ["pointer_click"])
 
     def test_connection_play_routes_to_existing_rule_without_authored_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
