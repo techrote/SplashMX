@@ -308,6 +308,10 @@ class BrowserBridge:
                 raise AuthoringError("authoring.invalid_backup", "The selected backup could not be read.") from exc
             before = self.session.project
             result = self.runtime.import_recovery(archive)
+            self.session._identity_counter = max(
+                getattr(self.session, "_identity_counter", 0),
+                _generated_identity_counter(self.session.project),
+            )
             self._record_people_local(before)
             return {"ok": True, "result": result, "state": self.state()}
         if action == "clearDiagnostics": self.runtime.clear_diagnostics(); return {"ok": True, "result": None, "state": self.state()}
