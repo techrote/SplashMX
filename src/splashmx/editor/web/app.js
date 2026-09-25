@@ -82,12 +82,18 @@ function groupBounds(rootId) {
     bottom: Math.max(...rows.map((visual) => Number(visual.y) + Number(visual.height))),
   };
 }
-async function commitVisual(thingId, patch, success = "Visual properties updated.") {
-  const thing = thingById(thingId);
-  if (!thing) throw new Error("That Thing is no longer available.");
-  const index = state.canonical.things.findIndex((row) => row.thing_id === thingId);
-  const visual = { ...visualFor(thing, Math.max(0, index)), ...patch };
-  return act("updateVisual", { thing_id: thingId, visual }, success);
+let visualCommitQueue = Promise.resolve();
+function commitVisual(thingId, patch, success = "Visual properties updated.") {
+  const applyLatest = async () => {
+    const thing = thingById(thingId);
+    if (!thing) throw new Error("That Thing is no longer available.");
+    const index = state.canonical.things.findIndex((row) => row.thing_id === thingId);
+    const visual = { ...visualFor(thing, Math.max(0, index)), ...patch };
+    return act("updateVisual", { thing_id: thingId, visual }, success);
+  };
+  const pending = visualCommitQueue.then(applyLatest, applyLatest);
+  visualCommitQueue = pending.catch(() => undefined);
+  return pending;
 }
 
 function timelineTracksFor(thing) {
