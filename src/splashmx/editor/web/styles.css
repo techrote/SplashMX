@@ -11,6 +11,15 @@ body { margin: 0; min-height: 100vh; }
 button, input, select { font: inherit; }
 button { min-height: 2.4rem; padding: 0.45rem 0.75rem; }
 input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, .button-like:focus-visible {
+  outline: 3px solid var(--selection);
+  outline-offset: 2px;
+}
+.button-like { display: inline-flex; align-items: center; min-height: 2.4rem; padding: 0.45rem 0.75rem; border: 1px solid currentColor; border-radius: 0.2rem; cursor: pointer; }
+.save-state { margin-left: 1rem; padding: 0.15rem 0.45rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.82rem; }
+.save-state[data-state="dirty"], .save-state[data-state="never-saved"] { font-weight: 700; }
+.shortcuts-help { margin: 0.5rem 0.8rem 0; padding: 0.45rem 0.65rem; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 0.4rem; }
+.shortcut-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 0.35rem 1rem; margin-top: 0.55rem; }
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid currentColor; }
 .topbar .muted { margin-left: 1rem; }
 .workspace { display: grid; grid-template-columns: minmax(30rem, 1fr) minmax(16rem, 20rem); gap: var(--gap); padding: var(--gap); align-items: start; }
@@ -35,7 +44,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 .stage {
   position: relative;
   min-height: 34rem;
-  overflow: hidden;
+  overflow: auto;
   border: 1px solid currentColor;
   border-radius: 0.4rem;
   background-color: var(--stage-bg);
@@ -46,7 +55,14 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
   touch-action: none;
 }
 .stage:focus-visible { outline: 3px solid var(--selection); outline-offset: 2px; }
+.stage-canvas {
+  position: relative;
+  width: 1600px;
+  height: 1000px;
+  transform-origin: top left;
+}
 .stage-help { margin-bottom: 0; }
+.toolbar-separator { width: 1px; align-self: stretch; background: color-mix(in srgb, CanvasText 25%, transparent); margin: 0 0.15rem; }
 
 .visual-thing {
   position: absolute;
@@ -293,4 +309,17 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
   .panel-heading { display: block; }
   .inline-form { margin-top: 0.8rem; }
   .stage { min-height: 28rem; }
+}
+
+.recovery-panel { grid-column: 1 / -1; }
+.inspect-summary { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.25rem 0.65rem; }
+.inspect-summary dt { font-weight: 700; }
+.inspect-summary dd { margin: 0; overflow-wrap: anywhere; }
+.inspect-panel details { margin: 0.6rem 0; }
+.inspect-panel pre { max-height: 24rem; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.diagnostic p { margin: 0.25rem 0; }
+@media (max-width: 860px) {
+  .workspace { grid-template-columns: 1fr; }
+  .stage-panel, .runtime-panel, .properties-panel, .library-panel, .rules-panel, .connections-panel, .timeline-panel, .recovery-panel { grid-column: 1; }
+  .topbar { align-items: flex-start; flex-direction: column; }
 }

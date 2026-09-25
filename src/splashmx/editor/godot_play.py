@@ -55,7 +55,8 @@ def _visual(value: Any) -> dict[str, Any] | None:
     if not isinstance(value, Mapping):
         _fail("godot_play.invalid_visual", "visual authored state must be an object")
     required = {"x", "y", "width", "height", "rotation", "shape", "fill"}
-    if set(value) != required:
+    allowed = required | {"layer"}
+    if not required.issubset(set(value)) or not set(value).issubset(allowed):
         _fail("godot_play.invalid_visual", "visual authored state fields are invalid")
     shape = value["shape"]
     fill = value["fill"]
@@ -78,6 +79,7 @@ def _visual(value: Any) -> dict[str, Any] | None:
         "width": width,
         "height": height,
         "rotation": _number(value["rotation"], "rotation"),
+        "layer": _number(value.get("layer", 0), "layer"),
         "shape": shape,
         "fill": fill.lower(),
     }

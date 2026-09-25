@@ -1,3 +1,4 @@
+import { applyTranslations, t, setLocale, currentLocale } from "./i18n.js";
 let state = null;
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
@@ -9,7 +10,8 @@ async function act(action, data = {}, success = "Change applied.") { try { const
 function selectedIds() { return state ? state.editor.selection : []; }
 function selectedOne() { const selected = selectedIds(); if (selected.length !== 1) throw new Error("Select exactly one Thing for this action."); return selected[0]; }
 
-const VISUAL_DEFAULTS = { x: 64, y: 64, width: 160, height: 100, rotation: 0, shape: "rectangle", fill: "#5b7cfa" };
+const VISUAL_DEFAULTS = { x: 64, y: 64, width: 160, height: 100, rotation: 0, layer: 0, shape: "rectangle", fill: "#5b7cfa" };
+let stageZoom = 1;
 const DEFAULT_RULE_FILL = "#ff5a5f";
 const TIMELINE_LABELS = {
   "visual.x": "Horizontal position",
@@ -80,12 +82,18 @@ function groupBounds(rootId) {
     bottom: Math.max(...rows.map((visual) => Number(visual.y) + Number(visual.height))),
   };
 }
-async function commitVisual(thingId, patch, success = "Visual properties updated.") {
-  const thing = thingById(thingId);
-  if (!thing) throw new Error("That Thing is no longer available.");
-  const index = state.canonical.things.findIndex((row) => row.thing_id === thingId);
-  const visual = { ...visualFor(thing, Math.max(0, index)), ...patch };
-  return act("updateVisual", { thing_id: thingId, visual }, success);
+let visualCommitQueue = Promise.resolve();
+function commitVisual(thingId, patch, success = "Visual properties updated.") {
+  const applyLatest = async () => {
+    const thing = thingById(thingId);
+    if (!thing) throw new Error("That Thing is no longer available.");
+    const index = state.canonical.things.findIndex((row) => row.thing_id === thingId);
+    const visual = { ...visualFor(thing, Math.max(0, index)), ...patch };
+    return act("updateVisual", { thing_id: thingId, visual }, success);
+  };
+  const pending = visualCommitQueue.then(applyLatest, applyLatest);
+  visualCommitQueue = pending.catch(() => undefined);
+  return pending;
 }
 
 function timelineTracksFor(thing) {
@@ -183,6 +191,11 @@ function startTimelinePreview() {
 function renderStage() {
   const stage = $("#stage");
   stage.replaceChildren();
+  const canvas = document.createElement("div");
+  canvas.className = "stage-canvas";
+  canvas.dataset.testid = "stage-canvas";
+  canvas.style.zoom = String(stageZoom);
+  stage.append(canvas);
   const selected = new Set(selectedIds());
 
   function installMove(node, thing, visual) {
@@ -199,8 +212,8 @@ function renderStage() {
       node.setPointerCapture(pointerId);
       const move = (moveEvent) => {
         if (moveEvent.pointerId !== pointerId) return;
-        nextX = Math.round(originalX + moveEvent.clientX - startX);
-        nextY = Math.round(originalY + moveEvent.clientY - startY);
+        nextX = Math.round(originalX + (moveEvent.clientX - startX) / stageZoom);
+        nextY = Math.round(originalY + (moveEvent.clientY - startY) / stageZoom);
         node.style.left = `${nextX}px`;
         node.style.top = `${nextY}px`;
       };
@@ -234,8 +247,8 @@ function renderStage() {
       handle.setPointerCapture(pointerId);
       const move = (moveEvent) => {
         if (moveEvent.pointerId !== pointerId) return;
-        width = Math.max(12, Math.round(originalWidth + moveEvent.clientX - startX));
-        height = Math.max(12, Math.round(originalHeight + moveEvent.clientY - startY));
+        width = Math.max(12, Math.round(originalWidth + (moveEvent.clientX - startX) / stageZoom));
+        height = Math.max(12, Math.round(originalHeight + (moveEvent.clientY - startY) / stageZoom));
         node.style.width = `${width}px`;
         node.style.height = `${height}px`;
       };
@@ -264,6 +277,7 @@ function renderStage() {
     node.dataset.testid = `stage-thing-${thing.thing_id}`;
     node.tabIndex = 0;
     node.setAttribute("role", "button");
+    node.setAttribute("aria-pressed", selected.has(thing.thing_id) ? "true" : "false");
     const thingRules = rulesFor(thing);
     node.setAttribute("aria-label", `${thing.label}. Position ${Math.round(visual.x)}, ${Math.round(visual.y)}. Size ${Math.round(visual.width)} by ${Math.round(visual.height)}.${thingRules.length ? " Has Rule." : ""}`);
     node.style.left = `${visual.x}px`;
@@ -271,6 +285,7 @@ function renderStage() {
     node.style.width = `${visual.width}px`;
     node.style.height = `${visual.height}px`;
     node.style.background = visual.fill;
+    node.style.zIndex = String(10000 + Number(visual.layer || 0));
     node.style.transform = `rotate(${visual.rotation}deg)`;
 
     const checkbox = document.createElement("input");
@@ -330,19 +345,20 @@ function renderStage() {
       }
       await commitVisual(thing.thing_id, patch, event.shiftKey ? `Resized ${thing.label}.` : `Moved ${thing.label}.`);
       if (!selectedIds().includes(thing.thing_id)) await act("select", { thing_ids: [thing.thing_id] }, `Selected ${thing.label}.`);
+      document.querySelector(`[data-testid="stage-thing-${thing.thing_id}"]`)?.focus();
     });
     installMove(node, thing, visual);
     installResize(resize, node, thing, visual);
-    stage.append(node);
+    canvas.append(node);
   });
 
-  renderGroupOverlays(stage, selected);
+  renderGroupOverlays(canvas, selected);
 
   if (!state.canonical.things.length) {
     const empty = document.createElement("p");
     empty.className = "empty";
     empty.textContent = "Your Stage is empty. Name a Thing and add it to start creating.";
-    stage.append(empty);
+    canvas.append(empty);
   }
 }
 
@@ -435,7 +451,7 @@ function renderGroupOverlays(stage, selected) {
       const dx = event.key === "ArrowLeft" ? -delta : event.key === "ArrowRight" ? delta : 0;
       const dy = event.key === "ArrowUp" ? -delta : event.key === "ArrowDown" ? delta : 0;
       await act("moveGroup", { root_id: group.thing_id, dx, dy }, `Moved ${group.label} as a group.`);
-      requestAnimationFrame(() => document.querySelector(`[data-testid="group-caption-${group.thing_id}"]`)?.focus());
+      document.querySelector(`[data-testid="group-caption-${group.thing_id}"]`)?.focus();
     });
 
     if (definition) {
@@ -473,7 +489,7 @@ function renderProperties() {
   form.hidden = false;
   empty.hidden = true;
   $("#properties-selection").textContent = thing.label;
-  for (const key of ["x", "y", "width", "height", "rotation", "shape", "fill"]) form.elements[key].value = visual[key];
+  for (const key of ["x", "y", "width", "height", "rotation", "layer", "shape", "fill"]) form.elements[key].value = visual[key];
 }
 
 function renderLibrary() {
@@ -859,7 +875,56 @@ async function stopPlay() {
 }
 
 function renderThingSelects() { for (const select of $$('[data-role="thing-select"]')) { const previous = select.value; select.replaceChildren(); for (const thing of state.canonical.things) { const option = document.createElement("option"); option.value = thing.thing_id; option.textContent = thing.label; select.append(option); } if (state.canonical.things.some((thing) => thing.thing_id === previous)) select.value = previous; } }
-function renderInspect() { const panel = $("#inspect"); panel.hidden = !state.editor.inspect_open; if (panel.hidden) return; const chosen = new Set(selectedIds()); $("#inspect-data").textContent = JSON.stringify({ selection: state.canonical.things.filter((thing) => chosen.has(thing.thing_id)), definitions: state.canonical.definitions, connections: state.canonical.connections, assets: state.canonical.assets }, null, 2); const log = $("#diagnostics"); log.replaceChildren(); for (const diagnostic of state.diagnostics || []) { const article = document.createElement("article"); article.className = "diagnostic"; article.dataset.code = diagnostic.code; const heading = document.createElement("strong"); heading.textContent = diagnostic.title; const message = document.createElement("p"); message.textContent = diagnostic.message; article.append(heading, message); log.append(article); } if (!(state.diagnostics || []).length) log.textContent = "No diagnostics."; }
+function renderInspect() {
+  const panel = $("#inspect");
+  panel.hidden = !state.editor.inspect_open;
+  if (panel.hidden) return;
+  const chosen = new Set(selectedIds());
+  const selectedThings = state.canonical.things.filter((thing) => chosen.has(thing.thing_id));
+  const summary = $("#inspect-summary");
+  summary.replaceChildren();
+  const addSummary = (label, value) => {
+    const term = document.createElement("dt");
+    term.textContent = label;
+    const detail = document.createElement("dd");
+    detail.textContent = String(value);
+    summary.append(term, detail);
+  };
+  if (selectedThings.length === 1) {
+    const thing = selectedThings[0];
+    addSummary("Thing", thing.label);
+    addSummary("Stable identity", thing.thing_id);
+    addSummary("Rules", thing.behaviours?.length || 0);
+    addSummary("Connections", state.canonical.connections.filter((row) =>
+      row.source?.thing_id === thing.thing_id || row.target?.thing_id === thing.thing_id
+    ).length);
+    const definition = definitionForRoot(thing.thing_id);
+    if (definition) addSummary("Reusable content", "Instance of a Library definition");
+  } else {
+    addSummary("Selection", selectedThings.length ? `${selectedThings.length} Things` : "Nothing selected");
+  }
+  $("#inspect-data").textContent = JSON.stringify({
+    selection: selectedThings,
+    definitions: state.canonical.definitions,
+    connections: state.canonical.connections,
+    assets: state.canonical.assets,
+  }, null, 2);
+  const log = $("#diagnostics");
+  log.replaceChildren();
+  for (const diagnostic of state.diagnostics || []) {
+    const article = document.createElement("article");
+    article.className = "diagnostic";
+    article.dataset.code = diagnostic.code;
+    const heading = document.createElement("strong");
+    heading.textContent = diagnostic.title;
+    const message = document.createElement("p");
+    message.textContent = diagnostic.message;
+    article.append(heading, message);
+    log.append(article);
+  }
+  if (!(state.diagnostics || []).length) log.textContent = t("app.no_diagnostics");
+}
+
 function renderPeople() {
   const people = state.people || { conflicts: [], presence: [] };
   const parts = [people.relay_online === false ? "Relay offline" : "Local-first collaboration ready"];
@@ -881,10 +946,36 @@ function renderPeople() {
   }
   if (!(people.conflicts || []).length) conflicts.textContent = "No unresolved semantic conflicts.";
 }
-function render() { if (!state) return; $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`; const playing = state.runtime && state.runtime.mode === "play"; $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode"; $("#play").disabled = playing; $("#stop").disabled = !playing; $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false"); renderStage(); renderProperties(); renderLibrary(); renderRules(); renderConnections(); renderTimeline(); renderGodotPlayer(playing); renderThingSelects(); renderInspect(); renderPeople(); }
+function render() {
+  if (!state) return;
+  $("#revision").textContent = `Revision ${state.canonical.project_revision_id}`;
+  const storageState = state.storage?.state || "never-saved";
+  const saveState = $("#save-state");
+  saveState.dataset.state = storageState;
+  saveState.textContent = storageState === "saved" ? t("app.saved") : storageState === "dirty" ? t("app.dirty") : t("app.never_saved");
+  const reload = $("#reload");
+  reload.disabled = !state.storage?.saved_revision_id;
+  reload.textContent = state.storage?.dirty && state.storage?.saved_revision_id ? "Reload saved — discard unsaved changes" : t("app.reload");
+  reload.title = state.storage?.dirty ? "Reload restores the verified saved revision and discards current unsaved edits." : "";
+  const playing = state.runtime && state.runtime.mode === "play";
+  $("#mode").textContent = playing ? "Play mode · Godot" : "Edit mode";
+  $("#play").disabled = playing;
+  $("#stop").disabled = !playing;
+  $("#inspect-toggle").setAttribute("aria-pressed", state.editor.inspect_open ? "true" : "false");
+  renderStage();
+  renderProperties();
+  renderLibrary();
+  renderRules();
+  renderConnections();
+  renderTimeline();
+  renderGodotPlayer(playing);
+  renderThingSelects();
+  renderInspect();
+  renderPeople();
+}
 
 $("#create-form").addEventListener("submit", async (event) => { event.preventDefault(); const data = new FormData(event.currentTarget); const index = state?.canonical.things.length || 0; const visual = { ...VISUAL_DEFAULTS, x: 64 + (index % 4) * 190, y: 64 + Math.floor(index / 4) * 130, shape: String(data.get("shape") || "rectangle") }; const payload = await act("createThing", { label: data.get("label") || "Thing", authored_state: { visual } }, "Added a visible Thing to the Stage."); if (payload.result) await act("select", { thing_ids: [payload.result] }, "Thing created and selected."); });
-$("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
+$("#visual-properties").addEventListener("submit", async (event) => { event.preventDefault(); try { const thingId = selectedOne(); const form = new FormData(event.currentTarget); await commitVisual(thingId, { x: Number(form.get("x")), y: Number(form.get("y")), width: Number(form.get("width")), height: Number(form.get("height")), rotation: Number(form.get("rotation")), layer: Number(form.get("layer")), shape: String(form.get("shape")), fill: String(form.get("fill")) }, "Visual properties applied."); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 async function groupSelected() {
   if (selectedIds().length < 2) return say("Select at least two Things to group.", true);
   await act("group", { members: selectedIds(), label: "Group" }, "Grouped the selected Things.");
@@ -898,7 +989,66 @@ async function ungroupSelected() {
     say(error.message, true);
   }
 }
+
+function setStageZoom(next) {
+  stageZoom = Math.max(0.25, Math.min(4, Math.round(Number(next) * 100) / 100));
+  renderStage();
+  say(t("status.zoom", { percent: Math.round(stageZoom * 100) }));
+}
+async function adjustSelectedLayer(delta) {
+  try {
+    const thingId = selectedOne();
+    if (isGroupId(thingId)) return say("Select a concrete visual Thing to change its stacking order.", true);
+    const thing = thingById(thingId);
+    const visual = visualFor(thing, Math.max(0, state.canonical.things.findIndex((row) => row.thing_id === thingId)));
+    const layer = Math.max(-1000, Math.min(1000, Number(visual.layer || 0) + delta));
+    await commitVisual(thingId, { layer }, delta < 0 ? t("status.layer_back", { label: thing.label }) : t("status.layer_forward", { label: thing.label }));
+  } catch (error) {
+    if (!error.message.includes("Select exactly")) throw error;
+    say(error.message, true);
+  }
+}
+async function downloadBackup() {
+  const response = await fetch("/api/recovery-export", { cache: "no-store" });
+  if (!response.ok) {
+    const payload = await response.json();
+    const error = new Error(payload?.error?.message || "Backup export failed.");
+    error.code = payload?.error?.code;
+    throw error;
+  }
+  const blob = await response.blob();
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = `SplashMX-${state.canonical.project_id}.smxbackup`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+  say(t("status.backup_downloaded"));
+}
+async function restoreBackup(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  await act("restoreBackup", { content_base64: btoa(binary) }, t("status.restore_complete"));
+}
 $("#group-selected").addEventListener("click", groupSelected);
+$("#layer-back").addEventListener("click", () => adjustSelectedLayer(-1));
+$("#layer-forward").addEventListener("click", () => adjustSelectedLayer(1));
+$("#zoom-out").addEventListener("click", () => setStageZoom(stageZoom / 1.25));
+$("#zoom-reset").addEventListener("click", () => setStageZoom(1));
+$("#zoom-in").addEventListener("click", () => setStageZoom(stageZoom * 1.25));
+$("#stage").addEventListener("keydown", (event) => {
+  if (event.target !== event.currentTarget || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+  event.preventDefault();
+  const amount = event.altKey ? 10 : 40;
+  event.currentTarget.scrollBy({
+    left: event.key === "ArrowLeft" ? -amount : event.key === "ArrowRight" ? amount : 0,
+    top: event.key === "ArrowUp" ? -amount : event.key === "ArrowDown" ? amount : 0,
+    behavior: "auto",
+  });
+});
 $("#ungroup-selected").addEventListener("click", ungroupSelected);
 $("#make-reusable").addEventListener("click", async () => {
   try {
@@ -915,9 +1065,10 @@ $("#add-rule").addEventListener("click", async () => { try { await act("attachRu
 $("#add-behaviour").addEventListener("click", async () => { try { await act("attachBehaviour", { thing_id: selectedOne(), event: "activate", actions: [{ action: "emit", event: "activated", payload: true }] }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#rule-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const formElement = event.currentTarget;
   try {
     const thingId = selectedOne();
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     if (String(form.get("event")) !== "pointer_click" || String(form.get("action")) !== "change_colour") {
       return say("Choose a supported Rule event and action.", true);
     }
@@ -929,7 +1080,7 @@ $("#rule-form").addEventListener("submit", async (event) => {
     } else {
       await act("attachRule", data, "Rule added.");
     }
-    event.currentTarget.elements.attachment_id.value = "";
+    formElement.elements.attachment_id.value = "";
   } catch (error) {
     if (!error.message.includes("Select exactly") && error.code !== "authoring.rule_exists") throw error;
     say(error.message, true);
@@ -988,8 +1139,17 @@ $("#clear-diagnostics").addEventListener("click", async () => { await act("clear
 $("#play").addEventListener("click", startPlay);
 $("#stop").addEventListener("click", stopPlay);
 $("#godot-player").addEventListener("load", () => { if (state?.runtime?.mode === "play" && state?.godot_player?.available) $("#godot-player-status").textContent = "Godot runtime loaded. Running the active canonical revision."; });
-$("#save").addEventListener("click", async () => { await act("save", {}, "Saved locally."); });
-$("#reload").addEventListener("click", async () => { await act("reload", {}, "Reloaded the verified local project."); });
+$("#save").addEventListener("click", async () => { await act("save", {}, t("status.saved")); });
+$("#reload").addEventListener("click", async () => { await act("reload", {}, t("status.reloaded")); });
+$("#backup-export").addEventListener("click", async () => { try { await downloadBackup(); } catch (error) { say(error.message, true); } });
+$("#backup-import").addEventListener("change", async (event) => {
+  const input = event.currentTarget;
+  const file = input.files?.[0];
+  if (!file) return;
+  try { await restoreBackup(file); }
+  catch (error) { say(error.message, true); }
+  finally { input.value = ""; }
+});
 $("#presence-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("peoplePresence", { cursor: String(form.get("cursor") || ""), selections: selectedIds() }, "Presence updated without changing authored state."); });
 $("#people-retry-local").addEventListener("click", async () => { await act("peopleRetryLocal", {}, "Local collaboration history retry completed."); });
 $("#import-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const file = form.get("file"); if (!(file instanceof File) || !file.size) return say("Choose a non-empty source file to import.", true); const bytes = new Uint8Array(await file.arrayBuffer()); let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte); await act("importAsset", { content_base64: btoa(binary), source_name: file.name, media_type: file.type || String(form.get("media_kind")), media_semantics: { kind: String(form.get("media_kind")) }, provenance: { origin: String(form.get("provenance")) }, licence_attribution: { licence: String(form.get("licence")), attribution: "author supplied" }, derivation_lineage: [{ operation: "source", parent: null }], label: file.name }); });
@@ -1012,6 +1172,25 @@ document.addEventListener("keydown", async (event) => {
   } else if (event.altKey && event.key.toLowerCase() === "i") {
     event.preventDefault();
     await act("inspect", { open: !state.editor.inspect_open }, "Inspect toggled.");
+  } else if (!typing && command && event.key === "0") {
+    event.preventDefault();
+    setStageZoom(1);
+  } else if (!typing && command && (event.key === "-" || event.key === "_")) {
+    event.preventDefault();
+    setStageZoom(stageZoom / 1.25);
+  } else if (!typing && command && (event.key === "=" || event.key === "+")) {
+    event.preventDefault();
+    setStageZoom(stageZoom * 1.25);
+  } else if (!typing && event.altKey && event.key === "[") {
+    event.preventDefault();
+    await adjustSelectedLayer(-1);
+  } else if (!typing && event.altKey && event.key === "]") {
+    event.preventDefault();
+    await adjustSelectedLayer(1);
   }
 });
-window.splashmxState = () => structuredClone(state); window.splashmxAct = (action, data = {}) => act(action, data); refresh().catch((error) => say(error.message, true));
+applyTranslations(document);
+window.splashmxState = () => structuredClone(state);
+window.splashmxAct = (action, data = {}) => act(action, data);
+window.splashmxI18n = { setLocale, currentLocale, t };
+refresh().catch((error) => say(error.message, true));

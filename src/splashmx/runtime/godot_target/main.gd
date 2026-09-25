@@ -361,6 +361,7 @@ func _apply_binding_visual(binding, visual):
     var polygon = binding["polygon"]
     node.position = Vector2(x + width / 2.0, y + height / 2.0)
     node.rotation_degrees = float(visual.get("rotation", 0))
+    node.z_index = int(clamp(float(visual.get("layer", 0)), -1000.0, 1000.0))
     var points = _shape_polygon(visual.get("shape", "rectangle"), width, height)
     polygon.polygon = points
     binding["collision"].polygon = points
