@@ -213,9 +213,23 @@ try {
   state = await waitForState(page, (value) => value.storage?.saved_revision_id === value.canonical.project_revision_id, "Save");
   const savedRevision = state.canonical.project_revision_id;
   const savedIds = state.canonical.things.map((row) => row.thing_id).sort();
+  const savedCopyY = thing(state, copiedFirst.thing_id).authored_state.visual.y;
+
+  // Make Reload observably necessary. Waiting only on the already-saved revision can
+  // race the async click handler and let a process restart abort its fetch.
+  await page.getByTestId(`group-caption-${secondRoot}`).focus();
+  await page.keyboard.press("ArrowDown");
+  state = await waitForState(page, (value) =>
+    thing(value, copiedFirst.thing_id)?.authored_state?.visual?.y === savedCopyY + 5,
+  "unsaved instance move before Reload");
+  assert.notEqual(state.canonical.project_revision_id, savedRevision);
 
   await page.getByTestId("reload").click();
-  state = await waitForState(page, (value) => value.canonical.project_revision_id === savedRevision && value.canonical.definitions.length === 2, "Save Reload");
+  state = await waitForState(page, (value) =>
+    value.canonical.project_revision_id === savedRevision &&
+    value.canonical.definitions.length === 2 &&
+    thing(value, copiedFirst.thing_id)?.authored_state?.visual?.y === savedCopyY,
+  "Save Reload");
   assert.deepEqual(state.canonical.things.map((row) => row.thing_id).sort(), savedIds);
   assert.equal(thing(state, first).behaviours[0].attachment_id, originalRuleId);
   evidence.checks.save_reload_preserves_reuse = true;
