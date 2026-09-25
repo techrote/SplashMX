@@ -230,12 +230,17 @@ try {
     clientWidth: element.clientWidth,
     clientHeight: element.clientHeight,
   }));
+  assert(metrics.clientWidth > 0 && metrics.clientHeight > 0);
   const centreX = Number(buttonVisual.x) + Number(buttonVisual.width) / 2;
   const centreY = Number(buttonVisual.y) + Number(buttonVisual.height) / 2;
+  // The editor-live Godot input surface reports mouse coordinates in the same
+  // CanvasLayer coordinate space as authored Thing visuals. Do not rescale the
+  // authored centre to the browser canvas CSS size: doing so moves the click
+  // away from the canonical visual when the exported canvas is responsively sized.
   await canvas.click({
     position: {
-      x: Math.max(1, Math.min(metrics.clientWidth - 1, centreX / 640 * metrics.clientWidth)),
-      y: Math.max(1, Math.min(metrics.clientHeight - 1, centreY / 360 * metrics.clientHeight)),
+      x: Math.max(1, Math.min(metrics.clientWidth - 1, centreX)),
+      y: Math.max(1, Math.min(metrics.clientHeight - 1, centreY)),
     },
   });
 
