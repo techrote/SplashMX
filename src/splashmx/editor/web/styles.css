@@ -193,6 +193,32 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 .library-copy { min-width: 0; display: grid; gap: 0.2rem; }
 .library-copy strong, .library-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rules-list { display: grid; gap: 0.45rem; }
+.connections-panel { grid-column: 1 / -1; }
+.connection-form fieldset {
+  display: flex;
+  gap: 0.55rem;
+  align-items: end;
+  flex-wrap: wrap;
+  border: 1px solid currentColor;
+  border-radius: 0.35rem;
+  padding: 0.65rem;
+}
+.connection-form label { display: grid; gap: 0.25rem; min-width: 10rem; }
+.connections-list { display: grid; gap: 0.45rem; margin-top: 0.65rem; }
+.connection-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem;
+  border: 1px solid color-mix(in srgb, CanvasText 35%, transparent);
+  border-radius: 0.35rem;
+}
+.connection-card > div:first-child { display: grid; gap: 0.25rem; min-width: 0; }
+.connection-ready { font-size: 0.82rem; opacity: 0.75; }
+.connection-recovery { margin: 0; font-size: 0.82rem; font-weight: 600; }
+.advanced-disclosure { margin-bottom: 0.85rem; }
+.advanced-disclosure > summary { cursor: pointer; margin-bottom: 0.65rem; }
 .rule-card {
   display: flex;
   justify-content: space-between;
@@ -261,7 +287,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
-  .stage-panel, .runtime-panel, .properties-panel, .library-panel, .rules-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
+  .stage-panel, .runtime-panel, .properties-panel, .library-panel, .rules-panel, .connections-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
 }
 @media (max-width: 760px) {
   .panel-heading { display: block; }

@@ -433,6 +433,28 @@ class AddConnection:
 
 
 @dataclass(frozen=True)
+class ReplaceConnection:
+    """Replace one live Connection while preserving its stable ConnectionId."""
+
+    connection: ConnectionRecord
+
+    def apply(self, draft: CanonicalDocument) -> None:
+        current = draft.connections.get(self.connection.connection_id)
+        if current is None or current.tombstoned:
+            raise SemanticError(
+                "canonical.unknown_connection",
+                f"Unknown live ConnectionId {self.connection.connection_id}",
+            )
+        if self.connection.tombstoned:
+            raise SemanticError(
+                "canonical.invalid_connection",
+                "A Connection replacement must remain live.",
+            )
+        _validate_connection(draft, self.connection)
+        draft.connections[self.connection.connection_id] = self.connection
+
+
+@dataclass(frozen=True)
 class TombstoneConnection:
     connection_id: ConnectionId
 

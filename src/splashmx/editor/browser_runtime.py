@@ -11,7 +11,15 @@ from pathlib import Path
 import re
 from typing import Any, Callable
 
-from splashmx.editor.authoring import AuthoringError, AuthoringSession
+from splashmx.canonical.core import PortDirection, PortKind, ThingId
+from splashmx.editor.authoring import (
+    AuthoringError,
+    AuthoringSession,
+    CHANGE_COLOUR_PORT_ID,
+    CLICKED_PORT_ID,
+    POINTER_CLICK_EVENT,
+    VISUAL_FILL_RULE_KIND,
+)
 from splashmx.execution.ir import BudgetLimits, IRProgram, compile_rule
 from splashmx.runtime.lifecycle import LifecycleError, WorldRuntime
 from splashmx.storage.local import SQLiteProjectStore, StorageError
@@ -192,6 +200,108 @@ class BrowserRuntimeSession:
         was_playing = self.world is not None
         self.world = None
         return {"mode": "edit", "discarded_transient_play_state": was_playing}
+
+    def dispatch_pointer_event(
+        self,
+        thing_id: str | ThingId,
+        payload: Any = None,
+    ) -> list[ThingId]:
+        """Route one real pointer event through local Rules and canonical Connections."""
+        world = self.world
+        if world is None:
+            raise BrowserRuntimeError("browser.play_not_active", "Start Play before interacting with the creation.")
+        tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
+        source = self.authoring.document.things.get(tid)
+        if source is None or source.tombstoned or tid not in world.runtime.states:
+            raise BrowserRuntimeError("browser.interaction_thing_unavailable", "That interactive Thing is not active in Play.")
+
+        local_rule = any(
+            attachment.authored_config.get("projection") == "Rule"
+            and attachment.authored_config.get("author_kind") == VISUAL_FILL_RULE_KIND
+            and attachment.authored_config.get("event") == POINTER_CLICK_EVENT
+            for attachment in source.behaviours.values()
+        )
+
+        routes: list[ThingId] = []
+        for connection in sorted(
+            self.authoring.document.connections.values(),
+            key=lambda row: str(row.connection_id),
+        ):
+            if (
+                connection.tombstoned
+                or connection.source.thing_id != tid
+                or connection.source.port_id != CLICKED_PORT_ID
+            ):
+                continue
+            source_port = source.ports.get(connection.source.port_id)
+            if (
+                source_port is None
+                or source_port.kind is not PortKind.EVENT
+                or source_port.direction is not PortDirection.OUT
+            ):
+                raise BrowserRuntimeError(
+                    "browser.connection_event_unavailable",
+                    "This Connection's source event is no longer available. Edit or delete the Connection.",
+                )
+            target = self.authoring.document.things.get(connection.target.thing_id)
+            target_port = None if target is None else target.ports.get(connection.target.port_id)
+            target_rule = False if target is None else any(
+                attachment.authored_config.get("projection") == "Rule"
+                and attachment.authored_config.get("author_kind") == VISUAL_FILL_RULE_KIND
+                and attachment.authored_config.get("event") == POINTER_CLICK_EVENT
+                for attachment in target.behaviours.values()
+            )
+            if (
+                target is None
+                or target.tombstoned
+                or connection.target.port_id != CHANGE_COLOUR_PORT_ID
+                or target_port is None
+                or target_port.kind is not PortKind.COMMAND
+                or target_port.direction is not PortDirection.IN
+                or not target_rule
+                or connection.target.thing_id not in world.runtime.states
+            ):
+                raise BrowserRuntimeError(
+                    "browser.connection_action_unavailable",
+                    "This Connection's target action is no longer available. Add the target's Change colour Rule again, edit the Connection, or delete it.",
+                )
+            routes.append(connection.target.thing_id)
+
+        if not local_rule and not routes:
+            raise BrowserRuntimeError(
+                "browser.no_matching_interaction",
+                "This Thing has no matching Rule or supported outgoing Connection.",
+            )
+
+        before_faults = len(world.runtime.faults)
+        affected: list[ThingId] = []
+        if local_rule:
+            if world.dispatch(tid, POINTER_CLICK_EVENT, payload) <= 0:
+                raise BrowserRuntimeError(
+                    "browser.no_matching_interaction",
+                    "This Thing's click Rule could not be dispatched.",
+                )
+            affected.append(tid)
+        for target_id in routes:
+            if world.dispatch(target_id, POINTER_CLICK_EVENT, payload) <= 0:
+                raise BrowserRuntimeError(
+                    "browser.connection_action_unavailable",
+                    "This Connection's target action could not be dispatched. Edit or delete the Connection.",
+                )
+            affected.append(target_id)
+
+        world.runtime.run_current_tick()
+        if len(world.runtime.faults) > before_faults:
+            fault = world.runtime.faults[-1]
+            raise BrowserRuntimeError(fault.code, fault.message)
+
+        result: list[ThingId] = []
+        seen: set[ThingId] = set()
+        for affected_id in affected:
+            if affected_id not in seen:
+                result.append(affected_id)
+                seen.add(affected_id)
+        return result
 
     def save(self) -> dict[str, Any]:
         project = self.authoring.project

@@ -249,15 +249,17 @@ try {
   assert(state.canonical.things.some((thing) => thing.thing_id === lamp));
   evidence.checks.reuse_preserves_first_instance = true;
 
+  // SMX-051F now exposes the real visual Clicked capability canonically at
+  // Thing creation. Retain this older campaign as an advanced-port compatibility
+  // check without trying to duplicate that stable PortId.
   await setSelection(page, [button]);
-  await page.locator('#port-form input[name="port_id"]').fill("clicked");
-  await page.locator('#port-form input[name="name"]').fill("Clicked");
-  await page.locator('#port-form select[name="kind"]').selectOption("event");
-  await page.locator('#port-form select[name="direction"]').selectOption("out");
-  await page.getByTestId("add-port").click();
-  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.ports.some((port) => port.port_id === "clicked"), "source port");
+  await page.locator(".advanced-disclosure").evaluate((element) => { element.open = true; });
+  state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.ports.some(
+    (port) => port.port_id === "clicked" && port.kind === "event" && port.direction === "out"
+  ), "source port");
 
   await setSelection(page, [lamp]);
+  await page.locator(".advanced-disclosure").evaluate((element) => { element.open = true; });
   await page.locator('#port-form input[name="port_id"]').fill("toggle");
   await page.locator('#port-form input[name="name"]').fill("Toggle");
   await page.locator('#port-form select[name="kind"]').selectOption("command");
@@ -271,6 +273,7 @@ try {
   // a freshly projected browser view rather than relying on event-time DOM state.
   await page.reload({ waitUntil: "networkidle" });
   await waitFor(page, (value) => value.canonical.things.some((thing) => thing.thing_id === button) && value.canonical.things.some((thing) => thing.thing_id === lamp), "connection Thing state");
+  await page.locator(".advanced-disclosure").evaluate((element) => { element.open = true; });
   await page.waitForTimeout(150);
   const connectionDom = await page.evaluate(() => ({
     selections: window.splashmxState?.().editor.selection || [],

@@ -294,10 +294,25 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
                 _live_max_tick = max(_live_max_tick, float(keyframe.get("tick", 0)))
 
     _apply_editor_live_tick(0.0)
-    _emit_editor_live_ready()
-    _emit_editor_live_sample(0.0)
+
+    # One transparent viewport-sized Control owns browser pointer capture for the
+    # editor-live target. It performs target-private hit testing over the exact
+    # materialized visuals, then forwards only semantic pointer_click events.
+    var input_surface = Control.new()
+    input_surface.name = "SplashMXEditorInputSurface"
+    input_surface.position = Vector2.ZERO
+    input_surface.size = get_viewport().get_visible_rect().size
+    input_surface.mouse_filter = Control.MOUSE_FILTER_STOP
+    input_surface.focus_mode = Control.FOCUS_NONE
+    input_surface.z_index = 4096
+    input_surface.gui_input.connect(_on_editor_live_surface_input)
+    _live_root.add_child(input_surface)
+
+    # Ready is an externally observed contract: enable input before announcing it.
     _live_ready = true
     set_process(true)
+    _emit_editor_live_ready()
+    _emit_editor_live_sample(0.0)
 
 
 func _shape_polygon(shape, width, height):
@@ -370,6 +385,65 @@ func _apply_editor_live_tick(tick):
         _apply_binding_visual(binding, visual)
 
 
+func _on_editor_live_surface_input(event):
+    if not _live_ready or _live_event_pending:
+        return
+    var surface_point = Vector2.ZERO
+    var canvas_point = Vector2.ZERO
+    if event is InputEventMouseButton:
+        if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+            return
+        surface_point = event.position
+        # In Control.gui_input(), global_position is in CanvasLayer coordinates,
+        # which is the coordinate space used by these editor-live Node2D Things.
+        canvas_point = event.global_position
+    elif event is InputEventScreenTouch:
+        if not event.pressed:
+            return
+        surface_point = event.position
+        # ScreenTouch exposes viewport coordinates rather than InputEventMouse's
+        # CanvasLayer-aware global_position, so undo the root stretch explicitly.
+        canvas_point = get_viewport().get_stretch_transform().affine_inverse() * event.position
+    else:
+        return
+
+    var hit_thing_id = ""
+    var hit_z = -2147483648
+    for thing_id in _live_bindings:
+        var binding = _live_bindings[thing_id]
+        if not binding["interactive_events"].has("pointer_click"):
+            continue
+        var node = binding["node"]
+        var visual = binding["sample_visual"]
+        var width = max(12.0, float(visual.get("width", 12)))
+        var height = max(12.0, float(visual.get("height", 12)))
+        var local_point = node.to_local(canvas_point)
+        var half_w = width / 2.0
+        var half_h = height / 2.0
+        var inside = false
+        if str(visual.get("shape", "rectangle")) == "ellipse":
+            var nx = local_point.x / half_w
+            var ny = local_point.y / half_h
+            inside = nx * nx + ny * ny <= 1.0
+        else:
+            inside = abs(local_point.x) <= half_w and abs(local_point.y) <= half_h
+        if inside and int(node.z_index) >= hit_z:
+            hit_z = int(node.z_index)
+            hit_thing_id = str(thing_id)
+
+    print("SMX_EDITOR_POINTER=" + JSON.stringify({
+        "path": "surface",
+        "surface_x": surface_point.x,
+        "surface_y": surface_point.y,
+        "canvas_x": canvas_point.x,
+        "canvas_y": canvas_point.y,
+        "hit_thing_id": hit_thing_id,
+    }))
+    if hit_thing_id != "":
+        _dispatch_editor_live_event(hit_thing_id, "pointer_click", {"pointer": "primary"})
+        get_viewport().set_input_as_handled()
+
+
 func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
     if not _live_ready:
         return
@@ -380,6 +454,10 @@ func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
         primary_pointer = event.pressed
     if not primary_pointer:
         return
+    print("SMX_EDITOR_POINTER=" + JSON.stringify({
+        "path": "area",
+        "thing_id": str(thing_id),
+    }))
     _dispatch_editor_live_event(str(thing_id), "pointer_click", {"pointer": "primary"})
 
 
@@ -428,35 +506,40 @@ func _on_editor_live_event_completed(
     if typeof(envelope) != TYPE_DICTIONARY or envelope.get("ok", false) != true:
         _fatal("editor-live interaction response is invalid")
         return
-    var update = envelope.get("update", {})
-    if (
-        typeof(update) != TYPE_DICTIONARY
-        or str(update.get("contract", "")) != "splashmx.editor-godot-runtime-update/1"
-        or str(update.get("project_revision_id", "")) != _live_project_revision_id
-        or str(update.get("thing_id", "")) != str(thing_id)
-    ):
-        _fatal("editor-live interaction update identity is invalid")
-        return
-    if not _canonical_shape_is_clean(update):
-        _fatal("editor-live interaction update leaked engine/runtime identity")
-        return
-    if not _live_bindings.has(str(thing_id)):
-        _fatal("editor-live interaction target is no longer materialized")
-        return
-    var visual = update.get("visual", {})
-    if typeof(visual) != TYPE_DICTIONARY:
-        _fatal("editor-live interaction visual is invalid")
-        return
-    var binding = _live_bindings[str(thing_id)]
-    binding["base_visual"] = visual.duplicate(true)
-    _apply_editor_live_tick(_live_elapsed_tick)
-    print("SMX051D_INTERACTION=" + JSON.stringify({
-        "contract": "splashmx.editor-godot-interaction/1",
-        "project_revision_id": _live_project_revision_id,
-        "thing_id": str(thing_id),
-        "trigger": str(trigger),
-        "visual": binding["sample_visual"].duplicate(true),
-    }))
+    var updates = envelope.get("updates", [])
+    if typeof(updates) != TYPE_ARRAY or updates.is_empty():
+        var legacy_update = envelope.get("update", {})
+        updates = [legacy_update]
+    for update in updates:
+        if (
+            typeof(update) != TYPE_DICTIONARY
+            or str(update.get("contract", "")) != "splashmx.editor-godot-runtime-update/1"
+            or str(update.get("project_revision_id", "")) != _live_project_revision_id
+        ):
+            _fatal("editor-live interaction update identity is invalid")
+            return
+        if not _canonical_shape_is_clean(update):
+            _fatal("editor-live interaction update leaked engine/runtime identity")
+            return
+        var update_thing_id = str(update.get("thing_id", ""))
+        if not _live_bindings.has(update_thing_id):
+            _fatal("editor-live interaction target is no longer materialized")
+            return
+        var visual = update.get("visual", {})
+        if typeof(visual) != TYPE_DICTIONARY:
+            _fatal("editor-live interaction visual is invalid")
+            return
+        var binding = _live_bindings[update_thing_id]
+        binding["base_visual"] = visual.duplicate(true)
+        _apply_editor_live_tick(_live_elapsed_tick)
+        print("SMX051D_INTERACTION=" + JSON.stringify({
+            "contract": "splashmx.editor-godot-interaction/1",
+            "project_revision_id": _live_project_revision_id,
+            "source_thing_id": str(thing_id),
+            "thing_id": update_thing_id,
+            "trigger": str(trigger),
+            "visual": binding["sample_visual"].duplicate(true),
+        }))
 
 
 func _semantic_live_sample(tick):
@@ -484,10 +567,15 @@ func _semantic_live_sample(tick):
 func _emit_editor_live_ready():
     var ids = _live_bindings.keys()
     ids.sort()
+    var interactive_ids = []
+    for thing_id in ids:
+        if _live_bindings[thing_id]["interactive_events"].has("pointer_click"):
+            interactive_ids.append(thing_id)
     print("SMX051C_PLAY_READY=" + JSON.stringify({
         "contract": "splashmx.editor-godot-play-ready/1",
         "project_revision_id": _live_project_revision_id,
         "thing_ids": ids,
+        "interactive_thing_ids": interactive_ids,
         "max_tick": _live_max_tick,
     }))
 
