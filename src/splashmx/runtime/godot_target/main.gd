@@ -426,7 +426,7 @@ func _on_editor_live_surface_input(event):
 
     if hit_thing_id != "":
         _dispatch_editor_live_event(hit_thing_id, "pointer_click", {"pointer": "primary"})
-        accept_event()
+        get_viewport().set_input_as_handled()
 
 
 func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
