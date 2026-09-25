@@ -124,7 +124,7 @@ try {
   );
   evidence.checks.target_action_is_canonical_rule_capability = true;
 
-  assert.equal(await page.locator("#connection-form input:not([type=hidden])").count(), 0);
+  assert.equal(await page.locator("#visual-connection-form input:not([type=hidden])").count(), 0);
   assert.equal(await page.locator(".advanced-disclosure").evaluate((element) => element.open), false);
   await page.getByTestId("connection-source-thing").selectOption(buttonId);
   await page.getByTestId("connection-target-thing").selectOption(lampId);
