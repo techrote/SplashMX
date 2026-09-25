@@ -339,6 +339,7 @@ function renderStage() {
       }
       await commitVisual(thing.thing_id, patch, event.shiftKey ? `Resized ${thing.label}.` : `Moved ${thing.label}.`);
       if (!selectedIds().includes(thing.thing_id)) await act("select", { thing_ids: [thing.thing_id] }, `Selected ${thing.label}.`);
+      document.querySelector(`[data-testid="stage-thing-${thing.thing_id}"]`)?.focus();
     });
     installMove(node, thing, visual);
     installResize(resize, node, thing, visual);
@@ -444,7 +445,7 @@ function renderGroupOverlays(stage, selected) {
       const dx = event.key === "ArrowLeft" ? -delta : event.key === "ArrowRight" ? delta : 0;
       const dy = event.key === "ArrowUp" ? -delta : event.key === "ArrowDown" ? delta : 0;
       await act("moveGroup", { root_id: group.thing_id, dx, dy }, `Moved ${group.label} as a group.`);
-      requestAnimationFrame(() => document.querySelector(`[data-testid="group-caption-${group.thing_id}"]`)?.focus());
+      document.querySelector(`[data-testid="group-caption-${group.thing_id}"]`)?.focus();
     });
 
     if (definition) {
