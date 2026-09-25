@@ -294,10 +294,13 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
                 _live_max_tick = max(_live_max_tick, float(keyframe.get("tick", 0)))
 
     _apply_editor_live_tick(0.0)
-    _emit_editor_live_ready()
-    _emit_editor_live_sample(0.0)
+    # Ready is an externally observed contract: enable input before announcing it.
+    # Otherwise a physical click arriving immediately after the ready console event
+    # can be dropped by _on_editor_live_input with no runtime request or error.
     _live_ready = true
     set_process(true)
+    _emit_editor_live_ready()
+    _emit_editor_live_sample(0.0)
 
 
 func _shape_polygon(shape, width, height):
