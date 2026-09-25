@@ -9,10 +9,14 @@ from __future__ import annotations
 import math
 from typing import Any, Mapping
 
+from splashmx.canonical.core import ThingId
 from splashmx.canonical.serialization import CanonicalProjectRevision
 from splashmx.runtime.godot import validate_target_value
+from splashmx.runtime.lifecycle import WorldRuntime
 
 EDITOR_GODOT_PLAY_CONTRACT = "splashmx.editor-godot-play/1"
+EDITOR_GODOT_RUNTIME_UPDATE_CONTRACT = "splashmx.editor-godot-runtime-update/1"
+POINTER_CLICK_EVENT = "pointer_click"
 VISUAL_PROPERTIES = frozenset({
     "visual.x",
     "visual.y",
@@ -114,6 +118,19 @@ def _tracks(value: Any, thing_id: str) -> list[dict[str, Any]]:
     return rows
 
 
+def _interactive_events(thing: Any) -> list[str]:
+    events: set[str] = set()
+    for behaviour in thing.behaviours.values():
+        config = dict(behaviour.authored_config)
+        if (
+            config.get("projection") == "Rule"
+            and config.get("author_kind") == "visual-fill"
+            and config.get("event") == POINTER_CLICK_EVENT
+        ):
+            events.add(POINTER_CLICK_EVENT)
+    return sorted(events)
+
+
 def build_editor_godot_play_projection(project: CanonicalProjectRevision) -> dict[str, Any]:
     if not isinstance(project, CanonicalProjectRevision):
         _fail("godot_play.invalid_project", "Godot Play requires a canonical project revision")
@@ -130,16 +147,20 @@ def build_editor_godot_play_projection(project: CanonicalProjectRevision) -> dic
             "label": str(thing.label),
             "visual": visual,
             "timeline_tracks": _tracks(thing.authored_state.get("timeline_tracks"), identity),
+            "interactive_events": _interactive_events(thing),
         })
         if len(things) > _MAX_THINGS:
             _fail("godot_play.resource_limit", "Godot Play visual Thing limit exceeded")
 
+    required_features = ["render_2d"]
+    if any(thing["interactive_events"] for thing in things):
+        required_features.insert(0, "input")
     projection = {
         "contract": EDITOR_GODOT_PLAY_CONTRACT,
         "project_id": str(project.document.project_id),
         "project_revision_id": str(project.document.project_revision_id),
         "ticks_per_second": 60,
-        "required_features": ["render_2d"],
+        "required_features": required_features,
         "things": things,
     }
     # Reuse the production target-value guard so forbidden target/runtime identity
@@ -151,9 +172,46 @@ def build_editor_godot_play_projection(project: CanonicalProjectRevision) -> dic
     return projection
 
 
+
+def build_editor_godot_runtime_update(
+    world: WorldRuntime,
+    *,
+    project_revision_id: str,
+    thing_id: str | ThingId,
+) -> dict[str, Any]:
+    """Project one post-event transient runtime visual back to the Godot target."""
+    if not isinstance(world, WorldRuntime):
+        _fail("godot_play.runtime_unavailable", "Play is not active.")
+    tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
+    state = world.runtime.states.get(tid)
+    if state is None:
+        _fail("godot_play.unknown_thing", "That interactive Thing is not active in Play.")
+    visual = _visual(state.public_state.get("visual"))
+    if visual is None:
+        _fail("godot_play.missing_visual", "That interactive Thing has no visible runtime state.")
+    if "visual.fill" in state.public_state:
+        visual = _visual({**visual, "fill": state.public_state["visual.fill"]})
+        if visual is None:
+            _fail("godot_play.invalid_visual", "The interactive Rule produced invalid visible state.")
+    update = {
+        "contract": EDITOR_GODOT_RUNTIME_UPDATE_CONTRACT,
+        "project_revision_id": str(project_revision_id),
+        "thing_id": str(tid),
+        "visual": visual,
+    }
+    try:
+        validate_target_value(update, where="editor Godot runtime update")
+    except ValueError as exc:
+        _fail(getattr(exc, "code", "godot_play.invalid_runtime_update"), str(exc))
+    return update
+
+
 __all__ = [
     "EDITOR_GODOT_PLAY_CONTRACT",
+    "EDITOR_GODOT_RUNTIME_UPDATE_CONTRACT",
     "EditorGodotPlayError",
+    "POINTER_CLICK_EVENT",
     "VISUAL_PROPERTIES",
     "build_editor_godot_play_projection",
+    "build_editor_godot_runtime_update",
 ]

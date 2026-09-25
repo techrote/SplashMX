@@ -6,14 +6,20 @@ on:
       - 'src/splashmx/runtime/godot.py'
       - 'src/splashmx/runtime/godot_target/**'
       - 'src/splashmx/editor/godot_play.py'
+      - 'src/splashmx/canonical/core.py'
+      - 'src/splashmx/editor/authoring.py'
+      - 'src/splashmx/editor/browser_runtime.py'
       - 'src/splashmx/editor/browser_server.py'
       - 'src/splashmx/editor/web/app.js'
       - 'src/splashmx/editor/web/index.html'
       - 'src/splashmx/editor/web/styles.css'
       - 'tests/production/test_smx051c.py'
       - 'tests/production/smx051c_editor_godot_harness.mjs'
+      - 'tests/production/test_smx051d.py'
+      - 'tests/production/smx051d_editor_godot_harness.mjs'
       - 'tools/validate_smx051c.py'
       - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
+      - 'docs/implementation/SMX-051D-INTERACTIVE-RULES.md'
       - 'src/MODULES.json'
       - 'spec/production/conformance-registry.json'
       - 'spec/production/smx038-godot-runtime-fixtures.json'
@@ -32,14 +38,20 @@ on:
       - 'src/splashmx/runtime/godot.py'
       - 'src/splashmx/runtime/godot_target/**'
       - 'src/splashmx/editor/godot_play.py'
+      - 'src/splashmx/canonical/core.py'
+      - 'src/splashmx/editor/authoring.py'
+      - 'src/splashmx/editor/browser_runtime.py'
       - 'src/splashmx/editor/browser_server.py'
       - 'src/splashmx/editor/web/app.js'
       - 'src/splashmx/editor/web/index.html'
       - 'src/splashmx/editor/web/styles.css'
       - 'tests/production/test_smx051c.py'
       - 'tests/production/smx051c_editor_godot_harness.mjs'
+      - 'tests/production/test_smx051d.py'
+      - 'tests/production/smx051d_editor_godot_harness.mjs'
       - 'tools/validate_smx051c.py'
       - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
+      - 'docs/implementation/SMX-051D-INTERACTIVE-RULES.md'
       - 'src/MODULES.json'
       - 'spec/production/conformance-registry.json'
       - 'spec/production/smx038-godot-runtime-fixtures.json'
@@ -91,6 +103,8 @@ jobs:
         run: python tools/validate_smx051c.py
       - name: Run SMX-051C projection and availability tests
         run: python -m unittest discover -s tests/production -p 'test_smx051c.py' -v
+      - name: Run SMX-051D interactive Rule boundary tests
+        run: python -m unittest discover -s tests/production -p 'test_smx051d.py' -v
       - name: Export production-core target fixture
         run: python tools/export_smx038_fixture.py --output artifacts/smx038-runtime-fixture.json
       - name: Measure production WorldSave save-load seam
@@ -270,13 +284,35 @@ jobs:
         env:
           SMX051C_URL: http://127.0.0.1:8130/
         run: node tests/production/smx051c_editor_godot_harness.mjs
+      - name: Serve clean production editor for interactive Rule evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=src python -m splashmx.editor.browser_server \
+            --host 127.0.0.1 \
+            --port 8131 \
+            --project-id smx051d-browser \
+            --store-path artifacts/smx051d-editor.sqlite3 \
+            --godot-web-root build/web > /tmp/smx051d-editor.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8131/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/smx051d-editor.log
+          exit 1
+      - name: Exercise beginner Rule through real Godot input in Chromium
+        env:
+          SMX051D_URL: http://127.0.0.1:8131/
+        run: node tests/production/smx051d_editor_godot_harness.mjs
       - name: Print browser evidence
         if: always()
         run: |
           if [ -f artifacts/smx038-browser-evidence.json ]; then cat artifacts/smx038-browser-evidence.json; fi
           if [ -f artifacts/smx051c-editor-godot-evidence.json ]; then cat artifacts/smx051c-editor-godot-evidence.json; fi
+          if [ -f artifacts/smx051d-editor-godot-evidence.json ]; then cat artifacts/smx051d-editor-godot-evidence.json; fi
           if [ -f /tmp/smx038-http.log ]; then cat /tmp/smx038-http.log; fi
           if [ -f /tmp/smx051c-editor.log ]; then cat /tmp/smx051c-editor.log; fi
+          if [ -f /tmp/smx051d-editor.log ]; then cat /tmp/smx051d-editor.log; fi
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -284,5 +320,6 @@ jobs:
           path: |
             artifacts/smx038-browser-evidence.json
             artifacts/smx051c-editor-godot-evidence.json
+            artifacts/smx051d-editor-godot-evidence.json
           if-no-files-found: error
           retention-days: 30

@@ -20,11 +20,16 @@ from threading import RLock
 from typing import Any, Mapping
 from urllib.parse import urlparse
 
-from splashmx.canonical.core import SemanticError
+from splashmx.canonical.core import SemanticError, ThingId
 from splashmx.canonical.serialization import SerializationError
 from splashmx.collaboration.core import CollaborationError, RelayAuthenticator, RelayPacket
 from splashmx.editor.authoring import AuthoringError, AuthoringSession
-from splashmx.editor.godot_play import EditorGodotPlayError, build_editor_godot_play_projection
+from splashmx.editor.godot_play import (
+    EditorGodotPlayError,
+    POINTER_CLICK_EVENT,
+    build_editor_godot_play_projection,
+    build_editor_godot_runtime_update,
+)
 from splashmx.editor.browser_runtime import BrowserRuntimeError, BrowserRuntimeSession, rebuild_program_catalog
 from splashmx.editor.people import PeopleError, PeopleSession
 from splashmx.runtime.lifecycle import LifecycleError
@@ -204,6 +209,52 @@ class BrowserBridge:
                 )
             return build_editor_godot_play_projection(self.session.project)
 
+    def godot_runtime_event(self, request: Any) -> dict[str, Any]:
+        """Dispatch one validated target input through the production constrained runtime."""
+        with self._lock:
+            if not isinstance(request, dict):
+                raise EditorGodotPlayError("godot_play.invalid_event", "The runtime input event is invalid.")
+            _reject_transient_identity(request)
+            if not self.runtime.playing or self.runtime.world is None:
+                raise EditorGodotPlayError("godot_play.runtime_unavailable", "Play is not active.")
+            thing_id = _string(request, "thing_id")
+            trigger = _string(request, "trigger")
+            if trigger != POINTER_CLICK_EVENT:
+                raise EditorGodotPlayError(
+                    "godot_play.unsupported_event",
+                    "That runtime interaction is not supported by this editor Play target.",
+                )
+            world = self.runtime.world
+            tid = ThingId(thing_id)
+            if tid not in world.runtime.states:
+                raise EditorGodotPlayError("godot_play.unknown_thing", "That interactive Thing is not active in Play.")
+            projection = build_editor_godot_play_projection(self.session.project)
+            projected = next((row for row in projection["things"] if row["thing_id"] == thing_id), None)
+            if projected is None or trigger not in projected.get("interactive_events", []):
+                raise EditorGodotPlayError(
+                    "godot_play.no_matching_rule",
+                    "That Thing has no matching interactive Rule.",
+                )
+            before_faults = len(world.runtime.faults)
+            matches = world.dispatch(tid, trigger, request.get("payload"))
+            if matches <= 0:
+                raise EditorGodotPlayError(
+                    "godot_play.no_matching_rule",
+                    "That Thing has no matching interactive Rule.",
+                )
+            world.runtime.run_current_tick()
+            if len(world.runtime.faults) > before_faults:
+                fault = world.runtime.faults[-1]
+                raise EditorGodotPlayError(fault.code, fault.message)
+            return {
+                "ok": True,
+                "update": build_editor_godot_runtime_update(
+                    world,
+                    project_revision_id=str(self.session.document.project_revision_id),
+                    thing_id=thing_id,
+                ),
+            }
+
     def apply(self, request: Any) -> dict[str, Any]:
         # ThreadingHTTPServer may dispatch concurrent requests. Serialize semantic
         # mutations/snapshots so project revisions, collaboration receipts and the
@@ -259,10 +310,21 @@ class BrowserBridge:
         elif action == "makeReusable": result = str(self.session.make_reusable(_string(data, "root_id"), definition_id=_optional_string(data, "definition_id")))
         elif action == "instantiateReusable": result = str(self.session.instantiate_reusable(_string(data, "definition_id")))
         elif action in {"attachRule", "attachBehaviour"}:
-            method = self.session.attach_rule if action == "attachRule" else self.session.attach_behaviour
-            actions = data.get("actions")
-            if actions is not None and not isinstance(actions, list): raise AuthoringError("authoring.invalid_behaviour", "Actions must be a list.")
-            result = str(method(_string(data, "thing_id"), attachment_id=_optional_string(data, "attachment_id"), event=str(data.get("event", "activate")), actions=actions))
+            if action == "attachRule" and data.get("author_kind") == "visual-fill":
+                result = str(self.session.attach_visual_rule(
+                    _string(data, "thing_id"),
+                    attachment_id=_optional_string(data, "attachment_id"),
+                    fill=_string(data, "fill"),
+                ))
+            else:
+                method = self.session.attach_rule if action == "attachRule" else self.session.attach_behaviour
+                actions = data.get("actions")
+                if actions is not None and not isinstance(actions, list): raise AuthoringError("authoring.invalid_behaviour", "Actions must be a list.")
+                result = str(method(_string(data, "thing_id"), attachment_id=_optional_string(data, "attachment_id"), event=str(data.get("event", "activate")), actions=actions))
+        elif action == "updateVisualRule":
+            result = str(self.session.update_visual_rule(_string(data, "thing_id"), _string(data, "attachment_id"), fill=_string(data, "fill")))
+        elif action == "removeRule":
+            self.session.remove_rule(_string(data, "thing_id"), _string(data, "attachment_id"))
         elif action == "connect": result = str(self.session.connect(source_thing_id=_string(data, "source_thing_id"), source_port_id=_string(data, "source_port_id"), target_thing_id=_string(data, "target_thing_id"), target_port_id=_string(data, "target_port_id"), connection_id=_optional_string(data, "connection_id")))
         elif action == "timeline":
             keyframes = data.get("keyframes", [])
@@ -363,14 +425,27 @@ def make_handler(bridge: BrowserBridge):
             if static is None: self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That editor resource was not found."}}); return
             filename, mime = static; self._bytes(HTTPStatus.OK, (WEB_ROOT / filename).read_bytes(), mime, editor_csp=True)
         def do_POST(self) -> None:
-            if urlparse(self.path).path != "/api/action": self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That editor action was not found."}}); return
+            path = urlparse(self.path).path
+            if path not in {"/api/action", "/api/godot-runtime-event"}:
+                self._json(HTTPStatus.NOT_FOUND, {"error": {"code": "authoring.not_found", "message": "That editor action was not found."}})
+                return
             try: length = int(self.headers.get("Content-Length", "0"))
             except ValueError: length = -1
-            if length < 0 or length > _MAX_REQUEST_BYTES: self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": {"code": "authoring.request_too_large", "message": "That authoring change is too large for one request."}}); return
-            try: request = json.loads(self.rfile.read(length).decode("utf-8")); response = bridge.apply(request)
-            except (UnicodeDecodeError, json.JSONDecodeError): self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": "That authoring request could not be read."}}); return
-            except (AuthoringError, BrowserRuntimeError, PeopleError, CollaborationError, SemanticError, SerializationError, LifecycleError, StorageError) as exc: self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}, "state": bridge.state()}); return
-            except (TypeError, ValueError) as exc: self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": str(exc)}}); return
+            if length < 0 or length > _MAX_REQUEST_BYTES:
+                self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": {"code": "authoring.request_too_large", "message": "That authoring change is too large for one request."}})
+                return
+            try:
+                request = json.loads(self.rfile.read(length).decode("utf-8"))
+                response = bridge.godot_runtime_event(request) if path == "/api/godot-runtime-event" else bridge.apply(request)
+            except (UnicodeDecodeError, json.JSONDecodeError):
+                self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": "That authoring request could not be read."}})
+                return
+            except (AuthoringError, BrowserRuntimeError, EditorGodotPlayError, PeopleError, CollaborationError, SemanticError, SerializationError, LifecycleError, StorageError) as exc:
+                self._json(HTTPStatus.CONFLICT, {"error": {"code": getattr(exc, "code", "authoring.invalid_edit"), "message": str(exc)}, "state": bridge.state()})
+                return
+            except (TypeError, ValueError) as exc:
+                self._json(HTTPStatus.BAD_REQUEST, {"error": {"code": "authoring.invalid_request", "message": str(exc)}})
+                return
             self._json(HTTPStatus.OK, response)
     return Handler
 

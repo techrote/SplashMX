@@ -40,6 +40,7 @@ var _live_elapsed_tick = 0.0
 var _live_mid_emitted = false
 var _live_end_emitted = false
 var _live_project_revision_id = ""
+var _live_event_pending = false
 
 
 func _ready():
@@ -230,6 +231,7 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
     add_child(_live_root)
     _live_bindings.clear()
     _live_max_tick = 0.0
+    _live_event_pending = false
 
     var things = projection.get("things", [])
     if typeof(things) != TYPE_ARRAY or things.size() > MAX_BINDINGS:
@@ -243,11 +245,23 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
         var thing_id = str(thing.get("thing_id", ""))
         var visual = thing.get("visual", {})
         var tracks = thing.get("timeline_tracks", [])
+        var interactive_events = thing.get("interactive_events", [])
         if thing_id == "" or _live_bindings.has(thing_id):
             _fatal("editor-live Thing identity is empty or duplicated")
             return
-        if typeof(visual) != TYPE_DICTIONARY or typeof(tracks) != TYPE_ARRAY:
-            _fatal("editor-live visual/Timeline projection is invalid")
+        if (
+            typeof(visual) != TYPE_DICTIONARY
+            or typeof(tracks) != TYPE_ARRAY
+            or typeof(interactive_events) != TYPE_ARRAY
+        ):
+            _fatal("editor-live visual/Timeline/interaction projection is invalid")
+            return
+        for event_name in interactive_events:
+            if str(event_name) != "pointer_click":
+                _fatal("editor-live interaction event is unsupported")
+                return
+        if not interactive_events.is_empty() and not required_features.has("input"):
+            _fatal("editor-live interaction projection did not declare input")
             return
         var node = Node2D.new()
         node.set_meta("smx_thing_id", thing_id)
@@ -255,11 +269,21 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
         z_order += 1
         var polygon = Polygon2D.new()
         node.add_child(polygon)
+        var area = Area2D.new()
+        area.input_pickable = interactive_events.has("pointer_click")
+        var collision = CollisionPolygon2D.new()
+        area.add_child(collision)
+        node.add_child(area)
+        if interactive_events.has("pointer_click"):
+            area.input_event.connect(_on_editor_live_input.bind(thing_id))
         _live_root.add_child(node)
         var binding = {
             "thing_id": thing_id,
             "node": node,
             "polygon": polygon,
+            "area": area,
+            "collision": collision,
+            "interactive_events": interactive_events.duplicate(),
             "base_visual": visual.duplicate(true),
             "timeline_tracks": tracks.duplicate(true),
             "sample_visual": visual.duplicate(true),
@@ -322,7 +346,9 @@ func _apply_binding_visual(binding, visual):
     var polygon = binding["polygon"]
     node.position = Vector2(x + width / 2.0, y + height / 2.0)
     node.rotation_degrees = float(visual.get("rotation", 0))
-    polygon.polygon = _shape_polygon(visual.get("shape", "rectangle"), width, height)
+    var points = _shape_polygon(visual.get("shape", "rectangle"), width, height)
+    polygon.polygon = points
+    binding["collision"].polygon = points
     polygon.color = Color.from_string(str(visual.get("fill", "#5b7cfa")), Color.WHITE)
     binding["sample_visual"] = visual.duplicate(true)
 
@@ -342,6 +368,95 @@ func _apply_editor_live_tick(tick):
             if value != null:
                 visual[key] = value
         _apply_binding_visual(binding, visual)
+
+
+func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
+    if not _live_ready:
+        return
+    var primary_pointer = false
+    if event is InputEventMouseButton:
+        primary_pointer = event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+    elif event is InputEventScreenTouch:
+        primary_pointer = event.pressed
+    if not primary_pointer:
+        return
+    _dispatch_editor_live_event(str(thing_id), "pointer_click", {"pointer": "primary"})
+
+
+func _dispatch_editor_live_event(thing_id, trigger, payload):
+    if _live_event_pending:
+        return
+    _live_event_pending = true
+    var request = HTTPRequest.new()
+    add_child(request)
+    request.request_completed.connect(
+        _on_editor_live_event_completed.bind(request, str(thing_id), str(trigger))
+    )
+    var origin = str(JavaScriptBridge.eval("window.location.origin", true))
+    if origin == "":
+        _live_event_pending = false
+        request.queue_free()
+        _fatal("editor-live browser origin is unavailable for interaction")
+        return
+    var headers = PackedStringArray(["Content-Type: application/json"])
+    var body = JSON.stringify({
+        "thing_id": str(thing_id),
+        "trigger": str(trigger),
+        "payload": payload,
+    })
+    var error = request.request(
+        origin + "/api/godot-runtime-event",
+        headers,
+        HTTPClient.METHOD_POST,
+        body
+    )
+    if error != OK:
+        _live_event_pending = false
+        request.queue_free()
+        _fatal("editor-live interaction request could not start")
+
+
+func _on_editor_live_event_completed(
+    _result, response_code, _headers, body, request, thing_id, trigger
+):
+    _live_event_pending = false
+    request.queue_free()
+    if int(response_code) != 200:
+        _fatal("editor-live interaction request failed with status " + str(response_code))
+        return
+    var envelope = JSON.parse_string(body.get_string_from_utf8())
+    if typeof(envelope) != TYPE_DICTIONARY or envelope.get("ok", false) != true:
+        _fatal("editor-live interaction response is invalid")
+        return
+    var update = envelope.get("update", {})
+    if (
+        typeof(update) != TYPE_DICTIONARY
+        or str(update.get("contract", "")) != "splashmx.editor-godot-runtime-update/1"
+        or str(update.get("project_revision_id", "")) != _live_project_revision_id
+        or str(update.get("thing_id", "")) != str(thing_id)
+    ):
+        _fatal("editor-live interaction update identity is invalid")
+        return
+    if not _canonical_shape_is_clean(update):
+        _fatal("editor-live interaction update leaked engine/runtime identity")
+        return
+    if not _live_bindings.has(str(thing_id)):
+        _fatal("editor-live interaction target is no longer materialized")
+        return
+    var visual = update.get("visual", {})
+    if typeof(visual) != TYPE_DICTIONARY:
+        _fatal("editor-live interaction visual is invalid")
+        return
+    var binding = _live_bindings[str(thing_id)]
+    binding["base_visual"] = visual.duplicate(true)
+    _apply_editor_live_tick(_live_elapsed_tick)
+    print("SMX051D_INTERACTION=" + JSON.stringify({
+        "contract": "splashmx.editor-godot-interaction/1",
+        "project_revision_id": _live_project_revision_id,
+        "thing_id": str(thing_id),
+        "trigger": str(trigger),
+        "visual": binding["sample_visual"].duplicate(true),
+    }))
 
 
 func _semantic_live_sample(tick):
