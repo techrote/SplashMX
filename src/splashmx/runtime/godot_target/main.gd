@@ -373,6 +373,54 @@ func _apply_editor_live_tick(tick):
         _apply_binding_visual(binding, visual)
 
 
+func _input(event):
+    # Browser pointer picking must remain deterministic when several editor-live
+    # Things are materialized. Area2D input remains as the normal engine path,
+    # while this target-private visual hit test provides the same bounded
+    # pointer_click event without depending on physics picking order.
+    if not _editor_live or not _live_ready or _live_event_pending:
+        return
+    var point = Vector2.ZERO
+    if event is InputEventMouseButton:
+        if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+            return
+        point = event.position
+    elif event is InputEventScreenTouch:
+        if not event.pressed:
+            return
+        point = event.position
+    else:
+        return
+
+    var hit_thing_id = ""
+    var hit_z = -2147483648
+    for thing_id in _live_bindings:
+        var binding = _live_bindings[thing_id]
+        if not binding["interactive_events"].has("pointer_click"):
+            continue
+        var node = binding["node"]
+        var visual = binding["sample_visual"]
+        var width = max(12.0, float(visual.get("width", 12)))
+        var height = max(12.0, float(visual.get("height", 12)))
+        var local_point = node.to_local(point)
+        var half_w = width / 2.0
+        var half_h = height / 2.0
+        var inside = false
+        if str(visual.get("shape", "rectangle")) == "ellipse":
+            var nx = local_point.x / half_w
+            var ny = local_point.y / half_h
+            inside = nx * nx + ny * ny <= 1.0
+        else:
+            inside = abs(local_point.x) <= half_w and abs(local_point.y) <= half_h
+        if inside and int(node.z_index) >= hit_z:
+            hit_z = int(node.z_index)
+            hit_thing_id = str(thing_id)
+
+    if hit_thing_id != "":
+        _dispatch_editor_live_event(hit_thing_id, "pointer_click", {"pointer": "primary"})
+        get_viewport().set_input_as_handled()
+
+
 func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
     if not _live_ready:
         return
