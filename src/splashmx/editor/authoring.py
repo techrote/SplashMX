@@ -8,6 +8,7 @@ project revision.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from hashlib import sha256
 import math
@@ -44,8 +45,11 @@ from splashmx.canonical.core import (
     SemanticTransaction,
     SetAuthoredState,
     SetContainment,
+    SetInstanceStateOverride,
     ThingId,
     ThingRecord,
+    TombstoneRelationship,
+    TombstoneThing,
     apply_transaction,
     empty_document,
 )
@@ -208,6 +212,24 @@ class AuthoringSession:
         self._commit(AddPort(tid, record))
         return record.port_id
 
+    def _instance_membership(self, thing_id: ThingId) -> tuple[ThingId, Any, ElementId] | None:
+        """Return the canonical instance root/record/element for one concrete Thing."""
+        for root_id, instance in self.document.instances.items():
+            for element_id, concrete_id in instance.thing_by_element.items():
+                if concrete_id == thing_id:
+                    return root_id, instance, element_id
+        return None
+
+    def _active_containment(self) -> tuple[dict[ThingId, ThingId], dict[ThingId, list[tuple[RelationId, ThingId]]]]:
+        parent_by_child: dict[ThingId, ThingId] = {}
+        children: dict[ThingId, list[tuple[RelationId, ThingId]]] = {}
+        for relation in self.document.relationships.values():
+            if relation.tombstoned or relation.kind is not RelationshipKind.CONTAINS:
+                continue
+            parent_by_child[relation.target] = relation.source
+            children.setdefault(relation.source, []).append((relation.relation_id, relation.target))
+        return parent_by_child, children
+
     def group_things(
         self,
         member_ids: Sequence[str | ThingId],
@@ -218,6 +240,24 @@ class AuthoringSession:
         members = [value if isinstance(value, ThingId) else ThingId(value) for value in member_ids]
         if not members or len(set(members)) != len(members):
             raise AuthoringError("authoring.invalid_group", "Select one or more distinct Things to group.")
+        for member in members:
+            thing = self.document.things.get(member)
+            if thing is None or thing.tombstoned:
+                raise AuthoringError("authoring.unknown_thing", "Selection contains a Thing that is no longer available.")
+            membership = self._instance_membership(member)
+            if membership is not None and membership[0] != member:
+                raise AuthoringError(
+                    "authoring.partial_instance_group",
+                    "Select a whole reusable instance rather than regrouping one of its internal Things.",
+                )
+        selected = set(members)
+        parent_by_child, _ = self._active_containment()
+        for member in members:
+            current = parent_by_child.get(member)
+            while current is not None:
+                if current in selected:
+                    raise AuthoringError("authoring.invalid_group", "Do not group a Thing together with one of its containing groups.")
+                current = parent_by_child.get(current)
         group = ThingId(group_id or self.allocate_id("group"))
         operations: list[Any] = [AddThing(ThingRecord(group, label, {}))]
         for member in members:
@@ -231,11 +271,7 @@ class AuthoringSession:
         live = self.document.things.get(root)
         if live is None or live.tombstoned:
             raise AuthoringError("authoring.unknown_thing", "That Thing is no longer available to edit.")
-        children: dict[ThingId, list[ThingId]] = {}
-        for relation in self.document.relationships.values():
-            if relation.tombstoned or relation.kind is not RelationshipKind.CONTAINS:
-                continue
-            children.setdefault(relation.source, []).append(relation.target)
+        _, children = self._active_containment()
         result: set[ThingId] = set()
         pending = [root]
         while pending:
@@ -243,22 +279,152 @@ class AuthoringSession:
             if current in result:
                 continue
             result.add(current)
-            pending.extend(children.get(current, ()))
+            pending.extend(child for _, child in children.get(current, ()))
         return result
+
+    def ungroup(self, root_id: str | ThingId) -> tuple[ThingId, ...]:
+        """Dissolve an ordinary containment group without replacing its child Things."""
+        root = root_id if isinstance(root_id, ThingId) else ThingId(root_id)
+        thing = self.document.things.get(root)
+        if thing is None or thing.tombstoned:
+            raise AuthoringError("authoring.unknown_thing", "That group is no longer available.")
+        if self._instance_membership(root) is not None:
+            raise AuthoringError(
+                "authoring.reusable_ungroup_unsupported",
+                "Reusable instances stay intact. Create or move instances from the Library instead.",
+            )
+        parent_by_child, children = self._active_containment()
+        child_rows = children.get(root, [])
+        if not child_rows:
+            raise AuthoringError("authoring.not_a_group", "Select a group to ungroup.")
+        parent = parent_by_child.get(root)
+        operations: list[Any] = []
+        for relation_id, child_id in child_rows:
+            if parent is None:
+                operations.append(TombstoneRelationship(relation_id))
+            else:
+                operations.append(SetContainment(child_id, parent, relation_id))
+        operations.append(TombstoneThing(root))
+        self._commit(*operations)
+        child_ids = tuple(child_id for _, child_id in child_rows)
+        self.editor.selection = set(child_ids)
+        return child_ids
+
+    @staticmethod
+    def _translated_timeline_tracks(value: Any, *, thing_id: ThingId, dx: float, dy: float) -> Any:
+        if not isinstance(value, (list, tuple)):
+            return deepcopy(value)
+        tracks: list[Any] = []
+        for raw in value:
+            if not isinstance(raw, Mapping):
+                tracks.append(deepcopy(raw))
+                continue
+            track = deepcopy(dict(raw))
+            if "target_thing_id" in track:
+                track["target_thing_id"] = str(thing_id)
+            shift = dx if track.get("property") == "visual.x" else dy if track.get("property") == "visual.y" else 0.0
+            if shift and isinstance(track.get("keyframes"), (list, tuple)):
+                keyframes = []
+                for raw_frame in track["keyframes"]:
+                    frame = deepcopy(dict(raw_frame)) if isinstance(raw_frame, Mapping) else deepcopy(raw_frame)
+                    if isinstance(frame, dict):
+                        value_number = frame.get("value")
+                        if isinstance(value_number, (int, float)) and not isinstance(value_number, bool):
+                            frame["value"] = float(value_number) + shift
+                    keyframes.append(frame)
+                track["keyframes"] = keyframes
+            tracks.append(track)
+        return tracks
+
+    def _translate_concrete_state(self, thing_id: ThingId, dx: float, dy: float) -> tuple[dict[str, Any], dict[str, Any]]:
+        thing = self.document.things[thing_id]
+        state = deepcopy(dict(thing.authored_state))
+        overrides: dict[str, Any] = {}
+        visual = state.get("visual")
+        if isinstance(visual, Mapping):
+            shifted = _normalise_visual_state(
+                {"x": float(visual.get("x", 0)) + dx, "y": float(visual.get("y", 0)) + dy},
+                base=visual,
+            )
+            state["visual"] = shifted
+            overrides["visual"] = deepcopy(shifted)
+        if "timeline_tracks" in state:
+            shifted_tracks = self._translated_timeline_tracks(
+                state["timeline_tracks"],
+                thing_id=thing_id,
+                dx=dx,
+                dy=dy,
+            )
+            state["timeline_tracks"] = shifted_tracks
+            overrides["timeline_tracks"] = deepcopy(shifted_tracks)
+        return state, overrides
+
+    def _instance_override_operations(
+        self,
+        thing_id: ThingId,
+        overrides: Mapping[str, Any],
+    ) -> list[Any]:
+        membership = self._instance_membership(thing_id)
+        if membership is None or not overrides:
+            return []
+        root_id, instance, element_id = membership
+        return [
+            SetInstanceStateOverride(root_id, instance.definition_id, element_id, str(key), deepcopy(value))
+            for key, value in overrides.items()
+        ]
+
+    def move_group(self, root_id: str | ThingId, *, dx: float, dy: float) -> tuple[ThingId, ...]:
+        """Translate a visible group as one authoring gesture while retaining child identity."""
+        root = root_id if isinstance(root_id, ThingId) else ThingId(root_id)
+        descendants = self._descendants(root)
+        if len(descendants) <= 1:
+            raise AuthoringError("authoring.not_a_group", "Select a group to move as one object.")
+        clean_dx = _visual_number(dx, "Horizontal move", minimum=-10000, maximum=10000)
+        clean_dy = _visual_number(dy, "Vertical move", minimum=-10000, maximum=10000)
+        operations: list[Any] = []
+        moved: list[ThingId] = []
+        for thing_id in sorted(descendants, key=str):
+            if thing_id == root:
+                continue
+            thing = self.document.things[thing_id]
+            if not isinstance(thing.authored_state.get("visual"), Mapping):
+                continue
+            state, overrides = self._translate_concrete_state(thing_id, clean_dx, clean_dy)
+            operations.append(SetAuthoredState(thing_id, state))
+            operations.extend(self._instance_override_operations(thing_id, overrides))
+            moved.append(thing_id)
+        if not operations:
+            raise AuthoringError("authoring.group_has_no_visuals", "This group has no visible Things to move.")
+        self._commit(*operations)
+        self.editor.selection = {root}
+        return tuple(moved)
 
     def make_reusable(self, root_id: str | ThingId, *, definition_id: str | None = None) -> DefinitionId:
         root = root_id if isinstance(root_id, ThingId) else ThingId(root_id)
+        if root in self.document.instances:
+            raise AuthoringError("authoring.already_reusable", "This Stage group is already a reusable instance.")
         selected = sorted(self._descendants(root), key=str)
         definition = DefinitionId(definition_id or self.allocate_id("definition"))
         mapping = {thing_id: ElementId(f"element-{index:04d}") for index, thing_id in enumerate(selected)}
         self._commit(PromoteGroup(root, definition, mapping, {}))
+        self.editor.selection = {root}
         return definition
 
-    def instantiate_reusable(self, definition_id: str | DefinitionId) -> ThingId:
+    def instantiate_reusable(
+        self,
+        definition_id: str | DefinitionId,
+        *,
+        offset_x: float | None = None,
+        offset_y: float | None = None,
+    ) -> ThingId:
         definition = definition_id if isinstance(definition_id, DefinitionId) else DefinitionId(definition_id)
         record = self.document.definitions.get(definition)
         if record is None:
             raise AuthoringError("authoring.unknown_reusable", "That reusable part is not available.")
+        existing_count = sum(1 for instance in self.document.instances.values() if instance.definition_id == definition)
+        default_offset = 48.0 * max(existing_count, 1)
+        dx = default_offset if offset_x is None else _visual_number(offset_x, "Horizontal instance offset", minimum=-10000, maximum=10000)
+        dy = default_offset if offset_y is None else _visual_number(offset_y, "Vertical instance offset", minimum=-10000, maximum=10000)
         thing_by_element = {
             element_id: ThingId(self.allocate_id("thing")) for element_id in record.elements
         }
@@ -267,8 +433,36 @@ class AuthoringSession:
             for element_id in record.elements
             if element_id != record.root_element_id
         }
-        self._commit(InstantiateDefinition(definition, thing_by_element, relations))
-        return thing_by_element[record.root_element_id]
+        root_id = thing_by_element[record.root_element_id]
+        operations: list[Any] = [InstantiateDefinition(definition, thing_by_element, relations)]
+        for element_id, thing_id in thing_by_element.items():
+            element = record.elements[element_id]
+            state = deepcopy(dict(element.authored_state))
+            overrides: dict[str, Any] = {}
+            visual = state.get("visual")
+            if isinstance(visual, Mapping):
+                shifted = _normalise_visual_state(
+                    {"x": float(visual.get("x", 0)) + dx, "y": float(visual.get("y", 0)) + dy},
+                    base=visual,
+                )
+                state["visual"] = shifted
+                overrides["visual"] = deepcopy(shifted)
+            if "timeline_tracks" in state:
+                tracks = self._translated_timeline_tracks(
+                    state["timeline_tracks"],
+                    thing_id=thing_id,
+                    dx=dx,
+                    dy=dy,
+                )
+                state["timeline_tracks"] = tracks
+                overrides["timeline_tracks"] = deepcopy(tracks)
+            if state != dict(element.authored_state):
+                operations.append(SetAuthoredState(thing_id, state))
+            for key, value in overrides.items():
+                operations.append(SetInstanceStateOverride(root_id, definition, element_id, key, value))
+        self._commit(*operations)
+        self.editor.selection = {root_id}
+        return root_id
 
     def attach_rule(
         self,
@@ -495,7 +689,7 @@ class AuthoringSession:
         *,
         visual: Mapping[str, Any],
     ) -> dict[str, Any]:
-        """Transactionally update the author-facing visual projection of one Thing."""
+        """Transactionally update one concrete visual and its explicit instance overlay."""
         tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
         thing = self.document.things.get(tid)
         if thing is None or thing.tombstoned:
@@ -506,7 +700,9 @@ class AuthoringSession:
             visual,
             base=previous if isinstance(previous, Mapping) else None,
         )
-        self._commit(SetAuthoredState(tid, state))
+        operations: list[Any] = [SetAuthoredState(tid, state)]
+        operations.extend(self._instance_override_operations(tid, {"visual": state["visual"]}))
+        self._commit(*operations)
         return dict(state["visual"])
 
     def import_asset_thing(
