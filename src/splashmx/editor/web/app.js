@@ -967,8 +967,8 @@ $("#visual-connection-form").addEventListener("submit", async (event) => {
   form.querySelector('button[type="submit"]').textContent = "Create Connection";
   $("#cancel-connection-edit").hidden = true;
 });
-$("#visual-connection-form select[name="source_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
-$("#visual-connection-form select[name="target_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
+$('#visual-connection-form select[name="source_thing_id"]').addEventListener("change", renderConnectionEndpointChoices);
+$('#visual-connection-form select[name="target_thing_id"]').addEventListener("change", renderConnectionEndpointChoices);
 $("#cancel-connection-edit").addEventListener("click", () => {
   const form = $("#visual-connection-form");
   form.elements.connection_id.value = "";
