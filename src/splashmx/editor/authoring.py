@@ -87,6 +87,7 @@ _VISUAL_DEFAULTS = {
     "width": 160.0,
     "height": 100.0,
     "rotation": 0.0,
+    "layer": 0.0,
     "shape": "rectangle",
     "fill": "#5b7cfa",
 }
@@ -124,6 +125,7 @@ def _normalise_visual_state(value: Mapping[str, Any], *, base: Mapping[str, Any]
         "width": _visual_number(merged["width"], "Width", minimum=12, maximum=4096),
         "height": _visual_number(merged["height"], "Height", minimum=12, maximum=4096),
         "rotation": _visual_number(merged["rotation"], "Rotation", minimum=-3600, maximum=3600),
+        "layer": _visual_number(merged["layer"], "Layer", minimum=-1000, maximum=1000),
         "shape": shape,
         "fill": fill.lower(),
     }
