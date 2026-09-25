@@ -136,8 +136,8 @@ def _interactive_events(project: CanonicalProjectRevision, thing_id: ThingId, th
         and clicked.direction is PortDirection.OUT
         and any(
             not connection.tombstoned
-            and connection.source.thing_id == thing_id
-            and connection.source.port_id == CLICKED_PORT_ID
+            and str(connection.source.thing_id) == str(thing_id)
+            and str(connection.source.port_id) == str(CLICKED_PORT_ID)
             for connection in project.document.connections.values()
         )
     ):
