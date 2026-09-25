@@ -410,7 +410,11 @@ func _on_editor_live_surface_input(event):
         var visual = binding["sample_visual"]
         var width = max(12.0, float(visual.get("width", 12)))
         var height = max(12.0, float(visual.get("height", 12)))
-        var local_point = node.to_local(point)
+        # gui_input positions are in viewport space. Include the viewport's
+        # canvas transform when mapping them into the authored Thing's local
+        # coordinate space; Node2D.to_local() alone only accounts for the
+        # CanvasItem transform and mis-picks scaled browser canvases.
+        var local_point = node.get_global_transform_with_canvas().affine_inverse() * point
         var half_w = width / 2.0
         var half_h = height / 2.0
         var inside = false
