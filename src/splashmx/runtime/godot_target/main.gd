@@ -274,8 +274,13 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
         var collision = CollisionPolygon2D.new()
         area.add_child(collision)
         node.add_child(area)
+        var input_control = Control.new()
+        input_control.mouse_filter = Control.MOUSE_FILTER_PASS
+        input_control.focus_mode = Control.FOCUS_NONE
+        node.add_child(input_control)
         if interactive_events.has("pointer_click"):
             area.input_event.connect(_on_editor_live_input.bind(thing_id))
+            input_control.gui_input.connect(_on_editor_live_gui_input.bind(thing_id))
         _live_root.add_child(node)
         var binding = {
             "thing_id": thing_id,
@@ -283,6 +288,7 @@ func _on_editor_live_projection(_result, response_code, _headers, body):
             "polygon": polygon,
             "area": area,
             "collision": collision,
+            "input_control": input_control,
             "interactive_events": interactive_events.duplicate(),
             "base_visual": visual.duplicate(true),
             "timeline_tracks": tracks.duplicate(true),
@@ -352,6 +358,9 @@ func _apply_binding_visual(binding, visual):
     var points = _shape_polygon(visual.get("shape", "rectangle"), width, height)
     polygon.polygon = points
     binding["collision"].polygon = points
+    var input_control = binding["input_control"]
+    input_control.position = Vector2(-width / 2.0, -height / 2.0)
+    input_control.size = Vector2(width, height)
     polygon.color = Color.from_string(str(visual.get("fill", "#5b7cfa")), Color.WHITE)
     binding["sample_visual"] = visual.duplicate(true)
 
@@ -419,6 +428,32 @@ func _input(event):
     if hit_thing_id != "":
         _dispatch_editor_live_event(hit_thing_id, "pointer_click", {"pointer": "primary"})
         get_viewport().set_input_as_handled()
+
+
+func _on_editor_live_gui_input(event, thing_id):
+    if not _live_ready or _live_event_pending:
+        return
+    var primary_pointer = false
+    if event is InputEventMouseButton:
+        primary_pointer = event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+    elif event is InputEventScreenTouch:
+        primary_pointer = event.pressed
+    if not primary_pointer:
+        return
+    var binding = _live_bindings.get(str(thing_id))
+    if binding == null:
+        return
+    var visual = binding["sample_visual"]
+    if str(visual.get("shape", "rectangle")) == "ellipse":
+        var width = max(12.0, float(visual.get("width", 12)))
+        var height = max(12.0, float(visual.get("height", 12)))
+        var local_point = event.position
+        var nx = (local_point.x - width / 2.0) / (width / 2.0)
+        var ny = (local_point.y - height / 2.0) / (height / 2.0)
+        if nx * nx + ny * ny > 1.0:
+            return
+    _dispatch_editor_live_event(str(thing_id), "pointer_click", {"pointer": "primary"})
+    get_viewport().set_input_as_handled()
 
 
 func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
