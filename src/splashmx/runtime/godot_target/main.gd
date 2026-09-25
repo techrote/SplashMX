@@ -424,6 +424,12 @@ func _on_editor_live_surface_input(event):
             hit_z = int(node.z_index)
             hit_thing_id = str(thing_id)
 
+    print("SMX_EDITOR_POINTER=" + JSON.stringify({
+        "path": "surface",
+        "x": point.x,
+        "y": point.y,
+        "hit_thing_id": hit_thing_id,
+    }))
     if hit_thing_id != "":
         _dispatch_editor_live_event(hit_thing_id, "pointer_click", {"pointer": "primary"})
         get_viewport().set_input_as_handled()
@@ -439,6 +445,10 @@ func _on_editor_live_input(_viewport, event, _shape_idx, thing_id):
         primary_pointer = event.pressed
     if not primary_pointer:
         return
+    print("SMX_EDITOR_POINTER=" + JSON.stringify({
+        "path": "area",
+        "thing_id": str(thing_id),
+    }))
     _dispatch_editor_live_event(str(thing_id), "pointer_click", {"pointer": "primary"})
 
 
@@ -548,10 +558,15 @@ func _semantic_live_sample(tick):
 func _emit_editor_live_ready():
     var ids = _live_bindings.keys()
     ids.sort()
+    var interactive_ids = []
+    for thing_id in ids:
+        if _live_bindings[thing_id]["interactive_events"].has("pointer_click"):
+            interactive_ids.append(thing_id)
     print("SMX051C_PLAY_READY=" + JSON.stringify({
         "contract": "splashmx.editor-godot-play-ready/1",
         "project_revision_id": _live_project_revision_id,
         "thing_ids": ids,
+        "interactive_thing_ids": interactive_ids,
         "max_tick": _live_max_tick,
     }))
 
