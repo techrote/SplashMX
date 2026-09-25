@@ -233,26 +233,25 @@ class BrowserBridge:
             if projected is None or trigger not in projected.get("interactive_events", []):
                 raise EditorGodotPlayError(
                     "godot_play.no_matching_rule",
-                    "That Thing has no matching interactive Rule.",
+                    "That Thing has no matching interactive Rule or supported outgoing Connection.",
                 )
-            before_faults = len(world.runtime.faults)
-            matches = world.dispatch(tid, trigger, request.get("payload"))
-            if matches <= 0:
-                raise EditorGodotPlayError(
-                    "godot_play.no_matching_rule",
-                    "That Thing has no matching interactive Rule.",
-                )
-            world.runtime.run_current_tick()
-            if len(world.runtime.faults) > before_faults:
-                fault = world.runtime.faults[-1]
-                raise EditorGodotPlayError(fault.code, fault.message)
-            return {
-                "ok": True,
-                "update": build_editor_godot_runtime_update(
+            try:
+                affected = self.runtime.dispatch_pointer_event(tid, request.get("payload"))
+            except BrowserRuntimeError as exc:
+                raise EditorGodotPlayError(exc.code, str(exc)) from exc
+            updates = [
+                build_editor_godot_runtime_update(
                     world,
                     project_revision_id=str(self.session.document.project_revision_id),
-                    thing_id=thing_id,
-                ),
+                    thing_id=affected_id,
+                )
+                for affected_id in affected
+            ]
+            return {
+                "ok": True,
+                # Retain the singular field for the SMX-051D direct-Rule contract.
+                "update": updates[0],
+                "updates": updates,
             }
 
     def apply(self, request: Any) -> dict[str, Any]:
@@ -326,6 +325,10 @@ class BrowserBridge:
         elif action == "removeRule":
             self.session.remove_rule(_string(data, "thing_id"), _string(data, "attachment_id"))
         elif action == "connect": result = str(self.session.connect(source_thing_id=_string(data, "source_thing_id"), source_port_id=_string(data, "source_port_id"), target_thing_id=_string(data, "target_thing_id"), target_port_id=_string(data, "target_port_id"), connection_id=_optional_string(data, "connection_id")))
+        elif action == "connectNamed": result = str(self.session.connect_named(source_thing_id=_string(data, "source_thing_id"), source_port_id=_string(data, "source_port_id"), target_thing_id=_string(data, "target_thing_id"), target_port_id=_string(data, "target_port_id"), connection_id=_optional_string(data, "connection_id")))
+        elif action == "updateConnection": result = str(self.session.update_named_connection(_string(data, "connection_id"), source_thing_id=_string(data, "source_thing_id"), source_port_id=_string(data, "source_port_id"), target_thing_id=_string(data, "target_thing_id"), target_port_id=_string(data, "target_port_id")))
+        elif action == "removeConnection":
+            self.session.remove_connection(_string(data, "connection_id"))
         elif action == "timeline":
             keyframes = data.get("keyframes", [])
             if not isinstance(keyframes, list): raise AuthoringError("authoring.invalid_timeline", "Timeline keyframes must be a list.")

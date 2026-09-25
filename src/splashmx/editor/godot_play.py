@@ -9,7 +9,8 @@ from __future__ import annotations
 import math
 from typing import Any, Mapping
 
-from splashmx.canonical.core import ThingId
+from splashmx.canonical.core import PortDirection, PortKind, ThingId
+from splashmx.editor.authoring import CLICKED_PORT_ID
 from splashmx.canonical.serialization import CanonicalProjectRevision
 from splashmx.runtime.godot import validate_target_value
 from splashmx.runtime.lifecycle import WorldRuntime
@@ -118,7 +119,7 @@ def _tracks(value: Any, thing_id: str) -> list[dict[str, Any]]:
     return rows
 
 
-def _interactive_events(thing: Any) -> list[str]:
+def _interactive_events(project: CanonicalProjectRevision, thing_id: ThingId, thing: Any) -> list[str]:
     events: set[str] = set()
     for behaviour in thing.behaviours.values():
         config = dict(behaviour.authored_config)
@@ -128,6 +129,21 @@ def _interactive_events(thing: Any) -> list[str]:
             and config.get("event") == POINTER_CLICK_EVENT
         ):
             events.add(POINTER_CLICK_EVENT)
+    clicked = thing.ports.get(CLICKED_PORT_ID)
+    if (
+        clicked is not None
+        and clicked.kind is PortKind.EVENT
+        and clicked.direction is PortDirection.OUT
+        and any(
+            not connection.tombstoned
+            and connection.source.thing_id == thing_id
+            and connection.source.port_id == CLICKED_PORT_ID
+            for connection in project.document.connections.values()
+        )
+    ):
+        # The target is validated again at event dispatch time so a stale action
+        # remains clickable enough to produce an explicit recovery diagnostic.
+        events.add(POINTER_CLICK_EVENT)
     return sorted(events)
 
 
@@ -147,7 +163,7 @@ def build_editor_godot_play_projection(project: CanonicalProjectRevision) -> dic
             "label": str(thing.label),
             "visual": visual,
             "timeline_tracks": _tracks(thing.authored_state.get("timeline_tracks"), identity),
-            "interactive_events": _interactive_events(thing),
+            "interactive_events": _interactive_events(project, thing_id, thing),
         })
         if len(things) > _MAX_THINGS:
             _fail("godot_play.resource_limit", "Godot Play visual Thing limit exceeded")

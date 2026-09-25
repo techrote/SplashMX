@@ -428,35 +428,40 @@ func _on_editor_live_event_completed(
     if typeof(envelope) != TYPE_DICTIONARY or envelope.get("ok", false) != true:
         _fatal("editor-live interaction response is invalid")
         return
-    var update = envelope.get("update", {})
-    if (
-        typeof(update) != TYPE_DICTIONARY
-        or str(update.get("contract", "")) != "splashmx.editor-godot-runtime-update/1"
-        or str(update.get("project_revision_id", "")) != _live_project_revision_id
-        or str(update.get("thing_id", "")) != str(thing_id)
-    ):
-        _fatal("editor-live interaction update identity is invalid")
-        return
-    if not _canonical_shape_is_clean(update):
-        _fatal("editor-live interaction update leaked engine/runtime identity")
-        return
-    if not _live_bindings.has(str(thing_id)):
-        _fatal("editor-live interaction target is no longer materialized")
-        return
-    var visual = update.get("visual", {})
-    if typeof(visual) != TYPE_DICTIONARY:
-        _fatal("editor-live interaction visual is invalid")
-        return
-    var binding = _live_bindings[str(thing_id)]
-    binding["base_visual"] = visual.duplicate(true)
-    _apply_editor_live_tick(_live_elapsed_tick)
-    print("SMX051D_INTERACTION=" + JSON.stringify({
-        "contract": "splashmx.editor-godot-interaction/1",
-        "project_revision_id": _live_project_revision_id,
-        "thing_id": str(thing_id),
-        "trigger": str(trigger),
-        "visual": binding["sample_visual"].duplicate(true),
-    }))
+    var updates = envelope.get("updates", [])
+    if typeof(updates) != TYPE_ARRAY or updates.is_empty():
+        var legacy_update = envelope.get("update", {})
+        updates = [legacy_update]
+    for update in updates:
+        if (
+            typeof(update) != TYPE_DICTIONARY
+            or str(update.get("contract", "")) != "splashmx.editor-godot-runtime-update/1"
+            or str(update.get("project_revision_id", "")) != _live_project_revision_id
+        ):
+            _fatal("editor-live interaction update identity is invalid")
+            return
+        if not _canonical_shape_is_clean(update):
+            _fatal("editor-live interaction update leaked engine/runtime identity")
+            return
+        var update_thing_id = str(update.get("thing_id", ""))
+        if not _live_bindings.has(update_thing_id):
+            _fatal("editor-live interaction target is no longer materialized")
+            return
+        var visual = update.get("visual", {})
+        if typeof(visual) != TYPE_DICTIONARY:
+            _fatal("editor-live interaction visual is invalid")
+            return
+        var binding = _live_bindings[update_thing_id]
+        binding["base_visual"] = visual.duplicate(true)
+        _apply_editor_live_tick(_live_elapsed_tick)
+        print("SMX051D_INTERACTION=" + JSON.stringify({
+            "contract": "splashmx.editor-godot-interaction/1",
+            "project_revision_id": _live_project_revision_id,
+            "source_thing_id": str(thing_id),
+            "thing_id": update_thing_id,
+            "trigger": str(trigger),
+            "visual": binding["sample_visual"].duplicate(true),
+        }))
 
 
 func _semantic_live_sample(tick):

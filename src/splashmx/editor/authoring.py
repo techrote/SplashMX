@@ -38,6 +38,7 @@ from splashmx.canonical.core import (
     PromoteGroup,
     RemoveBehaviourAttachment,
     ReplaceBehaviourAttachment,
+    ReplaceConnection,
     RelationId,
     RelationshipKind,
     SemanticError,
@@ -46,6 +47,7 @@ from splashmx.canonical.core import (
     SetContainment,
     ThingId,
     ThingRecord,
+    TombstoneConnection,
     apply_transaction,
     empty_document,
 )
@@ -71,6 +73,10 @@ _VISUAL_FILL = re.compile(r"#[0-9A-Fa-f]{6}")
 _VISUAL_SHAPES = {"rectangle", "ellipse"}
 POINTER_CLICK_EVENT = "pointer_click"
 VISUAL_FILL_RULE_KIND = "visual-fill"
+CLICKED_PORT_ID = PortId("clicked")
+CHANGE_COLOUR_PORT_ID = PortId("change-colour")
+CLICKED_PORT_NAME = "Clicked"
+CHANGE_COLOUR_PORT_NAME = "Change colour"
 _VISUAL_DEFAULTS = {
     "x": 64.0,
     "y": 64.0,
@@ -186,9 +192,19 @@ class AuthoringSession:
     ) -> ThingId:
         identifier = ThingId(thing_id or self.allocate_id("thing"))
         state = dict(authored_state or {})
+        ports: dict[PortId, PortRecord] = {}
         if "visual" in state:
             state["visual"] = _normalise_visual_state(state["visual"])
-        self._commit(AddThing(ThingRecord(identifier, str(label), state)))
+            # A visible Thing can genuinely produce pointer input through the
+            # production Godot adapter, so expose that author capability as a
+            # stable canonical event port from first creation.
+            ports[CLICKED_PORT_ID] = PortRecord(
+                CLICKED_PORT_ID,
+                CLICKED_PORT_NAME,
+                PortKind.EVENT,
+                PortDirection.OUT,
+            )
+        self._commit(AddThing(ThingRecord(identifier, str(label), state, ports)))
         return identifier
 
     def add_port(
@@ -311,6 +327,7 @@ class AuthoringSession:
         event: str,
         actions: Sequence[Mapping[str, Any]],
         authored_metadata: Mapping[str, Any] | None = None,
+        extra_operations: Sequence[Any] = (),
     ) -> BehaviourAttachmentId:
         tid = thing_id if isinstance(thing_id, ThingId) else ThingId(thing_id)
         attachment = BehaviourAttachmentId(attachment_id or self.allocate_id("behaviour"))
@@ -333,7 +350,7 @@ class AuthoringSession:
         if authored_metadata:
             config.update(dict(authored_metadata))
         record = BehaviourAttachmentRecord(attachment, revision, config)
-        self._commit(AddBehaviourAttachment(tid, record))
+        self._commit(*extra_operations, AddBehaviourAttachment(tid, record))
         self.programs[revision] = program
         return attachment
 
@@ -362,6 +379,25 @@ class AuthoringSession:
         if not isinstance(visual, Mapping):
             raise AuthoringError("authoring.rule_requires_visual", "Choose a visible Thing for this Rule.")
         target_visual = _normalise_visual_state({"fill": fill}, base=visual)
+        operations: list[Any] = []
+        action_port = thing.ports.get(CHANGE_COLOUR_PORT_ID)
+        if action_port is None:
+            operations.append(
+                AddPort(
+                    tid,
+                    PortRecord(
+                        CHANGE_COLOUR_PORT_ID,
+                        CHANGE_COLOUR_PORT_NAME,
+                        PortKind.COMMAND,
+                        PortDirection.IN,
+                    ),
+                )
+            )
+        elif action_port.kind is not PortKind.COMMAND or action_port.direction is not PortDirection.IN:
+            raise AuthoringError(
+                "authoring.connection_action_conflict",
+                "This Thing has an incompatible advanced port where Change colour would be exposed.",
+            )
         return self._attach_projection(
             tid,
             projection="Rule",
@@ -369,6 +405,7 @@ class AuthoringSession:
             event=POINTER_CLICK_EVENT,
             actions=({"action": "set_public", "key": "visual.fill", "value": target_visual["fill"]},),
             authored_metadata={"author_kind": VISUAL_FILL_RULE_KIND},
+            extra_operations=operations,
         )
 
     def update_visual_rule(
@@ -410,7 +447,27 @@ class AuthoringSession:
                 "author_kind": VISUAL_FILL_RULE_KIND,
             },
         )
-        self._commit(ReplaceBehaviourAttachment(tid, replacement))
+        operations: list[Any] = []
+        action_port = thing.ports.get(CHANGE_COLOUR_PORT_ID)
+        if action_port is None:
+            operations.append(
+                AddPort(
+                    tid,
+                    PortRecord(
+                        CHANGE_COLOUR_PORT_ID,
+                        CHANGE_COLOUR_PORT_NAME,
+                        PortKind.COMMAND,
+                        PortDirection.IN,
+                    ),
+                )
+            )
+        elif action_port.kind is not PortKind.COMMAND or action_port.direction is not PortDirection.IN:
+            raise AuthoringError(
+                "authoring.connection_action_conflict",
+                "This Thing has an incompatible advanced port where Change colour would be exposed.",
+            )
+        operations.append(ReplaceBehaviourAttachment(tid, replacement))
+        self._commit(*operations)
         self.programs.pop(prior.behaviour_revision, None)
         self.programs[revision] = program
         return aid
@@ -456,6 +513,187 @@ class AuthoringSession:
             )
         )
         return connection
+
+    def _has_visual_fill_rule(self, thing: ThingRecord) -> bool:
+        return any(
+            behaviour.authored_config.get("projection") == "Rule"
+            and behaviour.authored_config.get("author_kind") == VISUAL_FILL_RULE_KIND
+            and behaviour.authored_config.get("event") == POINTER_CLICK_EVENT
+            for behaviour in thing.behaviours.values()
+        )
+
+    def _require_named_connection_endpoints(
+        self,
+        source_thing: ThingId,
+        source_port: PortId,
+        target_thing: ThingId,
+        target_port: PortId,
+    ) -> None:
+        source = self.document.things.get(source_thing)
+        target = self.document.things.get(target_thing)
+        if source is None or source.tombstoned or target is None or target.tombstoned:
+            raise AuthoringError(
+                "authoring.connection_thing_unavailable",
+                "Choose source and target Things that are still available.",
+            )
+        source_record = source.ports.get(source_port)
+        if (
+            source_port != CLICKED_PORT_ID
+            or source_record is None
+            or source_record.kind is not PortKind.EVENT
+            or source_record.direction is not PortDirection.OUT
+        ):
+            raise AuthoringError(
+                "authoring.connection_event_unavailable",
+                "Choose an available source event. Visible Things expose Clicked.",
+            )
+        target_record = target.ports.get(target_port)
+        if (
+            target_port != CHANGE_COLOUR_PORT_ID
+            or target_record is None
+            or target_record.kind is not PortKind.COMMAND
+            or target_record.direction is not PortDirection.IN
+            or not self._has_visual_fill_rule(target)
+        ):
+            raise AuthoringError(
+                "authoring.connection_action_unavailable",
+                "Choose an available target action. Add a Change colour Rule to the target Thing first.",
+            )
+
+    def connect_named(
+        self,
+        *,
+        source_thing_id: str | ThingId,
+        source_port_id: str | PortId,
+        target_thing_id: str | ThingId,
+        target_port_id: str | PortId,
+        connection_id: str | None = None,
+    ) -> ConnectionId:
+        """Create a beginner Connection from named, real canonical endpoint choices."""
+        source_thing = source_thing_id if isinstance(source_thing_id, ThingId) else ThingId(source_thing_id)
+        source_port = source_port_id if isinstance(source_port_id, PortId) else PortId(source_port_id)
+        target_thing = target_thing_id if isinstance(target_thing_id, ThingId) else ThingId(target_thing_id)
+        target_port = target_port_id if isinstance(target_port_id, PortId) else PortId(target_port_id)
+        self._require_named_connection_endpoints(source_thing, source_port, target_thing, target_port)
+        return self.connect(
+            source_thing_id=source_thing,
+            source_port_id=source_port,
+            target_thing_id=target_thing,
+            target_port_id=target_port,
+            connection_id=connection_id,
+        )
+
+    def update_named_connection(
+        self,
+        connection_id: str | ConnectionId,
+        *,
+        source_thing_id: str | ThingId,
+        source_port_id: str | PortId,
+        target_thing_id: str | ThingId,
+        target_port_id: str | PortId,
+    ) -> ConnectionId:
+        """Edit Connection endpoints without replacing its stable ConnectionId."""
+        connection = connection_id if isinstance(connection_id, ConnectionId) else ConnectionId(connection_id)
+        source_thing = source_thing_id if isinstance(source_thing_id, ThingId) else ThingId(source_thing_id)
+        source_port = source_port_id if isinstance(source_port_id, PortId) else PortId(source_port_id)
+        target_thing = target_thing_id if isinstance(target_thing_id, ThingId) else ThingId(target_thing_id)
+        target_port = target_port_id if isinstance(target_port_id, PortId) else PortId(target_port_id)
+        self._require_named_connection_endpoints(source_thing, source_port, target_thing, target_port)
+        self._commit(
+            ReplaceConnection(
+                ConnectionRecord(
+                    connection,
+                    ConnectionEndpoint(source_thing, source_port),
+                    ConnectionEndpoint(target_thing, target_port),
+                )
+            )
+        )
+        return connection
+
+    def remove_connection(self, connection_id: str | ConnectionId) -> None:
+        connection = connection_id if isinstance(connection_id, ConnectionId) else ConnectionId(connection_id)
+        self._commit(TombstoneConnection(connection))
+
+    def connection_authoring_projection(self) -> dict[str, Any]:
+        """Project canonical endpoints into the bounded beginner Connection vocabulary."""
+        sources: list[dict[str, Any]] = []
+        targets: list[dict[str, Any]] = []
+        for thing_id, thing in sorted(self.document.things.items(), key=lambda row: str(row[0])):
+            if thing.tombstoned:
+                continue
+            visual = thing.authored_state.get("visual")
+            clicked = thing.ports.get(CLICKED_PORT_ID)
+            if (
+                isinstance(visual, Mapping)
+                and clicked is not None
+                and clicked.kind is PortKind.EVENT
+                and clicked.direction is PortDirection.OUT
+            ):
+                sources.append({
+                    "thing_id": str(thing_id),
+                    "thing_label": thing.label,
+                    "events": [{"port_id": str(clicked.port_id), "label": clicked.name}],
+                })
+            change_colour = thing.ports.get(CHANGE_COLOUR_PORT_ID)
+            if (
+                isinstance(visual, Mapping)
+                and change_colour is not None
+                and change_colour.kind is PortKind.COMMAND
+                and change_colour.direction is PortDirection.IN
+                and self._has_visual_fill_rule(thing)
+            ):
+                targets.append({
+                    "thing_id": str(thing_id),
+                    "thing_label": thing.label,
+                    "actions": [{"port_id": str(change_colour.port_id), "label": change_colour.name}],
+                })
+
+        cards: list[dict[str, Any]] = []
+        for connection in sorted(self.document.connections.values(), key=lambda row: str(row.connection_id)):
+            if connection.tombstoned:
+                continue
+            source = self.document.things.get(connection.source.thing_id)
+            target = self.document.things.get(connection.target.thing_id)
+            source_port = None if source is None else source.ports.get(connection.source.port_id)
+            target_port = None if target is None else target.ports.get(connection.target.port_id)
+            supported = bool(
+                source is not None
+                and target is not None
+                and connection.source.port_id == CLICKED_PORT_ID
+                and connection.target.port_id == CHANGE_COLOUR_PORT_ID
+                and source_port is not None
+                and source_port.kind is PortKind.EVENT
+                and source_port.direction is PortDirection.OUT
+                and target_port is not None
+                and target_port.kind is PortKind.COMMAND
+                and target_port.direction is PortDirection.IN
+                and self._has_visual_fill_rule(target)
+            )
+            stale_message = None
+            if connection.target.port_id == CHANGE_COLOUR_PORT_ID and target is not None and not self._has_visual_fill_rule(target):
+                stale_message = (
+                    f"{target.label} no longer has its Change colour Rule. "
+                    "Add that Rule again, edit this Connection, or delete it."
+                )
+            elif not supported:
+                stale_message = (
+                    "This advanced Connection is preserved, but this beginner Play slice "
+                    "executes only Clicked → Change colour."
+                )
+            cards.append({
+                "connection_id": str(connection.connection_id),
+                "source_thing_id": str(connection.source.thing_id),
+                "source_thing_label": source.label if source is not None else "Unavailable Thing",
+                "source_port_id": str(connection.source.port_id),
+                "source_event_label": source_port.name if source_port is not None else "Unavailable event",
+                "target_thing_id": str(connection.target.thing_id),
+                "target_thing_label": target.label if target is not None else "Unavailable Thing",
+                "target_port_id": str(connection.target.port_id),
+                "target_action_label": target_port.name if target_port is not None else "Unavailable action",
+                "play_supported": supported,
+                "recovery": stale_message,
+            })
+        return {"sources": sources, "targets": targets, "connections": cards}
 
     def add_timeline_track(
         self,
@@ -652,6 +890,9 @@ class AuthoringSession:
             "editor": {
                 "selection": sorted(map(str, self.editor.selection)),
                 "inspect_open": self.editor.inspect_open,
+            },
+            "authoring": {
+                "connections": self.connection_authoring_projection(),
             },
         }
 
