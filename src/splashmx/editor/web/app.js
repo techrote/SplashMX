@@ -499,7 +499,7 @@ function replaceSelectOptions(select, rows, valueKey, labelKey, preferred = "") 
 
 function renderConnectionEndpointChoices() {
   const projection = connectionProjection();
-  const form = $("#connection-form");
+  const form = $("#visual-connection-form");
   const sourceThing = form.elements.source_thing_id;
   const sourcePort = form.elements.source_port_id;
   const targetThing = form.elements.target_thing_id;
@@ -526,7 +526,7 @@ function renderConnectionEndpointChoices() {
 
 function renderConnections() {
   const projection = connectionProjection();
-  const form = $("#connection-form");
+  const form = $("#visual-connection-form");
   const editingId = String(form.elements.connection_id.value || "");
   renderConnectionEndpointChoices();
 
@@ -706,7 +706,8 @@ $("#cancel-rule-edit").addEventListener("click", () => {
   renderRules();
 });
 $("#port-form").addEventListener("submit", async (event) => { event.preventDefault(); try { const form = new FormData(event.currentTarget); await act("addPort", { thing_id: selectedOne(), port_id: form.get("port_id"), name: form.get("name"), kind: form.get("kind"), direction: form.get("direction") }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
-$("#connection-form").addEventListener("submit", async (event) => {
+$("#connection-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("connect", { source_thing_id: form.get("source_thing_id"), source_port_id: form.get("source_port_id"), target_thing_id: form.get("target_thing_id"), target_port_id: form.get("target_port_id"), connection_id: form.get("connection_id") || undefined }, "Advanced canonical Connection created."); });
+$("#visual-connection-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
   const data = new FormData(form);
@@ -729,10 +730,10 @@ $("#connection-form").addEventListener("submit", async (event) => {
   form.querySelector('button[type="submit"]').textContent = "Create Connection";
   $("#cancel-connection-edit").hidden = true;
 });
-$("#connection-form select[name="source_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
-$("#connection-form select[name="target_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
+$("#visual-connection-form select[name="source_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
+$("#visual-connection-form select[name="target_thing_id"]").addEventListener("change", renderConnectionEndpointChoices);
 $("#cancel-connection-edit").addEventListener("click", () => {
-  const form = $("#connection-form");
+  const form = $("#visual-connection-form");
   form.elements.connection_id.value = "";
   form.querySelector("legend").textContent = "Create a Connection";
   form.querySelector('button[type="submit"]').textContent = "Create Connection";
