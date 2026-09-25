@@ -259,6 +259,7 @@ try {
   ), "source port");
 
   await setSelection(page, [lamp]);
+  await page.locator(".advanced-disclosure").evaluate((element) => { element.open = true; });
   await page.locator('#port-form input[name="port_id"]').fill("toggle");
   await page.locator('#port-form input[name="name"]').fill("Toggle");
   await page.locator('#port-form select[name="kind"]').selectOption("command");
