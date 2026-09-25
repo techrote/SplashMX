@@ -74,7 +74,7 @@ const evidence = {
   schema: "splashmx.smx051g-editor-hardening-evidence/1",
   issue: "SMX-051G",
   checks: {},
-  godot: { ready: null, interactions: [] },
+  godot: { ready: null, interactions: [], pointer_events: [] },
 };
 let server = await startServer();
 let browser;
@@ -93,6 +93,8 @@ try {
       evidence.godot.ready = JSON.parse(text.slice("SMX051C_PLAY_READY=".length));
     } else if (text.startsWith("SMX051D_INTERACTION=")) {
       evidence.godot.interactions.push(JSON.parse(text.slice("SMX051D_INTERACTION=".length)));
+    } else if (text.startsWith("SMX_EDITOR_POINTER=")) {
+      evidence.godot.pointer_events.push(JSON.parse(text.slice("SMX_EDITOR_POINTER=".length)));
     } else if (text.startsWith("SMX038_ERROR=")) {
       evidence.godot.error = text;
     }
@@ -175,6 +177,7 @@ try {
 
   evidence.godot.ready = null;
   evidence.godot.interactions = [];
+  evidence.godot.pointer_events = [];
   delete evidence.godot.error;
   const beforePlayRevision = state.canonical.project_revision_id;
   const buttonVisual = structuredClone(thing(state, buttonId).authored_state.visual);
@@ -197,12 +200,23 @@ try {
   evidence.checks.stacking_reaches_real_godot_projection = true;
 
   const metrics = await canvas.evaluate((el) => ({ width: el.clientWidth, height: el.clientHeight }));
-  const centreX = Number(buttonVisual.x) + Number(buttonVisual.width) / 2;
-  const centreY = Number(buttonVisual.y) + Number(buttonVisual.height) / 2;
+  const projectedButton = projection.things.find((row) => row.thing_id === buttonId);
+  // The reusable copy is deliberately offset only 48px and may overlap the centre
+  // of the first instance. Click an inset point that is visibly part of the original
+  // source rather than an occluded/ambiguous overlap.
+  const sourceX = Number(projectedButton.visual.x) + Math.min(12, Number(projectedButton.visual.width) / 4);
+  const sourceY = Number(projectedButton.visual.y) + Math.min(12, Number(projectedButton.visual.height) / 4);
   await canvas.click({ position: {
-    x: Math.max(1, Math.min(metrics.width - 1, centreX / 640 * metrics.width)),
-    y: Math.max(1, Math.min(metrics.height - 1, centreY / 360 * metrics.height)),
+    x: Math.max(1, Math.min(metrics.width - 1, sourceX / 640 * metrics.width)),
+    y: Math.max(1, Math.min(metrics.height - 1, sourceY / 360 * metrics.height)),
   }});
+  const pointerDeadline = Date.now() + 10_000;
+  while (!evidence.godot.pointer_events.length && Date.now() < pointerDeadline) {
+    if (evidence.godot.error) throw new Error(evidence.godot.error);
+    await page.waitForTimeout(40);
+  }
+  assert.equal(evidence.godot.pointer_events.at(-1)?.hit_thing_id, buttonId);
+  evidence.checks.physical_godot_hit_targets_visible_source = true;
   const interactionDeadline = Date.now() + 30_000;
   while (!evidence.godot.interactions.some((row) => row.source_thing_id === buttonId && row.thing_id === lampId) && Date.now() < interactionDeadline) {
     if (evidence.godot.error) throw new Error(evidence.godot.error);
