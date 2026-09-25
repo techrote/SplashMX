@@ -252,8 +252,8 @@ try {
   // SMX-051F now exposes the real visual Clicked capability canonically at
   // Thing creation. Retain this older campaign as an advanced-port compatibility
   // check without trying to duplicate that stable PortId.
-  await page.locator(".advanced-disclosure").evaluate((element) => { element.open = true; });
   await setSelection(page, [button]);
+  await page.locator(".advanced-disclosure").evaluate((element) => { element.open = true; });
   state = await waitFor(page, (value) => value.canonical.things.find((thing) => thing.thing_id === button)?.ports.some(
     (port) => port.port_id === "clicked" && port.kind === "event" && port.direction === "out"
   ), "source port");
