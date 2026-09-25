@@ -12,6 +12,8 @@ import re
 from typing import Any, Callable
 
 from splashmx.canonical.core import PortDirection, PortKind, ThingId
+from splashmx.canonical.serialization import SerializationError, deserialize_project, serialize_project
+from splashmx.distribution.runtime import DistributionError, export_recovery_archive, import_recovery_archive
 from splashmx.editor.authoring import (
     AuthoringError,
     AuthoringSession,
@@ -70,6 +72,12 @@ def diagnostic_for(exc: BaseException) -> AuthorDiagnostic:
     if code in _STORAGE_MESSAGES:
         title, message = _STORAGE_MESSAGES[code]
         return AuthorDiagnostic(code, title, message)
+    if code.startswith("distribution."):
+        if code in {"distribution.invalid_archive", "distribution.unsupported_archive", "distribution.resource_limit"}:
+            return AuthorDiagnostic(code, "Backup could not be opened", "Your current project is unchanged. Choose a valid SplashMX backup and try again.")
+        if code == "distribution.project_mismatch":
+            return AuthorDiagnostic(code, "Backup belongs to another project", "Your current project is unchanged. Restore a backup created from this project.")
+        return AuthorDiagnostic(code, "Backup recovery could not continue", "Your current project is unchanged. No partial recovery was published.")
     if code.startswith("execution.") or code.startswith("lifecycle."):
         return AuthorDiagnostic(code, "Play could not continue", "Play stopped before unsafe or invalid runtime state could be published.")
     if code.startswith("authoring.") or code.startswith("semantic.") or code.startswith("serialization."):
@@ -149,8 +157,13 @@ class BrowserRuntimeSession:
             "mode": "play" if self.playing else "edit",
             "transient": True,
         }
+        current_revision = str(self.authoring.document.project_revision_id)
+        dirty = self.last_saved_revision_id != current_revision
         base["storage"] = {
             "saved_revision_id": self.last_saved_revision_id,
+            "current_revision_id": current_revision,
+            "dirty": dirty,
+            "state": "never-saved" if self.last_saved_revision_id is None else "dirty" if dirty else "saved",
             "local_only": True,
         }
         base["diagnostics"] = [item.as_dict() for item in self.diagnostics[-12:]]
@@ -302,6 +315,52 @@ class BrowserRuntimeSession:
                 result.append(affected_id)
                 seen.add(affected_id)
         return result
+
+    def refresh_saved_revision_marker(self) -> None:
+        """Recover the durable local-head marker without changing active authored state."""
+        if not self.store_path.exists():
+            self.last_saved_revision_id = None
+            return
+        try:
+            with self.store_factory(self.store_path) as store:
+                saved = store.load(self.authoring.document.project_id)
+        except StorageError as exc:
+            if exc.code == "storage.not_found":
+                self.last_saved_revision_id = None
+                return
+            # Status probing must never replace or damage current work. Surface the
+            # failure only when the author explicitly saves/reloads/recovers.
+            return
+        self.last_saved_revision_id = str(saved.document.project_revision_id)
+
+    def export_recovery(self) -> bytes:
+        """Export the active canonical project through the existing SMX-050 archive."""
+        try:
+            serialized = serialize_project(self.authoring.project)
+            return export_recovery_archive(project=serialized)
+        except (SerializationError, DistributionError) as exc:
+            raise self._remember_failure(exc) from exc
+
+    def import_recovery(self, raw: bytes) -> dict[str, Any]:
+        """Prepare a complete recovery candidate before replacing active unsaved state."""
+        try:
+            bundle = import_recovery_archive(raw)
+            if bundle.project is None:
+                raise DistributionError("distribution.invalid_archive", "backup does not contain a project")
+            candidate = deserialize_project(bundle.project)
+            if candidate.document.project_id != self.authoring.document.project_id:
+                raise DistributionError("distribution.project_mismatch", "backup project identity differs")
+            candidate_session = AuthoringSession(candidate, revision_counter=0)
+            candidate_session.programs.update(rebuild_program_catalog(candidate_session))
+            candidate_session._revision_counter = _revision_counter(candidate_session)
+        except (SerializationError, DistributionError, BrowserRuntimeError) as exc:
+            raise self._remember_failure(exc) from exc
+        self.authoring = candidate_session
+        self.world = None
+        return {
+            "recovered_revision_id": str(candidate.document.project_revision_id),
+            "requires_save": self.last_saved_revision_id != str(candidate.document.project_revision_id),
+        }
 
     def save(self) -> dict[str, Any]:
         project = self.authoring.project
