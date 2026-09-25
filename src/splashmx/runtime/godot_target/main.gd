@@ -410,11 +410,12 @@ func _on_editor_live_surface_input(event):
         var visual = binding["sample_visual"]
         var width = max(12.0, float(visual.get("width", 12)))
         var height = max(12.0, float(visual.get("height", 12)))
-        # gui_input positions are in viewport space. Include the viewport's
-        # canvas transform when mapping them into the authored Thing's local
-        # coordinate space; Node2D.to_local() alone only accounts for the
-        # CanvasItem transform and mis-picks scaled browser canvases.
-        var local_point = node.get_global_transform_with_canvas().affine_inverse() * point
+        # The root Web canvas may be resized independently of the authored
+        # 640x360 viewport. gui_input gives this full-surface Control a point in
+        # screen/embedder space, while authored Things live in canvas space.
+        # Undo the viewport screen transform before the CanvasItem transform.
+        var viewport_point = get_viewport().get_screen_transform().affine_inverse() * point
+        var local_point = node.get_global_transform_with_canvas().affine_inverse() * viewport_point
         var half_w = width / 2.0
         var half_h = height / 2.0
         var inside = false
@@ -432,6 +433,8 @@ func _on_editor_live_surface_input(event):
         "path": "surface",
         "x": point.x,
         "y": point.y,
+        "viewport_x": (get_viewport().get_screen_transform().affine_inverse() * point).x,
+        "viewport_y": (get_viewport().get_screen_transform().affine_inverse() * point).y,
         "hit_thing_id": hit_thing_id,
     }))
     if hit_thing_id != "":
