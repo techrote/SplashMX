@@ -50,6 +50,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 
 .visual-thing {
   position: absolute;
+  z-index: 2;
   display: grid;
   place-items: center;
   min-width: 12px;
@@ -118,10 +119,79 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 }
 .visual-thing:not(.is-selected) .resize-handle { display: none; }
 
+.group-outline {
+  position: absolute;
+  z-index: 1;
+  border: 2px dashed color-mix(in srgb, CanvasText 55%, transparent);
+  border-radius: 0.4rem;
+  pointer-events: none;
+}
+.group-outline.is-selected {
+  border-style: solid;
+  border-color: var(--selection);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--selection) 25%, transparent);
+}
+.group-caption {
+  position: absolute;
+  left: -2px;
+  top: -2.2rem;
+  min-height: 1.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 20rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid currentColor;
+  border-radius: 0.35rem;
+  background: Canvas;
+  color: CanvasText;
+  cursor: move;
+  pointer-events: auto;
+  user-select: none;
+  touch-action: none;
+  white-space: nowrap;
+}
+.group-caption:focus-visible {
+  outline: 3px solid var(--selection);
+  outline-offset: 2px;
+}
+.instance-badge {
+  padding: 0.08rem 0.3rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  opacity: 0.82;
+}
+
 .stack-form { margin: 0 0 0.85rem; }
 .stack-form fieldset { display: grid; gap: 0.55rem; border: 1px solid currentColor; border-radius: 0.35rem; }
 .stack-form label { display: grid; gap: 0.25rem; }
-.rules-panel { grid-column: 2; }
+.library-panel, .rules-panel { grid-column: 2; }
+.library-list { display: grid; gap: 0.55rem; }
+.library-card {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.6rem;
+  border: 1px solid color-mix(in srgb, CanvasText 35%, transparent);
+  border-radius: 0.4rem;
+}
+.library-preview {
+  width: 3rem;
+  height: 2.4rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.15rem;
+  padding: 0.2rem;
+  border: 1px solid color-mix(in srgb, CanvasText 30%, transparent);
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, CanvasText 6%, transparent);
+}
+.library-preview span { border-radius: 0.16rem; }
+.library-copy { min-width: 0; display: grid; gap: 0.2rem; }
+.library-copy strong, .library-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rules-list { display: grid; gap: 0.45rem; }
 .connections-panel { grid-column: 1 / -1; }
 .connection-form fieldset {
@@ -217,7 +287,7 @@ input, select { min-height: 2.3rem; padding: 0.35rem 0.5rem; }
 
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
-  .stage-panel, .runtime-panel, .properties-panel, .rules-panel, .connections-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
+  .stage-panel, .runtime-panel, .properties-panel, .library-panel, .rules-panel, .connections-panel, .timeline-panel, .tools-panel, #people-panel, #together-boundary, .inspect-panel { grid-column: 1; }
 }
 @media (max-width: 760px) {
   .panel-heading { display: block; }
