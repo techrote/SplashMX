@@ -36,7 +36,7 @@ Disposable experiment implementations are not production architecture by inertia
 
 | Domain | Retrieve after the minimum authority chain | Key retained evidence |
 |---|---|---|
-| Product / authoring | `docs/research/SMX-012-AUTHORING-MODEL.md`, `docs/research/SMX-019-BROWSER-VERTICAL-SLICE.md` | AUTH/UX/UXG/BV fixtures; real Chromium flow; O-028 limits |
+| Product / authoring | `docs/implementation/SMX-051G-EDITOR-HARDENING.md`, `docs/research/SMX-012-AUTHORING-MODEL.md`, `docs/research/SMX-019-BROWSER-VERTICAL-SLICE.md` | FlashMX-class Stage/Timeline/Rules/Library/Connections hardening; recovery/localization/accessibility regression; AUTH/UX/UXG/BV evidence |
 | Thing kernel / relationships | `SMX-002-THING-KERNEL.md`, `SMX-015-OBJECT-FABRIC-HARNESS.md` | universal Thing, explicit relationship taxonomy, destructive P0–P4 |
 | Composition / definitions / overrides | `SMX-003-COMPOSITION-DEFINITIONS.md`, SMX-015, SMX-018 | group-as-Thing, stable definition loci, overlays, R-018-01 |
 | Behaviour / IR / hot swap | `docs/implementation/SMX-026-EXECUTION-IR.md`, `SMX-004-BEHAVIOUR-EXECUTION.md`, `SMX-008-STREAMING-MIGRATION.md`, SMX-015/016 | production common IR/Rule compiler/scheduler/budgets; bounded turns; transactional replacement; hostile amplification |
