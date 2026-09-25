@@ -249,7 +249,6 @@ class BrowserBridge:
             ]
             return {
                 "ok": True,
-                # Retain the singular field for the SMX-051D direct-Rule contract.
                 "update": updates[0],
                 "updates": updates,
             }
@@ -306,6 +305,8 @@ class BrowserBridge:
         if action == "createThing": result = str(self.session.create_thing(label=_string(data, "label"), thing_id=_optional_string(data, "thing_id"), authored_state=_mapping(data.get("authored_state", {}), "authored_state")))
         elif action == "addPort": result = str(self.session.add_port(_string(data, "thing_id"), port_id=_string(data, "port_id"), name=_string(data, "name"), kind=_string(data, "kind"), direction=_string(data, "direction")))
         elif action == "group": result = str(self.session.group_things(_string_list(data, "members"), label=str(data.get("label", "Group")), group_id=_optional_string(data, "group_id")))
+        elif action == "ungroup": result = [str(value) for value in self.session.ungroup(_string(data, "root_id"))]
+        elif action == "moveGroup": result = [str(value) for value in self.session.move_group(_string(data, "root_id"), dx=_number(data, "dx"), dy=_number(data, "dy"))]
         elif action == "makeReusable": result = str(self.session.make_reusable(_string(data, "root_id"), definition_id=_optional_string(data, "definition_id")))
         elif action == "instantiateReusable": result = str(self.session.instantiate_reusable(_string(data, "definition_id")))
         elif action in {"attachRule", "attachBehaviour"}:
@@ -358,6 +359,12 @@ def _optional_string(data: dict[str, Any], key: str) -> str | None:
     if value is None: return None
     if not isinstance(value, str) or not value: raise AuthoringError("authoring.invalid_request", f"{key.replace('_', ' ')} must be text.")
     return value
+
+def _number(data: dict[str, Any], key: str) -> float:
+    value = data.get(key)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise AuthoringError("authoring.invalid_request", f"{key.replace('_', ' ')} must be numeric.")
+    return float(value)
 
 def _string_list(data: dict[str, Any], key: str) -> list[str]:
     value = data.get(key)
