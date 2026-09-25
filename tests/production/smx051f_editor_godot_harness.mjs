@@ -72,7 +72,7 @@ const evidence = {
   issue: "SMX-051F",
   source_url: URL,
   checks: {},
-  godot: { ready: null, interactions: [] },
+  godot: { ready: null, interactions: [], pointer_events: [] },
 };
 const consoleLines = [];
 
@@ -86,6 +86,8 @@ try {
       evidence.godot.ready = JSON.parse(text.slice("SMX051C_PLAY_READY=".length));
     } else if (text.startsWith("SMX051D_INTERACTION=")) {
       evidence.godot.interactions.push(JSON.parse(text.slice("SMX051D_INTERACTION=".length)));
+    } else if (text.startsWith("SMX_EDITOR_POINTER=")) {
+      evidence.godot.pointer_events.push(JSON.parse(text.slice("SMX_EDITOR_POINTER=".length)));
     } else if (text.startsWith("SMX038_ERROR=")) {
       evidence.godot.error = text;
     }
@@ -209,7 +211,9 @@ try {
   assert.equal(evidence.godot.ready.project_revision_id, beforePlayRevision);
   assert(evidence.godot.ready.thing_ids.includes(buttonId));
   assert(evidence.godot.ready.thing_ids.includes(lampId));
+  assert(evidence.godot.ready.interactive_thing_ids.includes(buttonId));
   evidence.checks.real_godot_materialized_connected_things = true;
+  evidence.checks.godot_binding_retains_connected_source_input = true;
 
   const liveProjectionEnvelope = await page.evaluate(async () => {
     const response = await fetch("/api/godot-play-projection", { cache: "no-store" });
