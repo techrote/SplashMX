@@ -1142,11 +1142,12 @@ $("#save").addEventListener("click", async () => { await act("save", {}, t("stat
 $("#reload").addEventListener("click", async () => { await act("reload", {}, t("status.reloaded")); });
 $("#backup-export").addEventListener("click", async () => { try { await downloadBackup(); } catch (error) { say(error.message, true); } });
 $("#backup-import").addEventListener("change", async (event) => {
-  const file = event.currentTarget.files?.[0];
+  const input = event.currentTarget;
+  const file = input.files?.[0];
   if (!file) return;
   try { await restoreBackup(file); }
   catch (error) { say(error.message, true); }
-  finally { event.currentTarget.value = ""; }
+  finally { input.value = ""; }
 });
 $("#presence-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); await act("peoplePresence", { cursor: String(form.get("cursor") || ""), selections: selectedIds() }, "Presence updated without changing authored state."); });
 $("#people-retry-local").addEventListener("click", async () => { await act("peopleRetryLocal", {}, "Local collaboration history retry completed."); });
