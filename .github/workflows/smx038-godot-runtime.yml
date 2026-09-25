@@ -19,10 +19,13 @@ on:
       - 'tests/production/smx051d_editor_godot_harness.mjs'
       - 'tests/production/test_smx051f.py'
       - 'tests/production/smx051f_editor_godot_harness.mjs'
+      - 'tests/production/test_smx051e.py'
+      - 'tests/production/smx051e_editor_godot_harness.mjs'
       - 'tools/validate_smx051c.py'
       - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
       - 'docs/implementation/SMX-051D-INTERACTIVE-RULES.md'
       - 'docs/implementation/SMX-051F-VISUAL-CONNECTIONS.md'
+      - 'docs/implementation/SMX-051E-GROUPING-LIBRARY.md'
       - 'src/MODULES.json'
       - 'spec/production/conformance-registry.json'
       - 'spec/production/smx038-godot-runtime-fixtures.json'
@@ -54,10 +57,13 @@ on:
       - 'tests/production/smx051d_editor_godot_harness.mjs'
       - 'tests/production/test_smx051f.py'
       - 'tests/production/smx051f_editor_godot_harness.mjs'
+      - 'tests/production/test_smx051e.py'
+      - 'tests/production/smx051e_editor_godot_harness.mjs'
       - 'tools/validate_smx051c.py'
       - 'docs/implementation/SMX-051C-GODOT-PLAY.md'
       - 'docs/implementation/SMX-051D-INTERACTIVE-RULES.md'
       - 'docs/implementation/SMX-051F-VISUAL-CONNECTIONS.md'
+      - 'docs/implementation/SMX-051E-GROUPING-LIBRARY.md'
       - 'src/MODULES.json'
       - 'spec/production/conformance-registry.json'
       - 'spec/production/smx038-godot-runtime-fixtures.json'
@@ -113,6 +119,8 @@ jobs:
         run: python -m unittest discover -s tests/production -p 'test_smx051d.py' -v
       - name: Run SMX-051F visual Connection boundary tests
         run: python -m unittest discover -s tests/production -p 'test_smx051f.py' -v
+      - name: Run SMX-051E grouping and Library boundary tests
+        run: python -m unittest discover -s tests/production -p 'test_smx051e.py' -v
       - name: Export production-core target fixture
         run: python tools/export_smx038_fixture.py --output artifacts/smx038-runtime-fixture.json
       - name: Measure production WorldSave save-load seam
@@ -332,6 +340,10 @@ jobs:
         env:
           SMX051F_URL: http://127.0.0.1:8132/
         run: node tests/production/smx051f_editor_godot_harness.mjs
+      - name: Exercise grouping reusable Library and both instances in Chromium
+        env:
+          SMX051E_GODOT_ROOT: build/web
+        run: node tests/production/smx051e_editor_godot_harness.mjs
       - name: Print browser evidence
         if: always()
         run: |
@@ -339,6 +351,7 @@ jobs:
           if [ -f artifacts/smx051c-editor-godot-evidence.json ]; then cat artifacts/smx051c-editor-godot-evidence.json; fi
           if [ -f artifacts/smx051d-editor-godot-evidence.json ]; then cat artifacts/smx051d-editor-godot-evidence.json; fi
           if [ -f artifacts/smx051f-editor-godot-evidence.json ]; then cat artifacts/smx051f-editor-godot-evidence.json; fi
+          if [ -f artifacts/smx051e-editor-godot-evidence.json ]; then cat artifacts/smx051e-editor-godot-evidence.json; fi
           if [ -f /tmp/smx038-http.log ]; then cat /tmp/smx038-http.log; fi
           if [ -f /tmp/smx051c-editor.log ]; then cat /tmp/smx051c-editor.log; fi
           if [ -f /tmp/smx051d-editor.log ]; then cat /tmp/smx051d-editor.log; fi
@@ -352,5 +365,6 @@ jobs:
             artifacts/smx051c-editor-godot-evidence.json
             artifacts/smx051d-editor-godot-evidence.json
             artifacts/smx051f-editor-godot-evidence.json
+            artifacts/smx051e-editor-godot-evidence.json
           if-no-files-found: error
           retention-days: 30
