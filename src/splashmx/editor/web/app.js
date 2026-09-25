@@ -1065,9 +1065,10 @@ $("#add-rule").addEventListener("click", async () => { try { await act("attachRu
 $("#add-behaviour").addEventListener("click", async () => { try { await act("attachBehaviour", { thing_id: selectedOne(), event: "activate", actions: [{ action: "emit", event: "activated", payload: true }] }); } catch (error) { if (!error.message.includes("Select exactly")) throw error; say(error.message, true); } });
 $("#rule-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const formElement = event.currentTarget;
   try {
     const thingId = selectedOne();
-    const form = new FormData(event.currentTarget);
+    const form = new FormData(formElement);
     if (String(form.get("event")) !== "pointer_click" || String(form.get("action")) !== "change_colour") {
       return say("Choose a supported Rule event and action.", true);
     }
@@ -1079,7 +1080,7 @@ $("#rule-form").addEventListener("submit", async (event) => {
     } else {
       await act("attachRule", data, "Rule added.");
     }
-    event.currentTarget.elements.attachment_id.value = "";
+    formElement.elements.attachment_id.value = "";
   } catch (error) {
     if (!error.message.includes("Select exactly") && error.code !== "authoring.rule_exists") throw error;
     say(error.message, true);
