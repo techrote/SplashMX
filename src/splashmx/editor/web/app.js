@@ -1039,7 +1039,7 @@ $("#stage").addEventListener("keydown", (event) => {
   event.currentTarget.scrollBy({
     left: event.key === "ArrowLeft" ? -amount : event.key === "ArrowRight" ? amount : 0,
     top: event.key === "ArrowUp" ? -amount : event.key === "ArrowDown" ? amount : 0,
-    behavior: "instant",
+    behavior: "auto",
   });
 });
 $("#ungroup-selected").addEventListener("click", ungroupSelected);
