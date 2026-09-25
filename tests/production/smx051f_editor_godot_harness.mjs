@@ -211,6 +211,17 @@ try {
   assert(evidence.godot.ready.thing_ids.includes(lampId));
   evidence.checks.real_godot_materialized_connected_things = true;
 
+  const liveProjectionEnvelope = await page.evaluate(async () => {
+    const response = await fetch("/api/godot-play-projection", { cache: "no-store" });
+    return response.json();
+  });
+  assert.equal(liveProjectionEnvelope.ok, true);
+  const sourceProjection = liveProjectionEnvelope.projection.things.find((row) => row.thing_id === buttonId);
+  assert(sourceProjection, "connected source missing from live Godot projection");
+  assert.deepEqual(sourceProjection.interactive_events, ["pointer_click"]);
+  evidence.godot.source_projection = sourceProjection;
+  evidence.checks.connected_source_is_interactive_after_reload = true;
+
   const metrics = await canvas.evaluate((element) => ({
     clientWidth: element.clientWidth,
     clientHeight: element.clientHeight,
