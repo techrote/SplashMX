@@ -504,17 +504,13 @@ function renderConnectionEndpointChoices() {
   const sourcePort = form.elements.source_port_id;
   const targetThing = form.elements.target_thing_id;
   const targetPort = form.elements.target_port_id;
-  const editing = projection.connections.find((row) => row.connection_id === String(form.elements.connection_id.value || ""));
-
-  const preferredSource = editing?.source_thing_id || sourceThing.value;
-  replaceSelectOptions(sourceThing, projection.sources, "thing_id", "thing_label", preferredSource);
+  replaceSelectOptions(sourceThing, projection.sources, "thing_id", "thing_label", sourceThing.value);
   const source = projection.sources.find((row) => row.thing_id === sourceThing.value);
-  replaceSelectOptions(sourcePort, source?.events || [], "port_id", "label", editing?.source_port_id || sourcePort.value);
+  replaceSelectOptions(sourcePort, source?.events || [], "port_id", "label", sourcePort.value);
 
-  const preferredTarget = editing?.target_thing_id || targetThing.value;
-  replaceSelectOptions(targetThing, projection.targets, "thing_id", "thing_label", preferredTarget);
+  replaceSelectOptions(targetThing, projection.targets, "thing_id", "thing_label", targetThing.value);
   const target = projection.targets.find((row) => row.thing_id === targetThing.value);
-  replaceSelectOptions(targetPort, target?.actions || [], "port_id", "label", editing?.target_port_id || targetPort.value);
+  replaceSelectOptions(targetPort, target?.actions || [], "port_id", "label", targetPort.value);
 
   const usable = Boolean(source?.events?.length && target?.actions?.length);
   form.querySelector('button[type="submit"]').disabled = !usable;
@@ -569,10 +565,14 @@ function renderConnections() {
     edit.textContent = "Edit";
     edit.addEventListener("click", () => {
       form.elements.connection_id.value = connection.connection_id;
+      form.elements.source_thing_id.value = connection.source_thing_id;
+      form.elements.target_thing_id.value = connection.target_thing_id;
       form.querySelector("legend").textContent = "Edit Connection";
       form.querySelector('button[type="submit"]').textContent = "Update Connection";
       $("#cancel-connection-edit").hidden = false;
       renderConnectionEndpointChoices();
+      form.elements.source_port_id.value = connection.source_port_id;
+      form.elements.target_port_id.value = connection.target_port_id;
       form.scrollIntoView({ block: "nearest" });
     });
     const remove = document.createElement("button");
