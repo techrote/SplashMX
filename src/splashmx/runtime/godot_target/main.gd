@@ -388,15 +388,22 @@ func _apply_editor_live_tick(tick):
 func _on_editor_live_surface_input(event):
     if not _live_ready or _live_event_pending:
         return
-    var point = Vector2.ZERO
+    var surface_point = Vector2.ZERO
+    var canvas_point = Vector2.ZERO
     if event is InputEventMouseButton:
         if not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
             return
-        point = event.position
+        surface_point = event.position
+        # In Control.gui_input(), global_position is in CanvasLayer coordinates,
+        # which is the coordinate space used by these editor-live Node2D Things.
+        canvas_point = event.global_position
     elif event is InputEventScreenTouch:
         if not event.pressed:
             return
-        point = event.position
+        surface_point = event.position
+        # ScreenTouch exposes viewport coordinates rather than InputEventMouse's
+        # CanvasLayer-aware global_position, so undo the root stretch explicitly.
+        canvas_point = get_viewport().get_stretch_transform().affine_inverse() * event.position
     else:
         return
 
@@ -410,12 +417,7 @@ func _on_editor_live_surface_input(event):
         var visual = binding["sample_visual"]
         var width = max(12.0, float(visual.get("width", 12)))
         var height = max(12.0, float(visual.get("height", 12)))
-        # The root Web canvas may be resized independently of the authored
-        # 640x360 viewport. gui_input gives this full-surface Control a point in
-        # screen/embedder space, while authored Things live in canvas space.
-        # Undo the viewport screen transform before the CanvasItem transform.
-        var viewport_point = get_viewport().get_screen_transform().affine_inverse() * point
-        var local_point = node.get_global_transform_with_canvas().affine_inverse() * viewport_point
+        var local_point = node.to_local(canvas_point)
         var half_w = width / 2.0
         var half_h = height / 2.0
         var inside = false
@@ -431,10 +433,10 @@ func _on_editor_live_surface_input(event):
 
     print("SMX_EDITOR_POINTER=" + JSON.stringify({
         "path": "surface",
-        "x": point.x,
-        "y": point.y,
-        "viewport_x": (get_viewport().get_screen_transform().affine_inverse() * point).x,
-        "viewport_y": (get_viewport().get_screen_transform().affine_inverse() * point).y,
+        "surface_x": surface_point.x,
+        "surface_y": surface_point.y,
+        "canvas_x": canvas_point.x,
+        "canvas_y": canvas_point.y,
         "hit_thing_id": hit_thing_id,
     }))
     if hit_thing_id != "":
